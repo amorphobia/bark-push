@@ -50,7 +50,7 @@ Content-Type: application/json; charset=utf-8
 **Optional Parameters:**
 - `title` (string): Notification title (recommended max 8 characters)
 - `subtitle` (string): Notification subtitle
-- `device_keys` (array): Used for batch pushing
+- `device_keys` (array): Used for batch pushing; if provided, `device_key` is ignored (`device_key` becomes optional)
 - `sound` (string): Notification ringtone (e.g., "alarm", "anticipate", "bell", "birdsong", "bloom", "calypso", "chime", "choo", "descent", "electronic", "fanfare", "glass", "gotosleep", "healthnotification", "horn", "ladder", "mailsent", "minuet", "multiwayinvitation", "newmail", "newsflash", "noir", "paymentsuccess", "shake", "sherwoodforest", "silence", "spell", "suspense", "telegraph", "tiptoes", "typewriters", "update")
 - `icon` (string): Custom icon URL (downloaded once per unique URL)
 - `group` (string): Notification grouping (recommended max 8 characters)
@@ -65,7 +65,7 @@ Content-Type: application/json; charset=utf-8
 - `automaticallyCopy` (boolean): Alternative name for autoCopy
 - `ciphertext` (string): The ciphertext of encrypted push notifications
 - `action` (string): Set to "none", tap notifications do nothing
-- `markdown` (string): Push content with basic Markdown. When this is provided, the body field is ignored.
+- `markdown` (string): Push content with basic Markdown. When this is provided, the body field is ignored by server (`body` also becomes optional).
 - `image` (string): URL of image to push
 - `id` (string): When using the same ID value, it will update the corresponding push notification content; Requires Bark v1.5.2, bark-server v2.2.5 or above
 - `delete` (string): Pass "1" to delete the notification from the system notification center and APP history, must be used with the id parameter; Requires "Background App Refresh" to be enabled in settings, otherwise it will not work.

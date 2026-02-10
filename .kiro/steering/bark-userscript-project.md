@@ -65,6 +65,10 @@ Content-Type: application/json; charset=utf-8
 - `automaticallyCopy` (boolean): Alternative name for autoCopy
 - `ciphertext` (string): The ciphertext of encrypted push notifications
 - `action` (string): Set to "none", tap notifications do nothing
+- `markdown` (string): Push content with basic Markdown. When this is provided, the body field is ignored.
+- `image` (string): URL of image to push
+- `id` (string): When using the same ID value, it will update the corresponding push notification content; Requires Bark v1.5.2, bark-server v2.2.5 or above
+- `delete` (string): Pass "1" to delete the notification from the system notification center and APP history, must be used with the id parameter; Requires "Background App Refresh" to be enabled in settings, otherwise it will not work.
 
 **Custom Headers:**
 - Users can configure custom HTTP headers for their devices

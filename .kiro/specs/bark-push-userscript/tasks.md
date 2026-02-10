@@ -14,25 +14,25 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
   - Set up testing framework (Vitest + fast-check)
   - _Requirements: 20.1, 25.4_
 
-- [ ] 2. Core utilities and validation
-  - [ ] 2.1 Implement validation utilities
+- [x] 2. Core utilities and validation
+  - [x] 2.1 Implement validation utilities
     - Write URL validation function
     - Write device key validation function
     - Write custom headers validation function
     - Write form validation functions (push form, device form)
     - _Requirements: 12.5, 12.6, 22.1, 22.2, 22.5_
   
-  - [ ] 2.2 Write property test for URL validation
+  - [x] 2.2 Write property test for URL validation
     - **Property 34: URL validation**
     - **Validates: Requirements 12.5**
   
-  - [ ] 2.3 Write property test for validation error messages
+  - [x] 2.3 Write property test for validation error messages
     - **Property 58: Required field error message**
     - **Property 59: Invalid URL error message**
     - **Property 60: Invalid headers error message**
     - **Validates: Requirements 22.1, 22.2, 22.5**
   
-  - [ ] 2.4 Write unit tests for validation edge cases
+  - [x] 2.4 Write unit tests for validation edge cases
     - Test empty strings, whitespace, special characters
     - Test various URL formats (http, https, with/without ports)
     - Test header formats (valid, missing colon, empty lines)

@@ -88,7 +88,6 @@ export function validateCustomHeaders(headers: string): boolean {
     // Split by first colon
     const colonIndex = trimmedLine.indexOf(':');
     const headerName = trimmedLine.substring(0, colonIndex).trim();
-    const headerValue = trimmedLine.substring(colonIndex + 1).trim();
 
     // Header name must not be empty
     if (headerName.length === 0) {
@@ -96,10 +95,7 @@ export function validateCustomHeaders(headers: string): boolean {
     }
 
     // Header value can be empty (some headers don't require values)
-    // But the line must have a colon
-    if (colonIndex === -1) {
-      return false;
-    }
+    // We already checked that the line contains a colon above
   }
 
   return true;

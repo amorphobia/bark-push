@@ -7,6 +7,7 @@ import { describe, test, expect, beforeEach, vi } from 'vitest';
 import fc from 'fast-check';
 import { DeviceSelector } from './device-selector';
 import { StorageManager } from '../storage/storage-manager';
+import { t } from '../i18n';
 import type { BarkDevice } from '../types';
 
 // Mock GM_getValue and GM_setValue
@@ -123,10 +124,10 @@ describe('DeviceSelector', () => {
 
           if (actualSelectCount === 0) {
             // Should show "Select device(s)"
-            return button.textContent === 'Select device(s)';
+            return button.textContent === t('push.selectDevicePlaceholder');
           } else {
             // Should show "N device(s) selected"
-            const expectedText = `${actualSelectCount} device(s) selected`;
+            const expectedText = t('push.deviceSelected').replace('{count}', actualSelectCount.toString());
             return button.textContent === expectedText;
           }
         }
@@ -294,7 +295,7 @@ describe('DeviceSelector', () => {
       const container = selector.render();
 
       const button = container.querySelector('.device-selector-button') as HTMLButtonElement;
-      expect(button.textContent).toBe('No devices configured');
+      expect(button.textContent).toBe(t('push.noDevices'));
       expect(button.disabled).toBe(true);
     });
 
@@ -308,23 +309,23 @@ describe('DeviceSelector', () => {
       const button = container.querySelector('.device-selector-button') as HTMLButtonElement;
 
       // No selection
-      expect(button.textContent).toBe('Select device(s)');
+      expect(button.textContent).toBe(t('push.selectDevicePlaceholder'));
 
       // Select one device
       selector.selectDevice('device-1');
-      expect(button.textContent).toBe('1 device(s) selected');
+      expect(button.textContent).toBe(t('push.deviceSelected').replace('{count}', '1'));
 
       // Select two devices
       selector.selectDevice('device-2');
-      expect(button.textContent).toBe('2 device(s) selected');
+      expect(button.textContent).toBe(t('push.deviceSelected').replace('{count}', '2'));
 
       // Select three devices
       selector.selectDevice('device-3');
-      expect(button.textContent).toBe('3 device(s) selected');
+      expect(button.textContent).toBe(t('push.deviceSelected').replace('{count}', '3'));
 
       // Deselect one
       selector.deselectDevice('device-2');
-      expect(button.textContent).toBe('2 device(s) selected');
+      expect(button.textContent).toBe(t('push.deviceSelected').replace('{count}', '2'));
     });
 
     test('dropdown shows empty message when no devices', () => {
@@ -336,7 +337,7 @@ describe('DeviceSelector', () => {
       const dropdown = container.querySelector('.device-selector-dropdown') as HTMLElement;
       const emptyMessage = dropdown.querySelector('.device-selector-empty');
       expect(emptyMessage).toBeTruthy();
-      expect(emptyMessage?.textContent).toBe('No devices configured');
+      expect(emptyMessage?.textContent).toBe(t('push.noDevices'));
     });
 
     test('dropdown shows all devices with checkboxes', () => {

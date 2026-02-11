@@ -17,6 +17,7 @@ export class DeviceForm {
   private onSave?: () => void;
   private errors: Record<string, string> = {};
   private testState: 'idle' | 'testing' | 'success' | 'failed' = 'idle';
+  private container: HTMLElement | null = null;
 
   constructor(storage: StorageManager, apiClient: BarkClient) {
     this.storage = storage;
@@ -54,6 +55,9 @@ export class DeviceForm {
   render(): HTMLElement {
     const container = document.createElement('div');
     container.className = 'device-form';
+    
+    // Store reference to container for querying later
+    this.container = container;
 
     // Form header
     const header = document.createElement('div');
@@ -312,7 +316,11 @@ export class DeviceForm {
    * Get form data from DOM
    */
   private getFormData(): DeviceFormData {
-    const form = document.querySelector('.device-form-fields') as HTMLFormElement;
+    if (!this.container) {
+      throw new Error('Form container not initialized');
+    }
+    
+    const form = this.container.querySelector('.device-form-fields') as HTMLFormElement;
     if (!form) {
       throw new Error('Form not found');
     }
@@ -456,7 +464,9 @@ export class DeviceForm {
    * Update test button state without full rerender
    */
   private updateTestButtonState(): void {
-    const testButton = document.querySelector('.test-button') as HTMLButtonElement;
+    if (!this.container) return;
+    
+    const testButton = this.container.querySelector('.test-button') as HTMLButtonElement;
     if (!testButton) return;
 
     testButton.disabled = this.testState === 'testing';
@@ -480,19 +490,21 @@ export class DeviceForm {
    * Update error display without full rerender
    */
   private updateErrorDisplay(): void {
+    if (!this.container) return;
+    
     // Clear all existing errors
-    const existingErrors = document.querySelectorAll('.field-error');
+    const existingErrors = this.container.querySelectorAll('.field-error');
     existingErrors.forEach(el => el.remove());
 
     // Remove error class from all inputs
-    const inputs = document.querySelectorAll('.device-form input, .device-form textarea');
+    const inputs = this.container.querySelectorAll('.device-form input, .device-form textarea');
     inputs.forEach(input => input.classList.remove('error'));
 
     // Add new errors
     Object.entries(this.errors).forEach(([fieldName, errorMessage]) => {
       if (fieldName === '_general') return;
 
-      const input = document.querySelector(`[name="${fieldName}"]`) as HTMLInputElement | HTMLTextAreaElement;
+      const input = this.container!.querySelector(`[name="${fieldName}"]`) as HTMLInputElement | HTMLTextAreaElement;
       if (!input) return;
 
       input.classList.add('error');

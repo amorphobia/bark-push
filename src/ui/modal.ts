@@ -7,6 +7,7 @@ import { BarkClient } from '../api/bark-client';
 import { PushTab } from './push-tab';
 import { SettingsTab } from './settings-tab';
 import { t } from '../i18n';
+import { toast } from './toast';
 
 export type TabType = 'push' | 'settings';
 
@@ -528,7 +529,7 @@ export class ModalController {
       if (container) {
         // Create PushTab if not exists
         if (!this.pushTab) {
-          this.pushTab = new PushTab(this.storage, this.barkClient);
+          this.pushTab = new PushTab(this.storage, this.barkClient, toast);
         }
         
         // Clear container and append rendered component
@@ -540,7 +541,7 @@ export class ModalController {
       if (container) {
         // Create SettingsTab if not exists
         if (!this.settingsTab) {
-          this.settingsTab = new SettingsTab(this.storage, this.barkClient);
+          this.settingsTab = new SettingsTab(this.storage, this.barkClient, toast);
         }
         
         // Clear container and append rendered component

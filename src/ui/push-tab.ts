@@ -8,6 +8,7 @@ import { StorageManager } from '../storage/storage-manager';
 import { DeviceSelector } from './device-selector';
 import { BarkClient } from '../api/bark-client';
 import { t } from '../i18n';
+import type { ToastManager } from './toast';
 
 /**
  * PushTab provides the notification composition interface
@@ -16,6 +17,7 @@ export class PushTab {
   private storage: StorageManager;
   private deviceSelector: DeviceSelector;
   private barkClient: BarkClient;
+  private toast: ToastManager;
   private devices: BarkDevice[];
   private markdownEnabled: boolean;
   private advancedExpanded: boolean;
@@ -24,9 +26,10 @@ export class PushTab {
   private currentTipIndex: number;
   private isSending: boolean;
 
-  constructor(storage: StorageManager, barkClient: BarkClient) {
+  constructor(storage: StorageManager, barkClient: BarkClient, toast: ToastManager) {
     this.storage = storage;
     this.barkClient = barkClient;
+    this.toast = toast;
     this.deviceSelector = new DeviceSelector(storage);
     this.devices = [];
     this.markdownEnabled = storage.getMarkdownEnabled();
@@ -515,18 +518,14 @@ export class PushTab {
    * Show success message
    */
   private showSuccess(message: string): void {
-    // This will be integrated with ToastManager in later tasks
-    console.log('Success:', message);
-    alert(message);
+    this.toast.show(message, 'success');
   }
 
   /**
    * Show error message
    */
   private showError(message: string): void {
-    // This will be integrated with ToastManager in later tasks
-    console.error('Error:', message);
-    alert(message);
+    this.toast.show(message, 'error');
   }
 
   /**

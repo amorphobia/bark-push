@@ -3,16 +3,18 @@
  * Feature: bark-push-userscript
  */
 
-import { describe, test, expect, beforeEach } from 'vitest';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { fc } from '@fast-check/vitest';
 import { LanguageSelector } from './language-selector';
 import { StorageManager } from '../storage/storage-manager';
 import { i18n } from '../i18n';
 import type { SupportedLocale } from '../i18n';
+import type { ToastManager } from './toast';
 
 describe('LanguageSelector', () => {
   let storage: StorageManager;
   let languageSelector: LanguageSelector;
+  let mockToast: ToastManager;
 
   beforeEach(async () => {
     localStorage.clear();
@@ -20,7 +22,7 @@ describe('LanguageSelector', () => {
     await i18n.setLocale('en');
     await i18n.init();
     storage = new StorageManager();
-    languageSelector = new LanguageSelector(storage);
+    mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager; languageSelector = new LanguageSelector(storage, mockToast);
   });
 
   describe('Property 47: Language change updates UI', () => {
@@ -32,7 +34,7 @@ describe('LanguageSelector', () => {
             localStorage.clear();
             await i18n.init();
             storage = new StorageManager();
-            languageSelector = new LanguageSelector(storage);
+            mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager; languageSelector = new LanguageSelector(storage, mockToast);
 
             // Get current locale before change
             const initialLocale = i18n.getCurrentLocale();
@@ -154,3 +156,5 @@ describe('LanguageSelector', () => {
     });
   });
 });
+
+

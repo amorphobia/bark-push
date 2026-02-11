@@ -6,12 +6,15 @@
 import { t } from '../i18n';
 import { StorageManager } from '../storage/storage-manager';
 import type { BarkDevice } from '../types';
+import type { ToastManager } from './toast';
 
 export class DeviceManager {
   private storage: StorageManager;
+  private toast: ToastManager;
 
-  constructor(storage: StorageManager) {
+  constructor(storage: StorageManager, toast: ToastManager) {
     this.storage = storage;
+    this.toast = toast;
   }
 
   /**
@@ -55,7 +58,7 @@ export class DeviceManager {
       onComplete();
     } catch (error) {
       console.error('Delete device error:', error);
-      alert(t('errors.storageError'));
+      this.toast.show(t('errors.storageError'), 'error');
     }
   }
 
@@ -74,7 +77,7 @@ export class DeviceManager {
       onComplete();
     } catch (error) {
       console.error('Set default device error:', error);
-      alert(t('errors.storageError'));
+      this.toast.show(t('errors.storageError'), 'error');
     }
   }
 }

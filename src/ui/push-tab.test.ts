@@ -9,6 +9,7 @@ import { PushTab } from './push-tab';
 import { StorageManager } from '../storage/storage-manager';
 import { BarkClient } from '../api/bark-client';
 import type { BarkDevice } from '../types';
+import type { ToastManager } from './toast';
 
 // Mock i18n before importing
 vi.mock('../i18n', () => {
@@ -94,13 +95,15 @@ global.alert = vi.fn();
 describe('PushTab', () => {
   let storage: StorageManager;
   let barkClient: BarkClient;
+  let mockToast: ToastManager;
   let pushTab: PushTab;
 
   beforeEach(() => {
     vi.clearAllMocks();
     storage = new StorageManager();
     barkClient = new BarkClient();
-    pushTab = new PushTab(storage, barkClient);
+    mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager;
+    pushTab = new PushTab(storage, barkClient, mockToast);
   });
 
   afterEach(() => {
@@ -191,7 +194,7 @@ describe('PushTab', () => {
           });
 
           // Create new push tab
-          const newPushTab = new PushTab(testStorage, barkClient);
+          const newPushTab = new PushTab(testStorage, barkClient, mockToast);
           const container = newPushTab.render();
           const markdownCheckbox = container.querySelector('#push-markdown') as HTMLInputElement;
 
@@ -223,7 +226,7 @@ describe('PushTab', () => {
             return defaultValue;
           });
           
-          const newPushTab = new PushTab(testStorage, barkClient);
+          const newPushTab = new PushTab(testStorage, barkClient, mockToast);
           const container = newPushTab.render();
           const advancedContent = container.querySelector('.advanced-content') as HTMLElement;
 
@@ -257,7 +260,7 @@ describe('PushTab', () => {
           });
 
           // Create new push tab and verify state is restored
-          const newPushTab = new PushTab(testStorage, barkClient);
+          const newPushTab = new PushTab(testStorage, barkClient, mockToast);
           const container = newPushTab.render();
           const advancedContent = container.querySelector('.advanced-content') as HTMLElement;
 
@@ -285,7 +288,7 @@ describe('PushTab', () => {
       return defaultValue;
     });
 
-    const newPushTab = new PushTab(testStorage, barkClient);
+    const newPushTab = new PushTab(testStorage, barkClient, mockToast);
     const container = newPushTab.render();
     const tipsElement = container.querySelector('#push-tips') as HTMLElement;
 
@@ -317,7 +320,7 @@ describe('PushTab', () => {
       return defaultValue;
     });
 
-    const newPushTab = new PushTab(testStorage, barkClient);
+    const newPushTab = new PushTab(testStorage, barkClient, mockToast);
     const container = newPushTab.render();
     const tipsElement = container.querySelector('#push-tips') as HTMLElement;
 
@@ -349,7 +352,7 @@ describe('PushTab', () => {
           vi.mocked(GM_getValue).mockImplementation((_key: string, defaultValue: any) => defaultValue);
           
           const testStorage = new StorageManager();
-          const newPushTab = new PushTab(testStorage, barkClient);
+          const newPushTab = new PushTab(testStorage, barkClient, mockToast);
           const container = newPushTab.render();
           const sendButton = container.querySelector('#push-send-button') as HTMLButtonElement;
 
@@ -386,7 +389,7 @@ describe('PushTab', () => {
           const testStorage = new StorageManager();
           devices.forEach(d => testStorage.saveDevice(d));
           
-          const newPushTab = new PushTab(testStorage, barkClient);
+          const newPushTab = new PushTab(testStorage, barkClient, mockToast);
           const container = newPushTab.render();
           const sendButton = container.querySelector('#push-send-button') as HTMLButtonElement;
 
@@ -423,7 +426,7 @@ describe('PushTab', () => {
           const testStorage = new StorageManager();
           testStorage.saveDevice(device);
           
-          const newPushTab = new PushTab(testStorage, barkClient);
+          const newPushTab = new PushTab(testStorage, barkClient, mockToast);
           const container = newPushTab.render();
           const sendButton = container.querySelector('#push-send-button') as HTMLButtonElement;
           const messageTextarea = container.querySelector('#push-message') as HTMLTextAreaElement;
@@ -466,7 +469,7 @@ describe('PushTab', () => {
           const testStorage = new StorageManager();
           testStorage.saveDevice(device);
           
-          const newPushTab = new PushTab(testStorage, barkClient);
+          const newPushTab = new PushTab(testStorage, barkClient, mockToast);
           const container = newPushTab.render();
           
           const titleInput = container.querySelector('#push-title') as HTMLInputElement;
@@ -545,7 +548,7 @@ describe('PushTab', () => {
       vi.mocked(GM_getValue).mockImplementation((_key: string, defaultValue: any) => defaultValue);
       
       const testStorage = new StorageManager();
-      const newPushTab = new PushTab(testStorage, barkClient);
+      const newPushTab = new PushTab(testStorage, barkClient, mockToast);
       const container = newPushTab.render();
       const tipsElement = container.querySelector('#push-tips');
 
@@ -568,7 +571,7 @@ describe('PushTab', () => {
         return defaultValue;
       });
 
-      const newPushTab = new PushTab(testStorage, barkClient);
+      const newPushTab = new PushTab(testStorage, barkClient, mockToast);
       const container = newPushTab.render();
       const tipsElement = container.querySelector('#push-tips');
 
@@ -606,7 +609,7 @@ describe('PushTab', () => {
       const device = createTestDevice();
       storage.saveDevice(device);
 
-      const newPushTab = new PushTab(storage, barkClient);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
       const container = newPushTab.render();
       newPushTab.refresh();
 
@@ -636,7 +639,7 @@ describe('PushTab', () => {
         return defaultValue;
       });
 
-      const newPushTab = new PushTab(testStorage, barkClient);
+      const newPushTab = new PushTab(testStorage, barkClient, mockToast);
       const container = newPushTab.render();
 
       const sendButton = container.querySelector('#push-send-button') as HTMLButtonElement;
@@ -681,7 +684,7 @@ describe('PushTab', () => {
 
     test('advanced options fields are present', () => {
       storage.setAdvancedExpanded(true);
-      const newPushTab = new PushTab(storage, barkClient);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
       const container = newPushTab.render();
 
       expect(container.querySelector('#push-sound')).toBeTruthy();
@@ -696,7 +699,7 @@ describe('PushTab', () => {
 
     test('sound dropdown has all options', () => {
       storage.setAdvancedExpanded(true);
-      const newPushTab = new PushTab(storage, barkClient);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
       const container = newPushTab.render();
 
       const soundSelect = container.querySelector('#push-sound') as HTMLSelectElement;
@@ -718,7 +721,7 @@ describe('PushTab', () => {
       
       // Create fresh instance with no devices
       const freshStorage = new StorageManager();
-      const freshPushTab = new PushTab(freshStorage, barkClient);
+      const freshPushTab = new PushTab(freshStorage, barkClient, mockToast);
       const container = freshPushTab.render();
       
       // Initially no devices
@@ -761,7 +764,7 @@ describe('PushTab', () => {
         return defaultValue;
       });
 
-      const newPushTab = new PushTab(testStorage, barkClient);
+      const newPushTab = new PushTab(testStorage, barkClient, mockToast);
       newPushTab.render();
 
       // Tips rotation should be active after render (devices exist)
@@ -773,3 +776,4 @@ describe('PushTab', () => {
     });
   });
 });
+

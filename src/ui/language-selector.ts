@@ -6,14 +6,17 @@
 import { i18n, t } from '../i18n';
 import type { SupportedLocale } from '../i18n';
 import { StorageManager } from '../storage/storage-manager';
+import type { ToastManager } from './toast';
 
 export class LanguageSelector {
   private storage: StorageManager;
+  private toast: ToastManager;
   private container: HTMLElement | null = null;
   private onLanguageChange?: () => void;
 
-  constructor(storage: StorageManager) {
+  constructor(storage: StorageManager, toast: ToastManager) {
     this.storage = storage;
+    this.toast = toast;
   }
 
   /**
@@ -99,7 +102,7 @@ export class LanguageSelector {
       }
     } catch (error) {
       console.error('Failed to change language:', error);
-      alert(t('errors.unknownError'));
+      this.toast.show(t('errors.unknownError'), 'error');
     }
   }
 

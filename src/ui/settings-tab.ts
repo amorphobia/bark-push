@@ -10,6 +10,7 @@ import { DeviceForm } from './device-form';
 import { DeviceManager } from './device-manager';
 import { LanguageSelector } from './language-selector';
 import type { BarkDevice } from '../types';
+import type { ToastManager } from './toast';
 
 type ViewState = 'list' | 'form';
 
@@ -24,12 +25,12 @@ export class SettingsTab {
   private deviceManager: DeviceManager;
   private languageSelector: LanguageSelector;
 
-  constructor(storage: StorageManager, apiClient: BarkClient) {
+  constructor(storage: StorageManager, apiClient: BarkClient, toast: ToastManager) {
     // Initialize components
     this.deviceList = new DeviceList(storage);
     this.deviceForm = new DeviceForm(storage, apiClient);
-    this.deviceManager = new DeviceManager(storage);
-    this.languageSelector = new LanguageSelector(storage);
+    this.deviceManager = new DeviceManager(storage, toast);
+    this.languageSelector = new LanguageSelector(storage, toast);
 
     // Set up language change callback to re-render UI
     this.languageSelector.setOnLanguageChange(() => {

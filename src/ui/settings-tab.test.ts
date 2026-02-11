@@ -9,10 +9,12 @@ import { StorageManager } from '../storage/storage-manager';
 import { BarkClient } from '../api/bark-client';
 import { createDevice } from '../utils/device-factory';
 import { i18n } from '../i18n';
+import type { ToastManager } from './toast';
 
 describe('SettingsTab', () => {
   let storage: StorageManager;
   let apiClient: BarkClient;
+  let mockToast: ToastManager;
   let settingsTab: SettingsTab;
 
   beforeEach(async () => {
@@ -21,7 +23,8 @@ describe('SettingsTab', () => {
     await i18n.init();
     storage = new StorageManager();
     apiClient = new BarkClient();
-    settingsTab = new SettingsTab(storage, apiClient);
+    mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager;
+    settingsTab = new SettingsTab(storage, apiClient, mockToast);
   });
 
   describe('Initial Rendering', () => {
@@ -280,3 +283,4 @@ describe('SettingsTab', () => {
     });
   });
 });
+

@@ -10,16 +10,26 @@ import { StorageManager } from '../storage/storage-manager';
 import { createDevice } from '../utils/device-factory';
 import { i18n } from '../i18n';
 import type { BarkDevice } from '../types';
+import type { ToastManager } from './toast';
 
 describe('DeviceManager', () => {
   let storage: StorageManager;
   let deviceManager: DeviceManager;
+  let mockToast: ToastManager;
 
   beforeEach(async () => {
     localStorage.clear();
     await i18n.init();
     storage = new StorageManager();
-    deviceManager = new DeviceManager(storage);
+    
+    // Create mock toast
+    mockToast = {
+      show: vi.fn(),
+      hide: vi.fn(),
+      clear: vi.fn(),
+    } as unknown as ToastManager;
+    
+    deviceManager = new DeviceManager(storage, mockToast);
   });
 
   describe('Property 41: Device deletion operation', () => {
@@ -33,7 +43,12 @@ describe('DeviceManager', () => {
           (deviceData) => {
             localStorage.clear();
             storage = new StorageManager();
-            deviceManager = new DeviceManager(storage);
+            mockToast = {
+              show: vi.fn(),
+              hide: vi.fn(),
+              clear: vi.fn(),
+            } as unknown as ToastManager;
+            deviceManager = new DeviceManager(storage, mockToast);
 
             const device = createDevice({
               serverUrl: deviceData.serverUrl,
@@ -75,7 +90,7 @@ describe('DeviceManager', () => {
           (deviceData) => {
             localStorage.clear();
             storage = new StorageManager();
-            deviceManager = new DeviceManager(storage);
+            mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager; deviceManager = new DeviceManager(storage, mockToast);
 
             const device = createDevice({
               serverUrl: deviceData.serverUrl,
@@ -120,7 +135,7 @@ describe('DeviceManager', () => {
           (deviceData) => {
             localStorage.clear();
             storage = new StorageManager();
-            deviceManager = new DeviceManager(storage);
+            mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager; deviceManager = new DeviceManager(storage, mockToast);
 
             const device = createDevice({
               serverUrl: deviceData.serverUrl,
@@ -159,7 +174,7 @@ describe('DeviceManager', () => {
           (deviceData) => {
             localStorage.clear();
             storage = new StorageManager();
-            deviceManager = new DeviceManager(storage);
+            mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager; deviceManager = new DeviceManager(storage, mockToast);
 
             const device = createDevice({
               serverUrl: deviceData.serverUrl,
@@ -305,3 +320,4 @@ describe('DeviceManager', () => {
     });
   });
 });
+

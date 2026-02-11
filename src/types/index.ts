@@ -198,6 +198,7 @@ export const STORAGE_KEYS = {
   MARKDOWN_ENABLED: 'bark_markdown_enabled',
   ADVANCED_EXPANDED: 'bark_advanced_expanded',
   LAST_TAB: 'bark_last_tab',
+  KEYBOARD_SHORTCUT: 'bark_keyboard_shortcut',
 } as const;
 
 /** Type for tab selection */
@@ -212,6 +213,7 @@ export interface StorageSchema {
   [STORAGE_KEYS.MARKDOWN_ENABLED]: boolean;
   [STORAGE_KEYS.ADVANCED_EXPANDED]: boolean;
   [STORAGE_KEYS.LAST_TAB]: TabType;
+  [STORAGE_KEYS.KEYBOARD_SHORTCUT]: string;
 }
 
 /**

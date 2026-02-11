@@ -304,6 +304,32 @@ export class StorageManager {
   }
 
   /**
+   * Get keyboard shortcut
+   * Requirement 18.6: Store UI state preferences
+   */
+  getKeyboardShortcut(): string {
+    try {
+      return GM_getValue(STORAGE_KEYS.KEYBOARD_SHORTCUT, 'Alt+B');
+    } catch (error) {
+      console.error('Failed to get keyboard shortcut:', error);
+      return 'Alt+B';
+    }
+  }
+
+  /**
+   * Set keyboard shortcut
+   * Requirement 18.6: Store UI state preferences
+   */
+  setKeyboardShortcut(shortcut: string): void {
+    try {
+      GM_setValue(STORAGE_KEYS.KEYBOARD_SHORTCUT, shortcut);
+    } catch (error) {
+      console.error('Failed to set keyboard shortcut:', error);
+      throw new Error('Failed to save keyboard shortcut. Storage may be unavailable.');
+    }
+  }
+
+  /**
    * Clear all storage (for testing purposes)
    * Requirement 18.7: Handle storage errors gracefully
    */
@@ -317,6 +343,7 @@ export class StorageManager {
       GM_setValue(STORAGE_KEYS.MARKDOWN_ENABLED, false);
       GM_setValue(STORAGE_KEYS.ADVANCED_EXPANDED, false);
       GM_setValue(STORAGE_KEYS.LAST_TAB, 'push');
+      GM_setValue(STORAGE_KEYS.KEYBOARD_SHORTCUT, 'Alt+B');
     } catch (error) {
       console.error('Failed to clear storage:', error);
       throw new Error('Failed to clear storage. Storage may be unavailable.');

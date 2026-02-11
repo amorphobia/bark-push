@@ -29,6 +29,24 @@ export class ModalController {
   }
 
   /**
+   * Check if modal is open
+   */
+  isOpen(): boolean {
+    return this.modalElement?.style.display === 'flex';
+  }
+
+  /**
+   * Toggle the modal
+   */
+  toggle(): void {
+    if (this.isOpen()) {
+      this.close();
+    } else {
+      this.open();
+    }
+  }
+
+  /**
    * Open the modal
    * Requirements: 1.1, 21.3
    */

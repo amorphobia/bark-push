@@ -9,6 +9,7 @@ import { DeviceList } from './device-list';
 import { DeviceForm } from './device-form';
 import { DeviceManager } from './device-manager';
 import { LanguageSelector } from './language-selector';
+import { t } from '../i18n';
 import type { BarkDevice } from '../types';
 import type { ToastManager } from './toast';
 
@@ -18,14 +19,20 @@ export class SettingsTab {
   private container: HTMLElement | null = null;
   private currentView: ViewState = 'list';
   private editingDevice: BarkDevice | null = null;
+  private isRecordingShortcut: boolean = false;
 
   // Components
   private deviceList: DeviceList;
   private deviceForm: DeviceForm;
   private deviceManager: DeviceManager;
   private languageSelector: LanguageSelector;
+  private storage: StorageManager;
+  private toast: ToastManager;
 
   constructor(storage: StorageManager, apiClient: BarkClient, toast: ToastManager) {
+    this.storage = storage;
+    this.toast = toast;
+    
     // Initialize components
     this.deviceList = new DeviceList(storage);
     this.deviceForm = new DeviceForm(storage, apiClient);
@@ -89,6 +96,16 @@ export class SettingsTab {
     `;
     languageSelectorWrapper.appendChild(this.languageSelector.render());
     view.appendChild(languageSelectorWrapper);
+
+    // Add keyboard shortcut settings
+    const keyboardShortcutWrapper = document.createElement('div');
+    keyboardShortcutWrapper.style.cssText = `
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #eee;
+    `;
+    keyboardShortcutWrapper.appendChild(this.renderKeyboardShortcut());
+    view.appendChild(keyboardShortcutWrapper);
 
     return view;
   }
@@ -188,5 +205,146 @@ export class SettingsTab {
    */
   getCurrentView(): ViewState {
     return this.currentView;
+  }
+
+  /**
+   * Render keyboard shortcut settings
+   */
+  private renderKeyboardShortcut(): HTMLElement {
+    const container = document.createElement('div');
+    container.className = 'bark-keyboard-shortcut';
+
+    const currentShortcut = this.storage.getKeyboardShortcut();
+
+    container.innerHTML = `
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">
+          ${t('settings.keyboardShortcut')}
+        </label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input 
+            type="text" 
+            id="bark-shortcut-input"
+            value="${currentShortcut || ''}"
+            readonly
+            placeholder="${t('settings.keyboardShortcutPlaceholder')}"
+            style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: #f5f5f5; cursor: pointer;"
+          />
+          <button 
+            id="bark-shortcut-record"
+            class="btn-secondary"
+            style="white-space: nowrap;"
+          >
+            ${t('settings.keyboardShortcutRecord')}
+          </button>
+          <button 
+            id="bark-shortcut-clear"
+            class="btn-secondary"
+            style="white-space: nowrap;"
+          >
+            ${t('settings.keyboardShortcutClear')}
+          </button>
+        </div>
+        <span style="display: block; margin-top: 4px; font-size: 12px; color: #666;">
+          ${t('settings.keyboardShortcutHint')}
+        </span>
+      </div>
+    `;
+
+    // Attach event listeners
+    const input = container.querySelector('#bark-shortcut-input') as HTMLInputElement;
+    const recordBtn = container.querySelector('#bark-shortcut-record') as HTMLButtonElement;
+    const clearBtn = container.querySelector('#bark-shortcut-clear') as HTMLButtonElement;
+
+    // Record shortcut
+    recordBtn.addEventListener('click', () => {
+      this.startRecordingShortcut(input, recordBtn);
+    });
+
+    // Clear shortcut
+    clearBtn.addEventListener('click', () => {
+      this.storage.setKeyboardShortcut('');
+      input.value = '';
+      this.toast.show(t('settings.keyboardShortcutCleared'), 'success');
+      // Notify main.ts to re-register (page reload required)
+      this.toast.show(t('settings.keyboardShortcutReloadRequired'), 'info');
+    });
+
+    return container;
+  }
+
+  /**
+   * Start recording keyboard shortcut
+   */
+  private startRecordingShortcut(input: HTMLInputElement, recordBtn: HTMLButtonElement): void {
+    if (this.isRecordingShortcut) return;
+
+    this.isRecordingShortcut = true;
+    recordBtn.textContent = t('settings.keyboardShortcutRecording');
+    recordBtn.disabled = true;
+    input.value = t('settings.keyboardShortcutPressKeys');
+    input.style.borderColor = '#007aff';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Build shortcut string
+      const parts: string[] = [];
+      if (event.ctrlKey) parts.push('Ctrl');
+      if (event.altKey) parts.push('Alt');
+      if (event.shiftKey) parts.push('Shift');
+      if (event.metaKey) parts.push('Meta');
+
+      // Get main key (ignore modifier keys)
+      const key = event.key;
+      if (!['Control', 'Alt', 'Shift', 'Meta'].includes(key)) {
+        parts.push(key.toUpperCase());
+      }
+
+      // Validate: must have at least one modifier
+      const hasModifier = event.ctrlKey || event.altKey || event.shiftKey || event.metaKey;
+      const hasMainKey = parts.length > 0 && !['Control', 'Alt', 'Shift', 'Meta'].includes(parts[parts.length - 1]);
+
+      if (hasModifier && hasMainKey) {
+        const shortcut = parts.join('+');
+        input.value = shortcut;
+
+        // Save shortcut
+        try {
+          this.storage.setKeyboardShortcut(shortcut);
+          this.toast.show(t('settings.keyboardShortcutSaved'), 'success');
+          // Notify that page reload is required
+          this.toast.show(t('settings.keyboardShortcutReloadRequired'), 'info');
+        } catch (error) {
+          this.toast.show(t('errors.storageError'), 'error');
+        }
+
+        // Stop recording
+        this.stopRecordingShortcut(input, recordBtn, handleKeyDown);
+      } else if (!hasModifier && hasMainKey) {
+        // Show error: must have modifier
+        this.toast.show(t('settings.keyboardShortcutInvalid'), 'error');
+      }
+    };
+
+    // Listen for keydown
+    document.addEventListener('keydown', handleKeyDown, true);
+
+    // Store handler for cleanup
+    (input as any)._keydownHandler = handleKeyDown;
+  }
+
+  /**
+   * Stop recording keyboard shortcut
+   */
+  private stopRecordingShortcut(input: HTMLInputElement, recordBtn: HTMLButtonElement, handler: (event: KeyboardEvent) => void): void {
+    this.isRecordingShortcut = false;
+    recordBtn.textContent = t('settings.keyboardShortcutRecord');
+    recordBtn.disabled = false;
+    input.style.borderColor = '#ddd';
+
+    // Remove event listener
+    document.removeEventListener('keydown', handler, true);
   }
 }

@@ -15,6 +15,7 @@ import { StorageManager } from './storage/storage-manager';
 // Global instances
 let modalController: ModalController | null = null;
 let storage: StorageManager | null = null;
+let keyboardShortcutListener: ((event: KeyboardEvent) => void) | null = null;
 
 /**
  * Initialize the userscript
@@ -39,6 +40,20 @@ async function init(): Promise<void> {
 }
 
 /**
+ * Toggle the modal
+ * Requirements: 1.1, 20.1
+ */
+function toggleModal(): void {
+  if (!modalController) {
+    console.error('[Bark Push] Modal controller not initialized');
+    return;
+  }
+  
+  // Toggle modal state
+  modalController.toggle();
+}
+
+/**
  * Show the modal
  * Requirements: 1.1, 20.1
  */
@@ -50,6 +65,96 @@ function showModal(): void {
   
   // Open modal (will inject into page on demand)
   modalController.open();
+}
+
+/**
+ * Parse keyboard shortcut string into modifier keys and main key
+ * Example: "Ctrl+Shift+B" -> { ctrl: true, shift: true, key: "B" }
+ */
+function parseShortcut(shortcut: string): { ctrl: boolean; alt: boolean; shift: boolean; meta: boolean; key: string } | null {
+  if (!shortcut) return null;
+  
+  const parts = shortcut.split('+').map(p => p.trim());
+  if (parts.length === 0) return null;
+  
+  const result = {
+    ctrl: false,
+    alt: false,
+    shift: false,
+    meta: false,
+    key: '',
+  };
+  
+  for (const part of parts) {
+    const lower = part.toLowerCase();
+    if (lower === 'ctrl' || lower === 'control') {
+      result.ctrl = true;
+    } else if (lower === 'alt') {
+      result.alt = true;
+    } else if (lower === 'shift') {
+      result.shift = true;
+    } else if (lower === 'meta' || lower === 'cmd' || lower === 'command') {
+      result.meta = true;
+    } else {
+      result.key = part.toUpperCase();
+    }
+  }
+  
+  return result.key ? result : null;
+}
+
+/**
+ * Check if keyboard event matches the configured shortcut
+ */
+function matchesShortcut(event: KeyboardEvent, shortcut: string): boolean {
+  const parsed = parseShortcut(shortcut);
+  if (!parsed) return false;
+  
+  return (
+    event.ctrlKey === parsed.ctrl &&
+    event.altKey === parsed.alt &&
+    event.shiftKey === parsed.shift &&
+    event.metaKey === parsed.meta &&
+    event.key.toUpperCase() === parsed.key
+  );
+}
+
+/**
+ * Register keyboard shortcut listener
+ */
+function registerKeyboardShortcut(): void {
+  if (!storage) return;
+  
+  // Remove existing listener if any
+  if (keyboardShortcutListener) {
+    document.removeEventListener('keydown', keyboardShortcutListener);
+  }
+  
+  // Get configured shortcut
+  const shortcut = storage.getKeyboardShortcut();
+  if (!shortcut) return;
+  
+  // Create new listener
+  keyboardShortcutListener = (event: KeyboardEvent) => {
+    // Don't trigger if user is typing in an input field
+    const target = event.target as HTMLElement;
+    const isInputField = target.tagName === 'INPUT' || 
+                        target.tagName === 'TEXTAREA' || 
+                        target.isContentEditable;
+    
+    if (isInputField) return;
+    
+    // Check if event matches configured shortcut
+    if (matchesShortcut(event, shortcut)) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleModal();
+    }
+  };
+  
+  // Register listener
+  document.addEventListener('keydown', keyboardShortcutListener, true);
+  console.log('[Bark Push] Keyboard shortcut registered:', shortcut);
 }
 
 /**
@@ -79,10 +184,12 @@ function registerMenuCommand(): void {
     document.addEventListener('DOMContentLoaded', async () => {
       await init();
       registerMenuCommand();
+      registerKeyboardShortcut();
     });
   } else {
     // DOM already loaded
     await init();
     registerMenuCommand();
+    registerKeyboardShortcut();
   }
 })();

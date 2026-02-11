@@ -96,7 +96,7 @@ export class LanguageSelector {
       // Requirement 17.7: Persist language preference
       this.storage.setLanguage(locale);
 
-      // Requirement 17.6: Update all UI text immediately
+      // Requirement 17.8: Trigger callback after locale is fully loaded
       if (this.onLanguageChange) {
         this.onLanguageChange();
       }

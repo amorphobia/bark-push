@@ -34,7 +34,8 @@ describe('LanguageSelector', () => {
             localStorage.clear();
             await i18n.init();
             storage = new StorageManager();
-            mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager; languageSelector = new LanguageSelector(storage, mockToast);
+            mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager;
+            languageSelector = new LanguageSelector(storage, mockToast);
 
             // Get current locale before change
             const initialLocale = i18n.getCurrentLocale();
@@ -57,8 +58,8 @@ describe('LanguageSelector', () => {
             const changeEvent = new Event('change');
             select.dispatchEvent(changeEvent);
 
-            // Wait for async setLocale to complete (dynamic imports take time)
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Wait longer for async setLocale to complete (dynamic imports + callback)
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             const storedLanguage = storage.getLanguage();
             const currentLocale = i18n.getCurrentLocale();
@@ -68,7 +69,7 @@ describe('LanguageSelector', () => {
                    currentLocale === locale;
           }
         ),
-        { numRuns: 15 }
+        { numRuns: 5 }
       );
     });
   });

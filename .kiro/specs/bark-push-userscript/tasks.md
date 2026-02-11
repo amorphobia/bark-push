@@ -415,31 +415,31 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test cancel/back navigation
     - _Requirements: 12.2, 12.11, 12.12, 13.3, 16.1, 16.3, 16.4, 16.5_
 
-- [ ] 17. Settings tab - device management actions
-  - [ ] 17.1 Implement device management handlers
+- [x] 17. Settings tab - device management actions
+  - [x] 17.1 Implement device management handlers
     - Implement handleAddDevice() - navigate to form
     - Implement handleEditDevice() - navigate to form with device data
     - Implement handleDeleteDevice() - show confirmation, delete from storage
     - Implement handleSetDefault() - update default device
     - _Requirements: 12.2, 13.1, 14.1, 14.2, 14.3, 14.4, 15.1, 15.2_
   
-  - [ ] 17.2 Write property test for device deletion
+  - [x] 17.2 Write property test for device deletion
     - **Property 41: Device deletion operation**
     - **Validates: Requirements 14.2**
   
-  - [ ] 17.3 Write property test for default device cleared on deletion
+  - [x] 17.3 Write property test for default device cleared on deletion
     - **Property 42: Default device cleared on deletion**
     - **Validates: Requirements 14.3**
   
-  - [ ] 17.4 Write property test for set default operation
+  - [x] 17.4 Write property test for set default operation
     - **Property 43: Set default operation**
     - **Validates: Requirements 15.1**
   
-  - [ ] 17.5 Write property test for default device ID persistence
+  - [x] 17.5 Write property test for default device ID persistence
     - **Property 45: Default device ID persistence**
     - **Validates: Requirements 15.4**
   
-  - [ ] 17.6 Write unit tests for device management
+  - [x] 17.6 Write unit tests for device management
     - Test add device navigation
     - Test edit device navigation
     - Test delete confirmation dialog

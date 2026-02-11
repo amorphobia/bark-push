@@ -3,7 +3,7 @@
  * Feature: bark-push-userscript
  */
 
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeEach, vi, afterEach } from 'vitest';
 import { fc } from '@fast-check/vitest';
 import { DeviceManager } from './device-manager';
 import { StorageManager } from '../storage/storage-manager';
@@ -11,6 +11,7 @@ import { createDevice } from '../utils/device-factory';
 import { i18n } from '../i18n';
 import type { BarkDevice } from '../types';
 import type { ToastManager } from './toast';
+import { ConfirmDialog } from './confirm-dialog';
 
 describe('DeviceManager', () => {
   let storage: StorageManager;
@@ -30,17 +31,24 @@ describe('DeviceManager', () => {
     } as unknown as ToastManager;
     
     deviceManager = new DeviceManager(storage, mockToast);
+    
+    // Mock ConfirmDialog.show to return true by default
+    vi.spyOn(ConfirmDialog, 'show').mockResolvedValue(true);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('Property 41: Device deletion operation', () => {
-    test('deleting device removes it from storage', () => {
-      fc.assert(
-        fc.property(
+    test('deleting device removes it from storage', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             serverUrl: fc.webUrl(),
             deviceKey: fc.string({ minLength: 2, maxLength: 50 }).filter(s => s.trim().length >= 2).map(s => s.trim()),
           }),
-          (deviceData) => {
+          async (deviceData) => {
             localStorage.clear();
             storage = new StorageManager();
             mockToast = {
@@ -57,11 +65,10 @@ describe('DeviceManager', () => {
             storage.saveDevice(device);
 
             // Mock confirm to always return true
-            const originalConfirm = global.confirm;
-            global.confirm = vi.fn(() => true);
+            vi.spyOn(ConfirmDialog, 'show').mockResolvedValue(true);
 
             let completed = false;
-            deviceManager.handleDeleteDevice(device, () => {
+            await deviceManager.handleDeleteDevice(device, () => {
               completed = true;
             });
 
@@ -69,7 +76,7 @@ describe('DeviceManager', () => {
             const deviceExists = devices.some(d => d.id === device.id);
 
             // Restore confirm
-            global.confirm = originalConfirm;
+            vi.restoreAllMocks();
 
             return completed && !deviceExists;
           }
@@ -80,14 +87,14 @@ describe('DeviceManager', () => {
   });
 
   describe('Property 42: Default device cleared on deletion', () => {
-    test('deleting default device clears default device ID', () => {
-      fc.assert(
-        fc.property(
+    test('deleting default device clears default device ID', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             serverUrl: fc.webUrl(),
             deviceKey: fc.string({ minLength: 2, maxLength: 50 }).filter(s => s.trim().length >= 2).map(s => s.trim()),
           }),
-          (deviceData) => {
+          async (deviceData) => {
             localStorage.clear();
             storage = new StorageManager();
             mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager; deviceManager = new DeviceManager(storage, mockToast);
@@ -106,15 +113,14 @@ describe('DeviceManager', () => {
             }
 
             // Mock confirm to always return true
-            const originalConfirm = global.confirm;
-            global.confirm = vi.fn(() => true);
+            vi.spyOn(ConfirmDialog, 'show').mockResolvedValue(true);
 
-            deviceManager.handleDeleteDevice(device, () => {});
+            await deviceManager.handleDeleteDevice(device, () => {});
 
             const defaultIdAfter = storage.getDefaultDeviceId();
 
             // Restore confirm
-            global.confirm = originalConfirm;
+            vi.restoreAllMocks();
 
             return defaultIdAfter === null;
           }
@@ -221,53 +227,50 @@ describe('DeviceManager', () => {
       expect(navigatedDevice).toBe(device);
     });
 
-    test('handleDeleteDevice shows confirmation dialog', () => {
+    test('handleDeleteDevice shows confirmation dialog', async () => {
       const device = createDevice({
         serverUrl: 'https://api.day.app',
         deviceKey: 'test-key-123',
       });
       storage.saveDevice(device);
 
-      const originalConfirm = global.confirm;
-      global.confirm = vi.fn(() => false);
+      vi.spyOn(ConfirmDialog, 'show').mockResolvedValue(false);
 
-      deviceManager.handleDeleteDevice(device, () => {});
+      await deviceManager.handleDeleteDevice(device, () => {});
 
-      expect(global.confirm).toHaveBeenCalled();
+      expect(ConfirmDialog.show).toHaveBeenCalled();
 
-      global.confirm = originalConfirm;
+      vi.restoreAllMocks();
     });
 
-    test('handleDeleteDevice does not delete if user cancels', () => {
+    test('handleDeleteDevice does not delete if user cancels', async () => {
       const device = createDevice({
         serverUrl: 'https://api.day.app',
         deviceKey: 'test-key-123',
       });
       storage.saveDevice(device);
 
-      const originalConfirm = global.confirm;
-      global.confirm = vi.fn(() => false);
+      vi.spyOn(ConfirmDialog, 'show').mockResolvedValue(false);
 
-      deviceManager.handleDeleteDevice(device, () => {});
+      await deviceManager.handleDeleteDevice(device, () => {});
 
       const devices = storage.getDevices();
       expect(devices.some(d => d.id === device.id)).toBe(true);
 
-      global.confirm = originalConfirm;
+      vi.restoreAllMocks();
     });
 
-    test('handleDeleteDevice deletes device if user confirms', () => {
+    test('handleDeleteDevice deletes device if user confirms', async () => {
       const device = createDevice({
         serverUrl: 'https://api.day.app',
         deviceKey: 'test-key-123',
       });
       storage.saveDevice(device);
 
-      const originalConfirm = global.confirm;
-      global.confirm = vi.fn(() => true);
+      vi.spyOn(ConfirmDialog, 'show').mockResolvedValue(true);
 
       let completed = false;
-      deviceManager.handleDeleteDevice(device, () => {
+      await deviceManager.handleDeleteDevice(device, () => {
         completed = true;
       });
 
@@ -275,7 +278,7 @@ describe('DeviceManager', () => {
       expect(devices.some(d => d.id === device.id)).toBe(false);
       expect(completed).toBe(true);
 
-      global.confirm = originalConfirm;
+      vi.restoreAllMocks();
     });
 
     test('handleSetDefault sets device as default', () => {
@@ -320,4 +323,5 @@ describe('DeviceManager', () => {
     });
   });
 });
+
 

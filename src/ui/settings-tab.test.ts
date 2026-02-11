@@ -104,7 +104,7 @@ describe('SettingsTab', () => {
   });
 
   describe('Device Management Integration', () => {
-    test('delete device refreshes list view', () => {
+    test('delete device refreshes list view', async () => {
       const device = createDevice({
         serverUrl: 'https://api.day.app',
         deviceKey: 'test-key-123',
@@ -113,9 +113,9 @@ describe('SettingsTab', () => {
 
       const container = settingsTab.render();
 
-      // Mock confirm to return true
-      const originalConfirm = global.confirm;
-      global.confirm = vi.fn(() => true);
+      // Mock ConfirmDialog to return true
+      const { ConfirmDialog } = await import('./confirm-dialog');
+      vi.spyOn(ConfirmDialog, 'show').mockResolvedValue(true);
 
       // Find delete button
       const buttons = container.querySelectorAll('button');
@@ -124,14 +124,18 @@ describe('SettingsTab', () => {
       ) as HTMLButtonElement;
       
       expect(deleteButton).toBeTruthy();
-      deleteButton.click();
+      
+      // Click and wait for async operation
+      await deleteButton.click();
+      
+      // Wait a bit for the async operation to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Verify device was deleted
       const devices = storage.getDevices();
       expect(devices.length).toBe(0);
 
-      // Restore confirm
-      global.confirm = originalConfirm;
+      vi.restoreAllMocks();
     });
 
     test('set default device refreshes list view', () => {

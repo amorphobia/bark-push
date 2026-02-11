@@ -7,6 +7,7 @@ import { t } from '../i18n';
 import { StorageManager } from '../storage/storage-manager';
 import type { BarkDevice } from '../types';
 import type { ToastManager } from './toast';
+import { ConfirmDialog } from './confirm-dialog';
 
 export class DeviceManager {
   private storage: StorageManager;
@@ -37,10 +38,11 @@ export class DeviceManager {
    * Handle delete device action
    * Requirements: 14.1, 14.2, 14.3, 14.4
    */
-  handleDeleteDevice(device: BarkDevice, onComplete: () => void): void {
+  async handleDeleteDevice(device: BarkDevice, onComplete: () => void): Promise<void> {
     // Requirement 14.1: Show confirmation dialog
-    const confirmed = confirm(
-      `${t('settings.deleteConfirm')}\n\n${t('settings.deleteConfirmMessage')}`
+    const confirmed = await ConfirmDialog.show(
+      t('settings.deleteConfirmMessage'),
+      t('settings.deleteConfirm')
     );
 
     if (!confirmed) {

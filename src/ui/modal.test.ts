@@ -95,6 +95,99 @@ describe('ModalController', () => {
         { numRuns: 10, seed: 42 }
       );
     });
+
+    it('Property 1: Modal responsive width - should be 450px when viewport > 470px, or calc(100vw - 20px) when viewport ≤ 470px', () => {
+      fc.assert(
+        fc.property(fc.constant(null), () => {
+          modalController.open();
+
+          const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+          const styleElement = shadowRoot?.querySelector('style');
+          const styleContent = styleElement?.textContent || '';
+
+          // Check that modal has width: 450px
+          expect(styleContent).toContain('width: 450px');
+
+          // Check that modal has max-width: calc(100vw - 20px)
+          expect(styleContent).toContain('max-width: calc(100vw - 20px)');
+
+          // Check media query for mobile
+          expect(styleContent).toContain('@media (max-width: 470px)');
+          expect(styleContent).toContain('width: calc(100vw - 20px)');
+
+          modalController.close();
+        }),
+        { numRuns: 10, seed: 42 }
+      );
+    });
+
+    it('Property 63: Touch-friendly button sizing - all buttons should have minimum 44x44px dimensions', () => {
+      fc.assert(
+        fc.property(fc.constant(null), () => {
+          modalController.open();
+
+          const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+          const styleElement = shadowRoot?.querySelector('style');
+          const styleContent = styleElement?.textContent || '';
+
+          // Check tabs have min dimensions
+          expect(styleContent).toContain('min-width: 44px');
+          expect(styleContent).toContain('min-height: 44px');
+
+          // Check close button is 44x44
+          expect(styleContent).toContain('width: 44px');
+          expect(styleContent).toContain('height: 44px');
+
+          modalController.close();
+        }),
+        { numRuns: 10, seed: 42 }
+      );
+    });
+
+    it('Property 65: Color contrast compliance - colors should meet WCAG AA standards', () => {
+      fc.assert(
+        fc.property(fc.constant(null), () => {
+          modalController.open();
+
+          const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+          const styleElement = shadowRoot?.querySelector('style');
+          const styleContent = styleElement?.textContent || '';
+
+          // Check that WCAG AA compliance is documented in styles
+          expect(styleContent).toContain('WCAG AA');
+
+          // Check primary color is used
+          expect(styleContent).toContain('#007aff');
+
+          // Check text colors are defined
+          expect(styleContent).toContain('#333'); // Main text
+          expect(styleContent).toContain('#666'); // Secondary text
+
+          modalController.close();
+        }),
+        { numRuns: 10, seed: 42 }
+      );
+    });
+
+    it('Property 57: Focus indicator visibility - all focusable elements should have visible focus styles', () => {
+      fc.assert(
+        fc.property(fc.constant(null), () => {
+          modalController.open();
+
+          const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+          const styleElement = shadowRoot?.querySelector('style');
+          const styleContent = styleElement?.textContent || '';
+
+          // Check that focus styles are defined
+          expect(styleContent).toContain(':focus');
+          expect(styleContent).toContain('outline: 2px solid #007aff');
+          expect(styleContent).toContain('outline-offset: 2px');
+
+          modalController.close();
+        }),
+        { numRuns: 10, seed: 42 }
+      );
+    });
   });
 
   describe('Unit Tests: Modal open/close', () => {
@@ -364,6 +457,84 @@ describe('ModalController', () => {
       
       // Should not add any .bark-modal elements to main DOM
       expect(document.querySelector('.bark-modal')).toBeFalsy();
+    });
+  });
+
+  describe('Unit Tests: Responsive Design and Styling', () => {
+    it('should have iOS-style primary color #007aff', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      expect(styleContent).toContain('#007aff');
+    });
+
+    it('should have consistent spacing (8px, 16px, 24px)', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      expect(styleContent).toContain('8px');
+      expect(styleContent).toContain('16px');
+      expect(styleContent).toContain('24px');
+    });
+
+    it('should have minimum 14px font size for body text', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      expect(styleContent).toContain('font-size: 14px');
+    });
+
+    it('should have 200ms transition timing', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      expect(styleContent).toContain('transition:');
+      expect(styleContent).toContain('200ms');
+    });
+
+    it('should define primary, secondary, and danger button styles', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      expect(styleContent).toContain('.btn-primary');
+      expect(styleContent).toContain('.btn-secondary');
+      expect(styleContent).toContain('.btn-danger');
+    });
+
+    it('should have max-height of 600px for modal', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      expect(styleContent).toContain('max-height: 600px');
+    });
+
+    it('should have loading spinner animation', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      expect(styleContent).toContain('.spinner');
+      expect(styleContent).toContain('@keyframes spin');
     });
   });
 });

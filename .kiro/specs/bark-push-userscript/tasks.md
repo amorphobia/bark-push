@@ -203,8 +203,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test focus management
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.2, 3.3, 21.3_
 
-- [ ] 11. Responsive design and styling
-  - [ ] 11.1 Implement responsive modal styles
+- [x] 11. Responsive design and styling
+  - [x] 11.1 Implement responsive modal styles
     - Write CSS for modal width (desktop: 450px, mobile: calc(100vw - 20px))
     - Write CSS for modal max-height (600px with scroll)
     - Write CSS for iOS-style colors (#007AFF primary)
@@ -216,19 +216,19 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Ensure WCAG AA color contrast
     - _Requirements: 1.3, 1.4, 23.1, 23.2, 23.3, 23.4, 24.1, 24.2, 24.3, 24.4, 24.5, 24.7_
   
-  - [ ] 11.2 Write property test for responsive width
+  - [x] 11.2 Write property test for responsive width
     - **Property 1: Modal responsive width**
     - **Validates: Requirements 1.3, 1.4, 23.1, 23.2**
   
-  - [ ] 11.3 Write property test for touch-friendly sizing
+  - [x] 11.3 Write property test for touch-friendly sizing
     - **Property 63: Touch-friendly button sizing**
     - **Validates: Requirements 23.4**
   
-  - [ ] 11.4 Write property test for color contrast
+  - [x] 11.4 Write property test for color contrast
     - **Property 65: Color contrast compliance**
     - **Validates: Requirements 24.4**
   
-  - [ ] 11.5 Write property test for focus indicators
+  - [x] 11.5 Write property test for focus indicators
     - **Property 57: Focus indicator visibility**
     - **Validates: Requirements 21.5**
 

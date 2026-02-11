@@ -78,18 +78,18 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test storage error handling
     - _Requirements: 12.10, 13.2, 14.2, 15.1, 18.7_
 
-- [ ] 5. Checkpoint - Ensure storage layer tests pass
+- [x] 5. Checkpoint - Ensure storage layer tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. i18n system implementation
-  - [ ] 6.1 Create i18n infrastructure
+- [x] 6. i18n system implementation
+  - [x] 6.1 Create i18n infrastructure
     - Implement locale detection logic
     - Implement t() translation function
     - Create I18n class with locale switching
     - Define supported locales list
     - _Requirements: 17.1, 17.2, 17.3, 17.4_
   
-  - [ ] 6.2 Create translation files
+  - [x] 6.2 Create translation files
     - Create en.ts (English) with all UI strings
     - Create zh-CN.ts (Simplified Chinese)
     - Create zh-TW.ts (Traditional Chinese)
@@ -97,15 +97,15 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Create ko.ts (Korean)
     - _Requirements: 17.1_
   
-  - [ ] 6.3 Write property test for language matching
+  - [x] 6.3 Write property test for language matching
     - **Property 46: Language matching**
     - **Validates: Requirements 17.3**
   
-  - [ ] 6.4 Write property test for language persistence
+  - [x] 6.4 Write property test for language persistence
     - **Property 48: Language preference persistence**
     - **Validates: Requirements 17.7, 17.8**
   
-  - [ ] 6.5 Write unit tests for i18n system
+  - [x] 6.5 Write unit tests for i18n system
     - Test locale detection with various browser languages
     - Test fallback to English for unsupported locales
     - Test translation key lookup

@@ -2,6 +2,8 @@
  * Custom confirmation dialog to replace native confirm()
  */
 
+import { t } from '../i18n';
+
 export class ConfirmDialog {
   /**
    * Show a confirmation dialog
@@ -20,7 +22,7 @@ export class ConfirmDialog {
         right: 0;
         bottom: 0;
         background: rgba(0, 0, 0, 0.5);
-        z-index: 999998;
+        z-index: 9999999;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -75,7 +77,7 @@ export class ConfirmDialog {
 
       // Create cancel button
       const cancelButton = document.createElement('button');
-      cancelButton.textContent = 'Cancel';
+      cancelButton.textContent = t('common.cancel');
       cancelButton.style.cssText = `
         padding: 10px 20px;
         border: 1px solid #ddd;
@@ -101,7 +103,7 @@ export class ConfirmDialog {
 
       // Create confirm button
       const confirmButton = document.createElement('button');
-      confirmButton.textContent = 'Delete';
+      confirmButton.textContent = t('common.delete');
       confirmButton.style.cssText = `
         padding: 10px 20px;
         border: none;

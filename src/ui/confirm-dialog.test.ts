@@ -5,10 +5,12 @@
 
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import { ConfirmDialog } from './confirm-dialog';
+import { i18n } from '../i18n';
 
 describe('ConfirmDialog', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     document.body.innerHTML = '';
+    await i18n.init();
   });
 
   afterEach(() => {
@@ -196,3 +198,4 @@ describe('ConfirmDialog', () => {
     });
   });
 });
+

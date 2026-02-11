@@ -364,8 +364,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test button rendering
     - _Requirements: 11.2, 11.3, 11.4, 11.5, 11.7_
 
-- [ ] 16. Settings tab - device form view
-  - [ ] 16.1 Implement device form rendering
+- [x] 16. Settings tab - device form view
+  - [x] 16.1 Implement device form rendering
     - Render device name field (optional)
     - Render server URL field (required)
     - Render device key field (required)
@@ -376,38 +376,38 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Implement form validation with inline errors
     - _Requirements: 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.11_
   
-  - [ ] 16.2 Implement device form actions
+  - [x] 16.2 Implement device form actions
     - Implement handleTestConnection() with loading states
     - Implement handleSave() with validation
     - Implement form pre-population for edit mode
     - Handle navigation back to device list
     - _Requirements: 12.10, 12.12, 13.1, 13.2, 13.3, 16.1, 16.3, 16.4, 16.5_
   
-  - [ ] 16.3 Write property test for device save operation
+  - [x] 16.3 Write property test for device save operation
     - **Property 36: Device save operation**
     - **Validates: Requirements 12.10**
   
-  - [ ] 16.4 Write property test for validation error display
+  - [x] 16.4 Write property test for validation error display
     - **Property 37: Validation error display**
     - **Validates: Requirements 12.11, 16.2, 22.6**
   
-  - [ ] 16.5 Write property test for edit form pre-population
+  - [x] 16.5 Write property test for edit form pre-population
     - **Property 38: Edit form pre-population**
     - **Validates: Requirements 13.1**
   
-  - [ ] 16.6 Write property test for device update operation
+  - [x] 16.6 Write property test for device update operation
     - **Property 39: Device update operation**
     - **Validates: Requirements 13.2**
   
-  - [ ] 16.7 Write property test for edit preserves immutable fields
+  - [x] 16.7 Write property test for edit preserves immutable fields
     - **Property 40: Edit preserves immutable fields**
     - **Validates: Requirements 13.4**
   
-  - [ ] 16.8 Write property test for error clearing
+  - [x] 16.8 Write property test for error clearing
     - **Property 61: Error clearing on correction**
     - **Validates: Requirements 22.7**
   
-  - [ ] 16.9 Write unit tests for device form
+  - [x] 16.9 Write unit tests for device form
     - Test form rendering (add vs edit mode)
     - Test validation on save
     - Test test connection button

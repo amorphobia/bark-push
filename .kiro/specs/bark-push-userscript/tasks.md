@@ -232,8 +232,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - **Property 57: Focus indicator visibility**
     - **Validates: Requirements 21.5**
 
-- [ ] 12. Device selector component
-  - [ ] 12.1 Implement DeviceSelector class
+- [x] 12. Device selector component
+  - [x] 12.1 Implement DeviceSelector class
     - Render dropdown with multi-select checkboxes
     - Implement toggle() to open/close dropdown
     - Implement selectDevice() and deselectDevice()
@@ -241,23 +241,23 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Handle default device auto-selection
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
   
-  - [ ] 12.2 Write property test for device selector display
+  - [x] 12.2 Write property test for device selector display
     - **Property 10: Device selector shows all devices**
     - **Validates: Requirements 6.2**
   
-  - [ ] 12.3 Write property test for selection count display
+  - [x] 12.3 Write property test for selection count display
     - **Property 11: Device selection count display**
     - **Validates: Requirements 6.4**
   
-  - [ ] 12.4 Write property test for default device auto-selection
+  - [x] 12.4 Write property test for default device auto-selection
     - **Property 12: Default device auto-selection**
     - **Validates: Requirements 6.5, 15.3**
   
-  - [ ] 12.5 Write property test for device selection persistence
+  - [x] 12.5 Write property test for device selection persistence
     - **Property 15: Device selection persistence**
     - **Validates: Requirements 6.7**
   
-  - [ ] 12.6 Write unit tests for device selector
+  - [x] 12.6 Write unit tests for device selector
     - Test dropdown open/close
     - Test device selection/deselection
     - Test display with no devices

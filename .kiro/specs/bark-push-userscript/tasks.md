@@ -264,8 +264,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test display text updates
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 13. Push tab component
-  - [ ] 13.1 Implement PushTab class
+- [-] 13. Push tab component
+  - [x] 13.1 Implement PushTab class
     - Render title input field
     - Render message textarea field
     - Render markdown toggle checkbox
@@ -278,7 +278,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Handle Ctrl+Enter keyboard shortcut
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 5.1, 7.1, 7.2, 7.3, 7.4, 7.5, 8.1, 8.2, 8.3, 8.4, 9.1, 9.2, 9.3, 9.4, 9.5, 9.8, 9.9_
   
-  - [ ] 13.2 Write property test for title field single-line constraint
+  - [x] 13.2 Write property test for title field single-line constraint
     - **Property 5: Title field single-line constraint**
     - **Validates: Requirements 4.3**
   

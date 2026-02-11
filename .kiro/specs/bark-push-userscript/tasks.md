@@ -156,18 +156,18 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test API error response parsing
     - _Requirements: 10.8, 10.9, 16.3, 16.4, 16.5_
 
-- [ ] 8. Checkpoint - Ensure API client tests pass
+- [x] 8. Checkpoint - Ensure API client tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. Toast notification system
-  - [ ] 9.1 Implement ToastManager class
+- [x] 9. Toast notification system
+  - [x] 9.1 Implement ToastManager class
     - Create toast container element
     - Implement show() method with auto-dismiss
     - Implement hide() and clear() methods
     - Style toasts (success, error, info)
     - _Requirements: 9.6, 9.7, 22.3_
   
-  - [ ] 9.2 Write unit tests for toast system
+  - [x] 9.2 Write unit tests for toast system
     - Test toast display and auto-dismiss
     - Test multiple toasts
     - Test toast types (success, error, info)

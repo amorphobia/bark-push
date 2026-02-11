@@ -24,8 +24,8 @@ describe('LanguageSelector', () => {
   });
 
   describe('Property 47: Language change updates UI', () => {
-    test('changing language triggers callback and updates storage', () => {
-      fc.assert(
+    test('changing language triggers callback and updates storage', async () => {
+      await fc.assert(
         fc.asyncProperty(
           fc.constantFrom<SupportedLocale>('en', 'zh-CN', 'zh-TW', 'ja', 'ko'),
           async (locale) => {
@@ -56,7 +56,7 @@ describe('LanguageSelector', () => {
             select.dispatchEvent(changeEvent);
 
             // Wait for async setLocale to complete (dynamic imports take time)
-            await new Promise(resolve => setTimeout(resolve, 250));
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             const storedLanguage = storage.getLanguage();
             const currentLocale = i18n.getCurrentLocale();

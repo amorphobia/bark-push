@@ -480,7 +480,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test language selector integration
     - _Requirements: 12.2, 13.1, 13.3_
 
-- [ ] 20. Checkpoint - Ensure settings tab tests pass
+- [x] 20. Checkpoint - Ensure settings tab tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 21. Keyboard navigation and accessibility

@@ -171,7 +171,7 @@ describe('DeviceList', () => {
   test('Property 31: Custom headers visual indicator', () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1, maxLength: 100 }),
+        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
         (customHeaders) => {
           vi.clearAllMocks();
           

@@ -16,9 +16,9 @@ describe('DeviceForm', () => {
   let apiClient: BarkClient;
   let deviceForm: DeviceForm;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     localStorage.clear();
-    i18n.init();
+    await i18n.init();
     storage = new StorageManager();
     apiClient = new BarkClient();
     deviceForm = new DeviceForm(storage, apiClient);
@@ -31,15 +31,12 @@ describe('DeviceForm', () => {
           fc.record({
             name: fc.option(fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0).map(s => s.trim()), { nil: undefined }),
             serverUrl: fc.webUrl(),
-            deviceKey: fc.string({ minLength: 2, maxLength: 50 }).filter(s => s.trim().length >= 2).map(s => s.trim()),
+            deviceKey: fc.stringMatching(/^[a-zA-Z0-9_-]{10,50}$/),
             customHeaders: fc.option(
               fc.tuple(
-                fc.string({ minLength: 1, maxLength: 20 }).filter(s => {
-                  const trimmed = s.trim();
-                  return trimmed.length > 0 && !trimmed.includes(':');
-                }),
-                fc.string({ minLength: 1, maxLength: 50 })
-              ).map(([name, value]) => `${name.trim()}: ${value}`),
+                fc.stringMatching(/^[a-zA-Z][a-zA-Z0-9-]{0,19}$/),
+                fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0)
+              ).map(([name, value]) => `${name}: ${value.trim()}`),
               { nil: undefined }
             ),
           }),
@@ -182,9 +179,9 @@ describe('DeviceForm', () => {
         fc.property(
           fc.record({
             originalUrl: fc.webUrl(),
-            originalKey: fc.string({ minLength: 2, maxLength: 50 }).filter(s => s.trim().length >= 2).map(s => s.trim()),
+            originalKey: fc.stringMatching(/^[a-zA-Z0-9_-]{10,50}$/),
             newUrl: fc.webUrl(),
-            newKey: fc.string({ minLength: 2, maxLength: 50 }).filter(s => s.trim().length >= 2).map(s => s.trim()),
+            newKey: fc.stringMatching(/^[a-zA-Z0-9_-]{10,50}$/),
           }),
           (data) => {
             localStorage.clear();

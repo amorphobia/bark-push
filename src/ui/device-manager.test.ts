@@ -15,9 +15,9 @@ describe('DeviceManager', () => {
   let storage: StorageManager;
   let deviceManager: DeviceManager;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     localStorage.clear();
-    i18n.init();
+    await i18n.init();
     storage = new StorageManager();
     deviceManager = new DeviceManager(storage);
   });

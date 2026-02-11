@@ -67,15 +67,16 @@ describe('DeviceForm', () => {
             saveButton.click();
 
             const devices = storage.getDevices();
+            const trimmedUrl = formData.serverUrl.replace(/\/+$/, '');
             const savedDevice = devices.find(d => 
-              d.serverUrl === formData.serverUrl && 
+              d.serverUrl === trimmedUrl && 
               d.deviceKey === formData.deviceKey
             );
 
             document.body.removeChild(formElement);
 
             return saved && savedDevice !== undefined &&
-              savedDevice.serverUrl === formData.serverUrl &&
+              savedDevice.serverUrl === trimmedUrl &&
               savedDevice.deviceKey === formData.deviceKey &&
               (formData.name ? savedDevice.name === formData.name : true) &&
               (formData.customHeaders ? savedDevice.customHeaders === formData.customHeaders : true);
@@ -213,11 +214,12 @@ describe('DeviceForm', () => {
 
             const devices = storage.getDevices();
             const updatedDevice = devices.find(d => d.id === originalDevice.id);
+            const trimmedNewUrl = data.newUrl.replace(/\/+$/, '');
 
             document.body.removeChild(formElement);
 
             return saved && updatedDevice !== undefined &&
-              updatedDevice.serverUrl === data.newUrl &&
+              updatedDevice.serverUrl === trimmedNewUrl &&
               updatedDevice.deviceKey === data.newKey &&
               updatedDevice.id === originalDevice.id;
           }
@@ -464,6 +466,46 @@ describe('DeviceForm', () => {
       saveButton.click();
 
       expect(saveCalled).toBe(true);
+
+      const formToRemove = document.querySelector('.device-form');
+      if (formToRemove) {
+        document.body.removeChild(formToRemove);
+      }
+    });
+
+    test('trims trailing slashes from server URL when saving', () => {
+      deviceForm.setEditingDevice(null);
+      
+      let savedDevice: any = null;
+      deviceForm.setOnSave(() => {
+        const devices = storage.getDevices();
+        savedDevice = devices[devices.length - 1];
+      });
+      
+      const formElement = deviceForm.render();
+      document.body.appendChild(formElement);
+
+      const urlInput = document.querySelector('input[name="serverUrl"]') as HTMLInputElement;
+      const keyInput = document.querySelector('input[name="deviceKey"]') as HTMLInputElement;
+      
+      // Test with single trailing slash
+      urlInput.value = 'https://api.day.app/';
+      keyInput.value = 'a'.repeat(22);
+
+      const saveButton = document.querySelector('.btn-primary') as HTMLButtonElement;
+      saveButton.click();
+
+      expect(savedDevice).toBeTruthy();
+      expect(savedDevice.serverUrl).toBe('https://api.day.app');
+
+      // Test with multiple trailing slashes
+      storage.deleteDevice(savedDevice.id);
+      urlInput.value = 'https://api.day.app///';
+      saveButton.click();
+
+      const devices = storage.getDevices();
+      const lastDevice = devices[devices.length - 1];
+      expect(lastDevice.serverUrl).toBe('https://api.day.app');
 
       const formToRemove = document.querySelector('.device-form');
       if (formToRemove) {

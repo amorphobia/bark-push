@@ -327,11 +327,12 @@ export class DeviceForm {
 
     const formData = new FormData(form);
     const deviceKey = (formData.get('deviceKey') as string)?.trim() || '';
+    const serverUrl = (formData.get('serverUrl') as string)?.trim() || '';
     
     return {
       id: this.editingDevice?.id,
       name: (formData.get('name') as string)?.trim() || undefined,
-      serverUrl: (formData.get('serverUrl') as string)?.trim() || '',
+      serverUrl: serverUrl.replace(/\/+$/, ''), // Remove trailing slashes
       deviceKey: deviceKey,
       customHeaders: (formData.get('customHeaders') as string)?.trim() || undefined,
     };

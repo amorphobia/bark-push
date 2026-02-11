@@ -1,0 +1,232 @@
+/**
+ * BarkClient - API client for sending notifications to Bark servers
+ * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9
+ */
+
+import type { BarkDevice, NotificationPayload, BarkApiRequest } from '../types';
+
+/**
+ * BarkClient handles all communication with Bark servers
+ */
+export class BarkClient {
+  /**
+   * Send a push notification to one or more devices
+   * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7
+   * 
+   * @param devices - Array of devices to send to
+   * @param payload - Notification content and options
+   * @throws Error if network request fails or API returns error
+   */
+  async sendNotification(
+    devices: BarkDevice[],
+    payload: NotificationPayload
+  ): Promise<void> {
+    if (devices.length === 0) {
+      throw new Error('No devices provided');
+    }
+
+    // Build the API request
+    const request = this.buildRequest(devices, payload);
+    
+    // Use the first device's server URL (all devices should use same server for multi-device)
+    const serverUrl = devices[0].serverUrl;
+    
+    // Parse custom headers from the first device
+    const customHeaders = devices[0].customHeaders 
+      ? this.parseCustomHeaders(devices[0].customHeaders)
+      : {};
+
+    // Send the request
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'POST',
+        url: `${serverUrl}/push`,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          ...customHeaders,
+        },
+        data: JSON.stringify(request),
+        timeout: 10000,
+        onload: (response) => {
+          if (response.status >= 200 && response.status < 300) {
+            resolve();
+          } else {
+            const error = this.parseErrorResponse(response.responseText);
+            reject(new Error(error));
+          }
+        },
+        onerror: () => {
+          reject(new Error('Network error. Please check your connection.'));
+        },
+        ontimeout: () => {
+          reject(new Error('Request timed out. Please try again.'));
+        },
+      });
+    });
+  }
+
+  /**
+   * Test connection to a Bark server
+   * Requirements: 16.3, 16.4, 16.5
+   * 
+   * @param serverUrl - Server URL to test
+   * @param _deviceKey - Device key (not used for ping, but kept for API consistency)
+   * @param customHeaders - Optional custom headers
+   * @returns true if connection successful, false otherwise
+   */
+  async testConnection(
+    serverUrl: string,
+    _deviceKey: string,
+    customHeaders?: string
+  ): Promise<boolean> {
+    const headers = customHeaders 
+      ? this.parseCustomHeaders(customHeaders)
+      : {};
+
+    return new Promise((resolve) => {
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: `${serverUrl}/ping`,
+        headers,
+        timeout: 10000,
+        onload: (response) => {
+          resolve(response.status >= 200 && response.status < 300);
+        },
+        onerror: () => {
+          resolve(false);
+        },
+        ontimeout: () => {
+          resolve(false);
+        },
+      });
+    });
+  }
+
+  /**
+   * Build API request from devices and payload
+   * Requirements: 10.3, 10.4, 10.5, 10.6
+   * 
+   * Handles:
+   * - Single device: uses device_key
+   * - Multiple devices: uses device_keys array
+   * - Markdown mode: uses markdown parameter, omits body
+   * - Normal mode: uses body parameter
+   * - Optional parameters: includes only non-empty values
+   * 
+   * @param devices - Devices to send to
+   * @param payload - Notification payload
+   * @returns Bark API request object
+   */
+  private buildRequest(
+    devices: BarkDevice[],
+    payload: NotificationPayload
+  ): BarkApiRequest {
+    const request: BarkApiRequest = {};
+
+    // Handle single vs multi-device
+    // Requirement 10.3: Single device uses device_key
+    // Requirement 10.4: Multiple devices use device_keys array
+    if (devices.length === 1) {
+      request.device_key = devices[0].deviceKey;
+    } else {
+      request.device_keys = devices.map(d => d.deviceKey);
+    }
+
+    // Handle markdown vs body
+    // Requirement 10.5: Markdown mode uses markdown parameter
+    // Requirement 10.6: Normal mode uses body parameter
+    if (payload.markdown) {
+      request.markdown = payload.markdown;
+    } else if (payload.body) {
+      request.body = payload.body;
+    }
+
+    // Add title if provided
+    if (payload.title) {
+      request.title = payload.title;
+    }
+
+    // Add optional parameters (Requirement 8.5)
+    if (payload.sound) request.sound = payload.sound;
+    if (payload.icon) request.icon = payload.icon;
+    if (payload.group) request.group = payload.group;
+    if (payload.url) request.url = payload.url;
+    if (payload.badge !== undefined) request.badge = payload.badge;
+    if (payload.level) request.level = payload.level;
+    if (payload.volume !== undefined) request.volume = payload.volume;
+    if (payload.call) request.call = payload.call;
+    if (payload.isArchive) request.isArchive = payload.isArchive;
+    if (payload.copy) request.copy = payload.copy;
+    if (payload.ciphertext) request.ciphertext = payload.ciphertext;
+    if (payload.action) request.action = payload.action;
+    if (payload.image) request.image = payload.image;
+    if (payload.id) request.id = payload.id;
+    if (payload.delete) request.delete = payload.delete;
+    if (payload.subtitle) request.subtitle = payload.subtitle;
+
+    // Handle autoCopy (can be boolean or string)
+    if (payload.autoCopy) {
+      request.autoCopy = '1';
+    }
+    if (payload.automaticallyCopy) {
+      request.automaticallyCopy = true;
+    }
+
+    return request;
+  }
+
+  /**
+   * Parse custom headers from string format
+   * Requirement 10.7: Custom headers inclusion
+   * 
+   * Format: "Name: Value" (one per line)
+   * 
+   * @param headers - Newline-separated headers
+   * @returns Object with header key-value pairs
+   */
+  private parseCustomHeaders(headers: string): Record<string, string> {
+    const result: Record<string, string> = {};
+    
+    if (!headers || !headers.trim()) {
+      return result;
+    }
+
+    const lines = headers.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      const colonIndex = trimmed.indexOf(':');
+      if (colonIndex === -1) continue;
+
+      const key = trimmed.substring(0, colonIndex).trim();
+      const value = trimmed.substring(colonIndex + 1).trim();
+
+      if (key && value) {
+        result[key] = value;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Parse error response from Bark API
+   * Requirements: 10.8, 10.9
+   * 
+   * @param responseText - Response body text
+   * @returns User-friendly error message
+   */
+  private parseErrorResponse(responseText: string): string {
+    try {
+      const response = JSON.parse(responseText);
+      if (response.message) {
+        return response.message;
+      }
+    } catch {
+      // Not JSON or no message field
+    }
+
+    return 'Server error. Please check your settings.';
+  }
+}

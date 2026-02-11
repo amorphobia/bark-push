@@ -111,8 +111,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test translation key lookup
     - _Requirements: 17.2, 17.3, 17.4_
 
-- [ ] 7. Bark API client implementation
-  - [ ] 7.1 Implement BarkClient class
+- [x] 7. Bark API client implementation
+  - [x] 7.1 Implement BarkClient class
     - Implement sendNotification method
     - Implement testConnection method (ping endpoint)
     - Implement buildRequest helper (handles single vs multi-device, markdown vs body)
@@ -120,36 +120,36 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Implement error parsing and handling
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9_
   
-  - [ ] 7.2 Write property test for API endpoint correctness
+  - [x] 7.2 Write property test for API endpoint correctness
     - **Property 25: API endpoint correctness**
     - **Validates: Requirements 10.1**
   
-  - [ ] 7.3 Write property test for Content-Type header
+  - [x] 7.3 Write property test for Content-Type header
     - **Property 26: Content-Type header inclusion**
     - **Validates: Requirements 10.2**
   
-  - [ ] 7.4 Write property test for single device request format
+  - [x] 7.4 Write property test for single device request format
     - **Property 14: Single device uses device_key**
     - **Validates: Requirements 10.3**
   
-  - [ ] 7.5 Write property test for multi-device request format
+  - [x] 7.5 Write property test for multi-device request format
     - **Property 13: Multi-device uses device_keys array**
     - **Validates: Requirements 6.6, 10.4**
   
-  - [ ] 7.6 Write property test for markdown mode
+  - [x] 7.6 Write property test for markdown mode
     - **Property 7: Markdown mode affects body parameter**
     - **Property 8: Markdown mode affects markdown parameter**
     - **Validates: Requirements 5.2, 5.3, 10.5, 10.6**
   
-  - [ ] 7.7 Write property test for custom headers inclusion
+  - [x] 7.7 Write property test for custom headers inclusion
     - **Property 27: Custom headers inclusion**
     - **Validates: Requirements 10.7**
   
-  - [ ] 7.8 Write property test for optional parameters
+  - [x] 7.8 Write property test for optional parameters
     - **Property 20: Optional parameters inclusion**
     - **Validates: Requirements 8.5**
   
-  - [ ] 7.9 Write unit tests for API client
+  - [x] 7.9 Write unit tests for API client
     - Test successful notification send
     - Test connection test (ping)
     - Test network timeout handling

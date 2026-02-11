@@ -173,8 +173,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test toast types (success, error, info)
     - _Requirements: 9.6, 9.7_
 
-- [ ] 10. Modal controller and shadow DOM
-  - [ ] 10.1 Implement ModalController class
+- [x] 10. Modal controller and shadow DOM
+  - [x] 10.1 Implement ModalController class
     - Create shadow DOM container
     - Inject scoped styles
     - Implement open() and close() methods
@@ -183,19 +183,19 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Manage focus (initial focus, focus restoration)
     - _Requirements: 1.1, 1.2, 1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 20.2, 21.3_
   
-  - [ ] 10.2 Write property test for modal styling
+  - [x] 10.2 Write property test for modal styling
     - **Property 2: Modal styling consistency**
     - **Validates: Requirements 1.5, 1.6**
   
-  - [ ] 10.3 Write property test for tab state persistence
+  - [x] 10.3 Write property test for tab state persistence
     - **Property 3: Tab state persistence**
     - **Validates: Requirements 3.5**
   
-  - [ ] 10.4 Write property test for modal cleanup
+  - [x] 10.4 Write property test for modal cleanup
     - **Property 55: Modal cleanup on close**
     - **Validates: Requirements 20.5**
   
-  - [ ] 10.5 Write unit tests for modal controller
+  - [x] 10.5 Write unit tests for modal controller
     - Test modal open/close
     - Test ESC key closes modal
     - Test backdrop click closes modal

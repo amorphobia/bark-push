@@ -38,8 +38,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test header formats (valid, missing colon, empty lines)
     - _Requirements: 12.5, 12.6, 22.5_
 
-- [ ] 3. Data models and TypeScript interfaces
-  - [ ] 3.1 Define core TypeScript interfaces
+- [x] 3. Data models and TypeScript interfaces
+  - [x] 3.1 Define core TypeScript interfaces
     - Define BarkDevice interface
     - Define NotificationPayload interface
     - Define BarkApiRequest interface
@@ -47,7 +47,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Define storage schema types
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8_
   
-  - [ ] 3.2 Write property test for device data structure
+  - [x] 3.2 Write property test for device data structure
     - **Property 51: Device data structure completeness**
     - **Property 53: Device data type validation**
     - **Validates: Requirements 19.1, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8**

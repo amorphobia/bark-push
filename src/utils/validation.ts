@@ -2,10 +2,7 @@
  * Validation utilities for Bark Push userscript
  */
 
-export interface ValidationResult {
-  valid: boolean;
-  errors: Record<string, string>;
-}
+import type { ValidationResult, PushFormData, DeviceFormData } from '../types';
 
 /**
  * Validates a URL string
@@ -101,22 +98,6 @@ export function validateCustomHeaders(headers: string): boolean {
   return true;
 }
 
-/**
- * Validates push notification form data
- */
-export interface PushFormData {
-  title?: string;
-  message: string;
-  deviceIds: string[];
-  markdownEnabled: boolean;
-  sound?: string;
-  icon?: string;
-  group?: string;
-  url?: string;
-  autoCopy?: boolean;
-  isArchive?: boolean;
-}
-
 export function validatePushForm(data: PushFormData): ValidationResult {
   const errors: Record<string, string> = {};
 
@@ -148,17 +129,6 @@ export function validatePushForm(data: PushFormData): ValidationResult {
     valid: Object.keys(errors).length === 0,
     errors,
   };
-}
-
-/**
- * Validates device configuration form data
- */
-export interface DeviceFormData {
-  id?: string;
-  name?: string;
-  serverUrl: string;
-  deviceKey: string;
-  customHeaders?: string;
 }
 
 export function validateDeviceForm(data: DeviceFormData): ValidationResult {

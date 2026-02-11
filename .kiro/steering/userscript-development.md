@@ -25,6 +25,12 @@ Always declare these in `vite.config.ts` userscript section:
 
 ## Development Workflow
 
+### Build Verification
+- **CRITICAL**: Run `pnpm build` after each round of code modifications
+- This catches TypeScript compilation errors early
+- Ensures the production bundle can be created successfully
+- Fix any build errors before proceeding to the next task
+
 ### Hot Reload
 - Run `pnpm dev` to start development server
 - Install the dev version in Tampermonkey (it auto-updates)
@@ -36,11 +42,12 @@ Always declare these in `vite.config.ts` userscript section:
 - Test the production build before publishing
 
 ### Testing Strategy
-1. Test on multiple websites (simple pages, complex SPAs)
-2. Test with invalid/missing configuration
-3. Test network failures (offline, wrong server URL)
-4. Test with multiple devices configured
-5. Verify Tampermonkey storage persistence
+1. Run tests with `pnpm test:run` after implementing functionality
+2. Test on multiple websites (simple pages, complex SPAs)
+3. Test with invalid/missing configuration
+4. Test network failures (offline, wrong server URL)
+5. Test with multiple devices configured
+6. Verify Tampermonkey storage persistence
 
 ## Code Organization
 

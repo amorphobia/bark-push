@@ -6,9 +6,8 @@ import {
   validateCustomHeaders,
   validatePushForm,
   validateDeviceForm,
-  type PushFormData,
-  type DeviceFormData,
 } from './validation';
+import type { PushFormData, DeviceFormData } from '../types';
 
 describe('Validation Utilities', () => {
   describe('Property 34: URL validation', () => {

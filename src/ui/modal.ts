@@ -3,6 +3,9 @@
  */
 
 import { StorageManager } from '../storage/storage-manager';
+import { BarkClient } from '../api/bark-client';
+import { PushTab } from './push-tab';
+import { SettingsTab } from './settings-tab';
 
 export type TabType = 'push' | 'settings';
 
@@ -11,10 +14,16 @@ export class ModalController {
   private modalElement: HTMLElement | null = null;
   private currentTab: TabType = 'push';
   private storage: StorageManager;
+  private barkClient: BarkClient;
   private previousFocusElement: HTMLElement | null = null;
+
+  // Tab components
+  private pushTab: PushTab | null = null;
+  private settingsTab: SettingsTab | null = null;
 
   constructor(storage: StorageManager) {
     this.storage = storage;
+    this.barkClient = new BarkClient();
   }
 
   /**
@@ -69,6 +78,11 @@ export class ModalController {
   close(): void {
     if (this.modalElement) {
       this.modalElement.style.display = 'none';
+    }
+
+    // Clean up tab components
+    if (this.pushTab) {
+      this.pushTab.destroy();
     }
 
     // Restore focus to previous element (Requirements 2.4, 21.3)
@@ -483,16 +497,55 @@ export class ModalController {
         </div>
       </div>
     `;
+
+    // Inject the actual tab component after DOM is ready
+    requestAnimationFrame(() => {
+      this.injectTabComponent();
+    });
   }
 
   /**
    * Render content for the current tab
    */
   private renderTabContent(): string {
+    // Create a placeholder div that will be replaced with actual component
     if (this.currentTab === 'push') {
-      return '<div id="bark-push-tab">Push tab content (to be implemented)</div>';
+      return '<div id="bark-push-tab-container"></div>';
     } else {
-      return '<div id="bark-settings-tab">Settings tab content (to be implemented)</div>';
+      return '<div id="bark-settings-tab-container"></div>';
+    }
+  }
+
+  /**
+   * Inject tab component into the rendered container
+   */
+  private injectTabComponent(): void {
+    if (!this.shadowRoot) return;
+
+    if (this.currentTab === 'push') {
+      const container = this.shadowRoot.querySelector('#bark-push-tab-container');
+      if (container) {
+        // Create PushTab if not exists
+        if (!this.pushTab) {
+          this.pushTab = new PushTab(this.storage, this.barkClient);
+        }
+        
+        // Clear container and append rendered component
+        container.innerHTML = '';
+        container.appendChild(this.pushTab.render());
+      }
+    } else {
+      const container = this.shadowRoot.querySelector('#bark-settings-tab-container');
+      if (container) {
+        // Create SettingsTab if not exists
+        if (!this.settingsTab) {
+          this.settingsTab = new SettingsTab(this.storage, this.barkClient);
+        }
+        
+        // Clear container and append rendered component
+        container.innerHTML = '';
+        container.appendChild(this.settingsTab.render());
+      }
     }
   }
 

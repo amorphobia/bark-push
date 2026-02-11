@@ -447,19 +447,19 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test set default operation
     - _Requirements: 12.2, 13.1, 14.1, 14.2, 14.4, 15.1_
 
-- [ ] 18. Settings tab - language selector
-  - [ ] 18.1 Implement language selector
+- [x] 18. Settings tab - language selector
+  - [x] 18.1 Implement language selector
     - Render language dropdown with current language
     - List all supported languages
     - Implement handleLanguageChange() - update i18n and storage
     - Update all UI text immediately on change
     - _Requirements: 17.5, 17.6_
   
-  - [ ] 18.2 Write property test for language change updates UI
+  - [x] 18.2 Write property test for language change updates UI
     - **Property 47: Language change updates UI**
     - **Validates: Requirements 17.6**
   
-  - [ ] 18.3 Write unit tests for language selector
+  - [x] 18.3 Write unit tests for language selector
     - Test dropdown rendering
     - Test language selection
     - Test UI text updates

@@ -19,9 +19,9 @@ class I18n {
    * Initialize the i18n system
    * Detects locale and loads translations
    */
-  init(): void {
+  async init(): Promise<void> {
     this.currentLocale = this.detectLocale();
-    this.loadTranslations(this.currentLocale);
+    await this.loadTranslations(this.currentLocale);
   }
 
   /**

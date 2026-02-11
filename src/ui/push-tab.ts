@@ -64,10 +64,15 @@ export class PushTab {
     titleInput.id = 'push-title';
     titleInput.className = 'form-input';
     titleInput.placeholder = t('push.titlePlaceholder');
-    // Requirement 4.3: Single-line constraint
+    // Requirement 4.3: Single-line constraint - prevent Enter
     titleInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
+        // Move focus to message field
+        const messageField = this.containerElement?.querySelector('#bark-message') as HTMLTextAreaElement;
+        if (messageField) {
+          messageField.focus();
+        }
       }
     });
     
@@ -89,12 +94,17 @@ export class PushTab {
     messageTextarea.placeholder = t('push.messagePlaceholder');
     messageTextarea.rows = 4;
     messageTextarea.required = true;
-    // Requirement 4.6: Ctrl+Enter sends
+    // Requirement 4.6, 21.2: Ctrl+Enter sends notification
     messageTextarea.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
         this.handleSend();
       }
+      // Requirement 4.5: Enter inserts newline (default behavior, no action needed)
+    });
+    // Update send button state on input
+    messageTextarea.addEventListener('input', () => {
+      this.updateSendButtonState();
     });
     
     messageGroup.appendChild(messageLabel);

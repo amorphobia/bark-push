@@ -19,9 +19,10 @@ export class ModalController {
 
   /**
    * Open the modal
+   * Requirements: 1.1, 21.3
    */
   open(): void {
-    // Store currently focused element
+    // Store currently focused element (Requirement 21.3)
     this.previousFocusElement = document.activeElement as HTMLElement;
 
     // Load last active tab
@@ -40,11 +41,20 @@ export class ModalController {
       this.modalElement.style.display = 'flex';
     }
 
-    // Set initial focus to message field (will be implemented in push tab)
+    // Set initial focus to message field (Requirement 21.3)
+    // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
-      const messageField = this.shadowRoot?.querySelector('#bark-message') as HTMLTextAreaElement;
-      if (messageField && this.currentTab === 'push') {
-        messageField.focus();
+      if (this.currentTab === 'push') {
+        const messageField = this.shadowRoot?.querySelector('#bark-message') as HTMLTextAreaElement;
+        if (messageField) {
+          messageField.focus();
+        }
+      } else {
+        // For settings tab, focus the first focusable element
+        const focusableElements = this.getFocusableElements();
+        if (focusableElements.length > 0) {
+          focusableElements[0].focus();
+        }
       }
     });
 
@@ -54,15 +64,21 @@ export class ModalController {
 
   /**
    * Close the modal
+   * Requirements: 2.1, 2.4, 21.3
    */
   close(): void {
     if (this.modalElement) {
       this.modalElement.style.display = 'none';
     }
 
-    // Restore focus to previous element
-    if (this.previousFocusElement) {
-      this.previousFocusElement.focus();
+    // Restore focus to previous element (Requirements 2.4, 21.3)
+    if (this.previousFocusElement && typeof this.previousFocusElement.focus === 'function') {
+      try {
+        this.previousFocusElement.focus();
+      } catch (error) {
+        // Element might no longer be in DOM, ignore error
+        console.debug('Could not restore focus:', error);
+      }
     }
 
     // Clean up event listeners
@@ -558,10 +574,69 @@ export class ModalController {
 
   /**
    * Handle keyboard events
+   * Requirements: 2.2, 21.1
    */
   private handleKeyDown = (event: KeyboardEvent): void => {
+    // ESC key closes modal (Requirements 2.2, 21.1)
     if (event.key === 'Escape') {
       this.close();
     }
+    
+    // Tab key navigation - ensure focus stays within modal
+    if (event.key === 'Tab' && this.shadowRoot) {
+      this.handleTabNavigation(event);
+    }
   };
+
+  /**
+   * Handle Tab key navigation to keep focus within modal
+   * Requirement 21.4: Tab navigation order
+   */
+  private handleTabNavigation(event: KeyboardEvent): void {
+    if (!this.shadowRoot) return;
+
+    // Get all focusable elements within the modal
+    const focusableElements = this.getFocusableElements();
+    if (focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    const activeElement = this.shadowRoot.activeElement;
+
+    // If Shift+Tab on first element, wrap to last
+    if (event.shiftKey && activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+    }
+    // If Tab on last element, wrap to first
+    else if (!event.shiftKey && activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  }
+
+  /**
+   * Get all focusable elements in the modal
+   * Requirement 21.4: Tab navigation order
+   */
+  private getFocusableElements(): HTMLElement[] {
+    if (!this.shadowRoot) return [];
+
+    const selector = [
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'textarea:not([disabled])',
+      'select:not([disabled])',
+      'a[href]',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(', ');
+
+    const elements = Array.from(this.shadowRoot.querySelectorAll(selector)) as HTMLElement[];
+    
+    // Filter out hidden elements
+    return elements.filter(el => {
+      const style = getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden';
+    });
+  }
 }

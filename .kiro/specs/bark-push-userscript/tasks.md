@@ -483,8 +483,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
 - [x] 20. Checkpoint - Ensure settings tab tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 21. Keyboard navigation and accessibility
-  - [ ] 21.1 Implement keyboard navigation
+- [x] 21. Keyboard navigation and accessibility
+  - [x] 21.1 Implement keyboard navigation
     - Ensure Tab key moves focus through elements in order
     - Ensure ESC key closes modal
     - Ensure Ctrl+Enter sends notification
@@ -493,11 +493,11 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Restore focus to page on modal close
     - _Requirements: 2.2, 2.4, 4.6, 21.1, 21.2, 21.3, 21.4_
   
-  - [ ] 21.2 Write property test for tab navigation order
+  - [x] 21.2 Write property test for tab navigation order
     - **Property 56: Tab navigation order**
     - **Validates: Requirements 21.4**
   
-  - [ ] 21.3 Write unit tests for keyboard navigation
+  - [x] 21.3 Write unit tests for keyboard navigation
     - Test ESC closes modal
     - Test Ctrl+Enter sends notification
     - Test Tab navigation

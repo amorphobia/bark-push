@@ -52,27 +52,27 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - **Property 53: Device data type validation**
     - **Validates: Requirements 19.1, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8**
 
-- [ ] 4. Storage manager implementation
-  - [ ] 4.1 Implement StorageManager class
+- [x] 4. Storage manager implementation
+  - [x] 4.1 Implement StorageManager class
     - Wrap GM_setValue/GM_getValue with type safety
     - Implement device CRUD operations (get, save, update, delete)
     - Implement preferences operations (language, selected devices, markdown state, etc.)
     - Handle storage errors gracefully
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7_
   
-  - [ ] 4.2 Write property test for storage round-trip consistency
+  - [x] 4.2 Write property test for storage round-trip consistency
     - **Property 49: Storage round-trip consistency**
     - **Validates: Requirements 18.1, 18.2, 18.3, 18.4, 18.5, 18.6**
   
-  - [ ] 4.3 Write property test for device ID uniqueness
+  - [x] 4.3 Write property test for device ID uniqueness
     - **Property 52: Device ID uniqueness**
     - **Validates: Requirements 19.2**
   
-  - [ ] 4.4 Write property test for single default device constraint
+  - [x] 4.4 Write property test for single default device constraint
     - **Property 44: Single default device constraint**
     - **Validates: Requirements 15.2**
   
-  - [ ] 4.5 Write unit tests for storage operations
+  - [x] 4.5 Write unit tests for storage operations
     - Test device save, update, delete operations
     - Test default device management
     - Test storage error handling

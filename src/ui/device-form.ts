@@ -427,7 +427,7 @@ export class DeviceForm {
           serverUrl: formData.serverUrl,
           deviceKey: formData.deviceKey,
           customHeaders: formData.customHeaders,
-          isDefault: false,
+          isDefault: false, // Will be auto-set by StorageManager if first device
           createdAt: new Date().toISOString(),
         };
         this.storage.saveDevice(newDevice);

@@ -6,7 +6,8 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import { fc } from '@fast-check/vitest';
 import { StorageManager } from './storage-manager';
-import { createDevice } from '../utils/device-factory';
+import { createDevice, generateDeviceId } from '../utils/device-factory';
+import type { BarkDevice } from '../types';
 
 describe('StorageManager', () => {
   let storage: StorageManager;
@@ -366,6 +367,123 @@ describe('StorageManager', () => {
 
       expect(storage.getDevices().find(d => d.id === device1.id)?.isDefault).toBe(false);
       expect(storage.getDevices().find(d => d.id === device2.id)?.isDefault).toBe(true);
+    });
+
+    test('first device is automatically set as default', () => {
+      const device = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-123',
+        isDefault: false, // Explicitly set to false
+      });
+
+      storage.saveDevice(device);
+
+      const savedDevices = storage.getDevices();
+      expect(savedDevices).toHaveLength(1);
+      expect(savedDevices[0].isDefault).toBe(true);
+      expect(storage.getDefaultDeviceId()).toBe(device.id);
+    });
+
+    test('second device is not set as default when default exists', () => {
+      const device1 = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'key-1',
+        isDefault: false,
+      });
+      const device2 = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'key-2',
+        isDefault: false,
+      });
+
+      storage.saveDevice(device1);
+      storage.saveDevice(device2);
+
+      const devices = storage.getDevices();
+      expect(devices).toHaveLength(2);
+      expect(devices[0].isDefault).toBe(true); // First device
+      expect(devices[1].isDefault).toBe(false); // Second device
+      expect(storage.getDefaultDeviceId()).toBe(device1.id);
+    });
+
+    test('deleting default device sets oldest remaining device as default', () => {
+      // Create devices with different timestamps manually
+      const device1: BarkDevice = {
+        id: generateDeviceId(),
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'key-1',
+        isDefault: false,
+        createdAt: '2024-01-01T00:00:00.000Z',
+      };
+      const device2: BarkDevice = {
+        id: generateDeviceId(),
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'key-2',
+        isDefault: false,
+        createdAt: '2024-01-02T00:00:00.000Z',
+      };
+      const device3: BarkDevice = {
+        id: generateDeviceId(),
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'key-3',
+        isDefault: false,
+        createdAt: '2024-01-03T00:00:00.000Z',
+      };
+
+      storage.saveDevice(device1);
+      storage.saveDevice(device2);
+      storage.saveDevice(device3);
+
+      // Set device2 as default
+      storage.setDefaultDeviceId(device2.id);
+      expect(storage.getDefaultDeviceId()).toBe(device2.id);
+
+      // Delete the default device
+      storage.deleteDevice(device2.id);
+
+      // Oldest remaining device (device1) should become default
+      expect(storage.getDefaultDeviceId()).toBe(device1.id);
+      expect(storage.getDevices().find(d => d.id === device1.id)?.isDefault).toBe(true);
+      expect(storage.getDevices().find(d => d.id === device3.id)?.isDefault).toBe(false);
+    });
+
+    test('deleting non-default device does not change default', () => {
+      const device1 = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'key-1',
+      });
+      const device2 = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'key-2',
+      });
+
+      storage.saveDevice(device1);
+      storage.saveDevice(device2);
+
+      // device1 is auto-set as default
+      expect(storage.getDefaultDeviceId()).toBe(device1.id);
+
+      // Delete non-default device
+      storage.deleteDevice(device2.id);
+
+      // Default should remain unchanged
+      expect(storage.getDefaultDeviceId()).toBe(device1.id);
+      expect(storage.getDevices()[0].isDefault).toBe(true);
+    });
+
+    test('deleting last device clears default', () => {
+      const device = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key',
+      });
+
+      storage.saveDevice(device);
+      expect(storage.getDefaultDeviceId()).toBe(device.id);
+
+      storage.deleteDevice(device.id);
+
+      expect(storage.getDefaultDeviceId()).toBeNull();
+      expect(storage.getDevices()).toHaveLength(0);
     });
   });
 

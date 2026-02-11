@@ -29,10 +29,16 @@ export class StorageManager {
    * Save a new device to storage
    * Requirement 18.1: Store device configurations
    * Requirement 15.2: Enforce single default device constraint
+   * Auto-sets first device as default
    */
   saveDevice(device: BarkDevice): void {
     try {
       const devices = this.getDevices();
+      
+      // Auto-set first device as default
+      if (devices.length === 0) {
+        device.isDefault = true;
+      }
       
       // If this device is being set as default, clear other defaults
       if (device.isDefault) {
@@ -101,16 +107,23 @@ export class StorageManager {
    * Delete a device from storage
    * Requirement 18.1: Store device configurations
    * Requirement 14.3: Clear default device if deleted device was default
+   * Auto-sets oldest device as default when default device is deleted
    */
   deleteDevice(deviceId: string): void {
     try {
       const devices = this.getDevices();
+      const wasDefault = this.getDefaultDeviceId() === deviceId;
       const filteredDevices = devices.filter(d => d.id !== deviceId);
       
       GM_setValue(STORAGE_KEYS.DEVICES, filteredDevices);
       
-      // Clear default device ID if the deleted device was default
-      if (this.getDefaultDeviceId() === deviceId) {
+      // If deleted device was default, set oldest remaining device as default
+      if (wasDefault && filteredDevices.length > 0) {
+        const oldestDevice = filteredDevices.sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )[0];
+        this.setDefaultDeviceId(oldestDevice.id);
+      } else if (wasDefault) {
         this.setDefaultDeviceId(null);
       }
       

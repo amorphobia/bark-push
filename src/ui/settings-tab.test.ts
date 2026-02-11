@@ -132,15 +132,24 @@ describe('SettingsTab', () => {
     });
 
     test('set default device refreshes list view', () => {
-      const device = createDevice({
+      // Add two devices - first will be auto-set as default
+      const device1 = createDevice({
         serverUrl: 'https://api.day.app',
-        deviceKey: 'test-key-123',
+        deviceKey: 'test-key-1',
       });
-      storage.saveDevice(device);
+      const device2 = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-2',
+      });
+      storage.saveDevice(device1);
+      storage.saveDevice(device2);
+
+      // device1 is auto-set as default
+      expect(storage.getDefaultDeviceId()).toBe(device1.id);
 
       const container = settingsTab.render();
 
-      // Find set default button
+      // Find set default button for device2 (non-default device)
       const buttons = container.querySelectorAll('button');
       const setDefaultButton = Array.from(buttons).find(btn => 
         btn.textContent?.includes('Set Default')
@@ -149,9 +158,9 @@ describe('SettingsTab', () => {
       expect(setDefaultButton).toBeTruthy();
       setDefaultButton.click();
 
-      // Verify device was set as default
+      // Verify device2 was set as default
       const defaultId = storage.getDefaultDeviceId();
-      expect(defaultId).toBe(device.id);
+      expect(defaultId).toBe(device2.id);
     });
   });
 

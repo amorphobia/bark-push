@@ -207,6 +207,11 @@ export class PushTab {
       clearInterval(this.tipsInterval);
     }
 
+    // Only start if we have devices
+    if (this.devices.length === 0) {
+      return;
+    }
+
     this.tipsInterval = window.setInterval(() => {
       this.currentTipIndex++;
       const tipsElement = this.containerElement?.querySelector('#push-tips');

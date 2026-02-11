@@ -8,7 +8,7 @@
  * Requirements: 1.1, 17.2, 20.1
  */
 
-import { i18n } from './i18n';
+import { i18n, t } from './i18n';
 import { ModalController } from './ui/modal';
 import { StorageManager } from './storage/storage-manager';
 
@@ -59,7 +59,7 @@ function showModal(): void {
 function registerMenuCommand(): void {
   try {
     if (typeof GM_registerMenuCommand !== 'undefined') {
-      GM_registerMenuCommand('📱 Send to Bark', showModal);
+      GM_registerMenuCommand(t('menu.sendToBark'), showModal);
       console.log('[Bark Push] Menu command registered');
     } else {
       console.warn('[Bark Push] GM_registerMenuCommand not available');

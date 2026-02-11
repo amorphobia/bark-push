@@ -6,6 +6,7 @@ import { StorageManager } from '../storage/storage-manager';
 import { BarkClient } from '../api/bark-client';
 import { PushTab } from './push-tab';
 import { SettingsTab } from './settings-tab';
+import { t } from '../i18n';
 
 export type TabType = 'push' | 'settings';
 
@@ -484,13 +485,13 @@ export class ModalController {
         <div class="bark-modal-header">
           <div class="bark-tabs">
             <button class="bark-tab ${this.currentTab === 'push' ? 'active' : ''}" data-tab="push">
-              Push
+              ${t('tabs.push')}
             </button>
             <button class="bark-tab ${this.currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
-              Settings
+              ${t('tabs.settings')}
             </button>
           </div>
-          <button class="bark-close-btn" aria-label="Close">✕</button>
+          <button class="bark-close-btn" aria-label="${t('common.close')}">✕</button>
         </div>
         <div class="bark-modal-body">
           ${this.renderTabContent()}

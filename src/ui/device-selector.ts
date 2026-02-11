@@ -5,6 +5,7 @@
 
 import type { BarkDevice } from '../types';
 import { StorageManager } from '../storage/storage-manager';
+import { t } from '../i18n';
 
 /**
  * DeviceSelector provides a multi-select dropdown for choosing devices
@@ -164,14 +165,14 @@ export class DeviceSelector {
     // Update button text
     // Requirement 6.4: Show "X device(s) selected"
     if (this.devices.length === 0) {
-      button.textContent = 'No devices configured';
+      button.textContent = t('push.noDevices');
       button.disabled = true;
     } else if (this.selectedIds.length === 0) {
-      button.textContent = 'Select device(s)';
+      button.textContent = t('push.selectDevicePlaceholder');
       button.disabled = false;
     } else {
       const count = this.selectedIds.length;
-      button.textContent = `${count} device(s) selected`;
+      button.textContent = t('push.deviceSelected').replace('{count}', count.toString());
       button.disabled = false;
     }
 
@@ -186,7 +187,7 @@ export class DeviceSelector {
         // Requirement 6.3: Show message when no devices
         const message = document.createElement('div');
         message.className = 'device-selector-empty';
-        message.textContent = 'No devices configured';
+        message.textContent = t('push.noDevices');
         dropdown.appendChild(message);
       } else {
         // Requirement 6.2: Display all devices with checkboxes

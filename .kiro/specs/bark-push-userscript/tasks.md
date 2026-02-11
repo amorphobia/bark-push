@@ -326,8 +326,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
 - [x] 14. Checkpoint - Ensure push tab tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 15. Settings tab - device list view
-  - [ ] 15.1 Implement device list rendering
+- [x] 15. Settings tab - device list view
+  - [x] 15.1 Implement device list rendering
     - Render "No devices" message when empty
     - Render device cards with name, URL, truncated key
     - Display ⭐ icon for default device
@@ -337,27 +337,27 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Render "Add Device" button
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 12.1_
   
-  - [ ] 15.2 Write property test for device list display
+  - [x] 15.2 Write property test for device list display
     - **Property 29: Device list display completeness**
     - **Validates: Requirements 11.3**
   
-  - [ ] 15.3 Write property test for default device indicator
+  - [x] 15.3 Write property test for default device indicator
     - **Property 30: Default device visual indicator**
     - **Validates: Requirements 11.4**
   
-  - [ ] 15.4 Write property test for custom headers indicator
+  - [x] 15.4 Write property test for custom headers indicator
     - **Property 31: Custom headers visual indicator**
     - **Validates: Requirements 11.5**
   
-  - [ ] 15.5 Write property test for device list ordering
+  - [x] 15.5 Write property test for device list ordering
     - **Property 32: Device list ordering**
     - **Validates: Requirements 11.6**
   
-  - [ ] 15.6 Write property test for device action buttons
+  - [x] 15.6 Write property test for device action buttons
     - **Property 33: Device action buttons presence**
     - **Validates: Requirements 11.7**
   
-  - [ ] 15.7 Write unit tests for device list
+  - [x] 15.7 Write unit tests for device list
     - Test empty state display
     - Test device card rendering
     - Test icon display (star, lock)

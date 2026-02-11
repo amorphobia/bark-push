@@ -505,8 +505,8 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test focus restoration
     - _Requirements: 2.2, 4.6, 21.1, 21.2, 21.3_
 
-- [ ] 22. Main entry point and integration
-  - [ ] 22.1 Implement main.ts entry point
+- [x] 22. Main entry point and integration
+  - [x] 22.1 Implement main.ts entry point
     - Register Tampermonkey menu item "📱 Send to Bark"
     - Initialize i18n system on load
     - Create ModalController instance
@@ -514,15 +514,15 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Inject modal into page on demand
     - _Requirements: 1.1, 17.2, 20.1_
   
-  - [ ] 22.2 Write property test for host page DOM isolation
+  - [x] 22.2 Write property test for host page DOM isolation
     - **Property 54: Host page DOM isolation**
     - **Validates: Requirements 20.4**
   
-  - [ ] 22.3 Write property test for no external data transmission
+  - [x] 22.3 Write property test for no external data transmission
     - **Property 50: No external data transmission**
     - **Validates: Requirements 18.8**
   
-  - [ ] 22.4 Write unit tests for main entry point
+  - [x] 22.4 Write unit tests for main entry point
     - Test menu item registration
     - Test modal creation on click
     - Test i18n initialization

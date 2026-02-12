@@ -176,7 +176,7 @@ export class DeviceSelector {
     if (!buttonText || !dropdown || !button) return;
 
     // Update button text
-    // Requirement 6.4: Show "X device(s) selected"
+    // Requirement 6.4: Show selected device names
     if (this.devices.length === 0) {
       buttonText.textContent = t('push.noDevices');
       button.disabled = true;
@@ -184,8 +184,10 @@ export class DeviceSelector {
       buttonText.textContent = t('push.selectDevicePlaceholder');
       button.disabled = false;
     } else {
-      const count = this.selectedIds.length;
-      buttonText.textContent = t('push.deviceSelected').replace('{count}', count.toString());
+      // Show device names separated by commas
+      const selectedDevices = this.getSelectedDevices();
+      const deviceNames = selectedDevices.map(d => d.name || d.deviceKey.substring(0, 8) + '...');
+      buttonText.textContent = deviceNames.join(', ');
       button.disabled = false;
     }
 

@@ -126,8 +126,10 @@ describe('DeviceSelector', () => {
             // Should show "Select device(s)"
             return buttonText.textContent === t('push.selectDevicePlaceholder');
           } else {
-            // Should show "N device(s) selected"
-            const expectedText = t('push.deviceSelected').replace('{count}', actualSelectCount.toString());
+            // Should show device names separated by commas
+            const selectedDevices = testSelector.getSelectedDevices();
+            const expectedNames = selectedDevices.map(d => d.name || d.deviceKey.substring(0, 8) + '...');
+            const expectedText = expectedNames.join(', ');
             return buttonText.textContent === expectedText;
           }
         }
@@ -302,9 +304,9 @@ describe('DeviceSelector', () => {
     });
 
     test('display text updates with selection', () => {
-      const device1 = createTestDevice({ id: 'device-1' });
-      const device2 = createTestDevice({ id: 'device-2' });
-      const device3 = createTestDevice({ id: 'device-3' });
+      const device1 = createTestDevice({ id: 'device-1', name: 'Device 1' });
+      const device2 = createTestDevice({ id: 'device-2', name: 'Device 2' });
+      const device3 = createTestDevice({ id: 'device-3', name: 'Device 3' });
       selector.setDevices([device1, device2, device3]);
       const container = selector.render();
 
@@ -315,19 +317,19 @@ describe('DeviceSelector', () => {
 
       // Select one device
       selector.selectDevice('device-1');
-      expect(buttonText.textContent).toBe(t('push.deviceSelected').replace('{count}', '1'));
+      expect(buttonText.textContent).toBe('Device 1');
 
       // Select two devices
       selector.selectDevice('device-2');
-      expect(buttonText.textContent).toBe(t('push.deviceSelected').replace('{count}', '2'));
+      expect(buttonText.textContent).toBe('Device 1, Device 2');
 
       // Select three devices
       selector.selectDevice('device-3');
-      expect(buttonText.textContent).toBe(t('push.deviceSelected').replace('{count}', '3'));
+      expect(buttonText.textContent).toBe('Device 1, Device 2, Device 3');
 
       // Deselect one
       selector.deselectDevice('device-2');
-      expect(buttonText.textContent).toBe(t('push.deviceSelected').replace('{count}', '2'));
+      expect(buttonText.textContent).toBe('Device 1, Device 3');
     });
 
     test('dropdown shows empty message when no devices', () => {

@@ -18,6 +18,7 @@ export class ModalController {
   private storage: StorageManager;
   private barkClient: BarkClient;
   private previousFocusElement: HTMLElement | null = null;
+  private resizeHandler: (() => void) | null = null;
 
   // Tab components
   private pushTab: PushTab | null = null;
@@ -26,6 +27,35 @@ export class ModalController {
   constructor(storage: StorageManager) {
     this.storage = storage;
     this.barkClient = new BarkClient();
+  }
+
+  /**
+   * Calculate modal height based on viewport
+   * Design Change: Fixed height that doesn't change between tabs
+   * Formula: min(600px, window.innerHeight - 80px)
+   * The 80px margin provides breathing room (40px top + 40px bottom)
+   */
+  private calculateModalHeight(): number {
+    const viewportHeight = window.innerHeight;
+    const verticalMargin = 80; // 40px top + 40px bottom
+    const maxHeight = 600;
+    
+    return Math.min(maxHeight, viewportHeight - verticalMargin);
+  }
+
+  /**
+   * Update modal height
+   * Design Change: Apply calculated height to modal element
+   */
+  private updateModalHeight(): void {
+    if (!this.modalElement) return;
+
+    const modal = this.modalElement.querySelector('.bark-modal') as HTMLElement;
+    if (!modal) return;
+
+    const height = this.calculateModalHeight();
+    modal.style.height = `${height}px`;
+    modal.style.maxHeight = `${height}px`;
   }
 
   /**
@@ -49,6 +79,7 @@ export class ModalController {
   /**
    * Open the modal
    * Requirements: 1.1, 21.3
+   * Design Change: Set fixed height and add resize listener
    */
   open(): void {
     // Store currently focused element (Requirement 21.3)
@@ -69,6 +100,13 @@ export class ModalController {
     if (this.modalElement) {
       this.modalElement.style.display = 'flex';
     }
+
+    // Design Change: Set initial modal height
+    this.updateModalHeight();
+
+    // Design Change: Add resize listener for responsive height
+    this.resizeHandler = () => this.updateModalHeight();
+    window.addEventListener('resize', this.resizeHandler);
 
     // Set initial focus to message field (Requirement 21.3)
     // Use requestAnimationFrame to ensure DOM is ready
@@ -94,10 +132,17 @@ export class ModalController {
   /**
    * Close the modal
    * Requirements: 2.1, 2.4, 21.3
+   * Design Change: Remove resize listener
    */
   close(): void {
     if (this.modalElement) {
       this.modalElement.style.display = 'none';
+    }
+
+    // Design Change: Remove resize listener
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      this.resizeHandler = null;
     }
 
     // Clean up tab components
@@ -131,6 +176,9 @@ export class ModalController {
     
     // Re-render with new tab
     this.render();
+    
+    // Design Change: Reapply modal height after re-render
+    this.updateModalHeight();
     
     // Reattach listeners
     this.attachEventListeners();
@@ -190,17 +238,19 @@ export class ModalController {
         color: #333;
       }
 
-      /* Modal Container - Responsive Width */
+      /* Modal Container - Responsive Width & Fixed Height */
+      /* Design Change: Fixed height that doesn't change between tabs */
       .bark-modal {
         background: white;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         width: 450px;
         max-width: calc(100vw - 20px);
-        max-height: 600px;
+        /* Height is set dynamically via JavaScript */
+        /* max-height is also set dynamically to match height */
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: hidden; /* Prevent modal itself from scrolling */
       }
 
       @media (max-width: 470px) {
@@ -281,10 +331,12 @@ export class ModalController {
       }
 
       /* Modal Body */
+      /* Design Change: Only modal-body scrolls, not the entire modal */
       .bark-modal-body {
         padding: 16px;
         overflow-y: auto;
-        flex: 1;
+        overflow-x: hidden;
+        flex: 1; /* Take remaining space after header */
       }
 
       /* Scrollbar styling */

@@ -638,14 +638,16 @@ describe('ModalController', () => {
       expect(styleContent).toContain('.btn-danger');
     });
 
-    it('should have max-height of 600px for modal', () => {
+    it('should have dynamic height set via JavaScript (Design Change)', () => {
       modalController.open();
 
       const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
       const styleElement = shadowRoot?.querySelector('style');
       const styleContent = styleElement?.textContent || '';
 
-      expect(styleContent).toContain('max-height: 600px');
+      // Design Change: Height is now set dynamically, not in CSS
+      expect(styleContent).toContain('/* Height is set dynamically via JavaScript */');
+      expect(styleContent).toContain('/* max-height is also set dynamically to match height */');
     });
 
     it('should have loading spinner animation', () => {
@@ -657,6 +659,222 @@ describe('ModalController', () => {
 
       expect(styleContent).toContain('.spinner');
       expect(styleContent).toContain('@keyframes spin');
+    });
+  });
+
+  describe('Unit Tests: Fixed Height Behavior (Design Change)', () => {
+    it('should calculate modal height as min(600px, window.innerHeight - 80px)', () => {
+      // Mock window.innerHeight
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 800
+      });
+
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+
+      // Expected: min(600, 800 - 80) = min(600, 720) = 600
+      expect(modal.style.height).toBe('600px');
+      expect(modal.style.maxHeight).toBe('600px');
+
+      modalController.close();
+    });
+
+    it('should use viewport height minus 80px when viewport is small', () => {
+      // Mock small viewport
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 500
+      });
+
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+
+      // Expected: min(600, 500 - 80) = min(600, 420) = 420
+      expect(modal.style.height).toBe('420px');
+      expect(modal.style.maxHeight).toBe('420px');
+
+      modalController.close();
+    });
+
+    it('should maintain height when switching between tabs', () => {
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 800
+      });
+
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+      const initialHeight = modal.style.height;
+
+      // Switch to settings tab
+      modalController.switchTab('settings');
+
+      // Height should remain the same
+      const modalAfterSwitch = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+      expect(modalAfterSwitch.style.height).toBe(initialHeight);
+
+      // Switch back to push tab
+      modalController.switchTab('push');
+
+      // Height should still be the same
+      const modalAfterSecondSwitch = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+      expect(modalAfterSecondSwitch.style.height).toBe(initialHeight);
+
+      modalController.close();
+    });
+
+    it('should update height on window resize', () => {
+      // Start with large viewport
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 800
+      });
+
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      let modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+
+      // Initial height should be 600px
+      expect(modal.style.height).toBe('600px');
+
+      // Resize to smaller viewport
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 500
+      });
+
+      // Trigger resize event
+      window.dispatchEvent(new Event('resize'));
+
+      // Height should update to 420px (500 - 80)
+      modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+      expect(modal.style.height).toBe('420px');
+      expect(modal.style.maxHeight).toBe('420px');
+
+      modalController.close();
+    });
+
+    it('should remove resize listener when modal is closed', () => {
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 800
+      });
+
+      modalController.open();
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+      const initialHeight = modal.style.height;
+
+      modalController.close();
+
+      // Change viewport size
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 500
+      });
+
+      // Trigger resize event
+      window.dispatchEvent(new Event('resize'));
+
+      // Height should not change because modal is closed and listener is removed
+      expect(modal.style.height).toBe(initialHeight);
+    });
+
+    it('should handle very small viewports gracefully', () => {
+      // Mock very small viewport
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 300
+      });
+
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+
+      // Expected: min(600, 300 - 80) = min(600, 220) = 220
+      expect(modal.style.height).toBe('220px');
+      expect(modal.style.maxHeight).toBe('220px');
+
+      modalController.close();
+    });
+
+    it('should have modal-body with flex: 1 and overflow-y: auto', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      // Check that modal-body has flex: 1
+      expect(styleContent).toContain('flex: 1');
+      
+      // Check that modal-body has overflow-y: auto
+      expect(styleContent).toContain('overflow-y: auto');
+
+      modalController.close();
+    });
+
+    it('should have modal with overflow: hidden to prevent modal scrolling', () => {
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      const styleElement = shadowRoot?.querySelector('style');
+      const styleContent = styleElement?.textContent || '';
+
+      // Check that modal has overflow: hidden
+      const modalStyles = styleContent.match(/\.bark-modal\s*{[^}]*}/s)?.[0] || '';
+      expect(modalStyles).toContain('overflow: hidden');
+
+      modalController.close();
+    });
+
+    it('should transition smoothly between fixed and responsive modes', () => {
+      // Start at threshold (680px = 600px + 80px margin)
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 680
+      });
+
+      modalController.open();
+
+      const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
+      let modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+
+      // At 680px: min(600, 680 - 80) = min(600, 600) = 600
+      expect(modal.style.height).toBe('600px');
+
+      // Resize to just below threshold
+      Object.defineProperty(window, 'innerHeight', {
+        writable: true,
+        configurable: true,
+        value: 679
+      });
+
+      window.dispatchEvent(new Event('resize'));
+
+      modal = shadowRoot?.querySelector('.bark-modal') as HTMLElement;
+      // At 679px: min(600, 679 - 80) = min(600, 599) = 599
+      expect(modal.style.height).toBe('599px');
+
+      modalController.close();
     });
   });
 });

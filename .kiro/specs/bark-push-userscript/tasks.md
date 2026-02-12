@@ -528,15 +528,15 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test i18n initialization
     - _Requirements: 1.1, 17.2_
 
-- [ ] 23. **DESIGN CHANGE: Implement fixed modal height behavior**
-  - [ ] 23.1 Update modal height calculation logic
+- [x] 23. **DESIGN CHANGE: Implement fixed modal height behavior**
+  - [x] 23.1 Update modal height calculation logic
     - Implement `calculateModalHeight()` function: `min(600px, window.innerHeight - 80px)`
     - Apply fixed height to modal element (both `height` and `max-height`)
     - Ensure modal height remains constant across tab switches
     - _Design Change: See design.md "DESIGN CHANGE: Fixed Modal Height Behavior" section_
     - _Requirements: 23.3_
   
-  - [ ] 23.2 Implement viewport resize handling
+  - [x] 23.2 Implement viewport resize handling
     - Add `window.resize` event listener
     - Call `updateModalHeight()` on resize events
     - Ensure smooth transition between fixed and responsive modes
@@ -544,7 +544,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: Modal height responds to viewport changes_
     - _Requirements: 23.3_
   
-  - [ ] 23.3 Update modal CSS for fixed height
+  - [x] 23.3 Update modal CSS for fixed height
     - Set modal to use CSS custom property `--modal-height`
     - Apply `display: flex; flex-direction: column` to modal
     - Set `overflow: hidden` on modal container
@@ -553,7 +553,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: CSS structure supports fixed height with scrollable content_
     - _Requirements: 23.3_
   
-  - [ ] 23.4 Write unit tests for fixed height behavior
+  - [x] 23.4 Write unit tests for fixed height behavior
     - Test height calculation with various viewport sizes
     - Test height remains constant during tab switches
     - Test resize event updates height correctly

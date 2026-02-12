@@ -32,7 +32,7 @@ vi.mock('../i18n', () => {
     'push.advancedOptionsCollapse': '▲ Advanced Options',
     'push.advanced.sound': 'Sound',
     'push.advanced.icon': 'Icon URL',
-    'push.advanced.iconPlaceholder': 'https://example.com/icon.png',
+    'push.advanced.iconPlaceholder': 'https://day.app/assets/images/avatar.jpg',
     'push.advanced.group': 'Group',
     'push.advanced.groupPlaceholder': 'Notification group',
     'push.advanced.url': 'URL',

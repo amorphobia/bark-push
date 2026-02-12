@@ -54,7 +54,7 @@ export default {
       sound: '소리',
       soundPlaceholder: '알림 소리 선택',
       icon: '아이콘 URL',
-      iconPlaceholder: 'https://example.com/icon.png',
+      iconPlaceholder: 'https://day.app/assets/images/avatar.jpg',
       group: '그룹',
       groupPlaceholder: '알림 그룹',
       url: 'URL',

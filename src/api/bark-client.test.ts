@@ -621,9 +621,9 @@ describe('BarkClient', () => {
       const payload: NotificationPayload = {
         body: 'Test',
         sound: 'alarm',
-        icon: 'https://example.com/icon.png',
+        icon: 'https://day.app/assets/images/avatar.jpg',
         group: 'test-group',
-        url: 'https://example.com',
+        url: 'https://bark.day.app',
         badge: 5,
         level: 'critical',
         volume: 8,
@@ -638,9 +638,9 @@ describe('BarkClient', () => {
       const callArgs = mockXmlHttpRequest.mock.calls[0][0];
       const requestData = JSON.parse(callArgs.data);
       expect(requestData.sound).toBe('alarm');
-      expect(requestData.icon).toBe('https://example.com/icon.png');
+      expect(requestData.icon).toBe('https://day.app/assets/images/avatar.jpg');
       expect(requestData.group).toBe('test-group');
-      expect(requestData.url).toBe('https://example.com');
+      expect(requestData.url).toBe('https://bark.day.app');
       expect(requestData.badge).toBe(5);
       expect(requestData.level).toBe('critical');
       expect(requestData.volume).toBe(8);

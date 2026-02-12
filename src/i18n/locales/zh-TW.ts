@@ -54,7 +54,7 @@ export default {
       sound: '聲音',
       soundPlaceholder: '選擇通知聲音',
       icon: '圖示 URL',
-      iconPlaceholder: 'https://example.com/icon.png',
+      iconPlaceholder: 'https://day.app/assets/images/avatar.jpg',
       group: '分組',
       groupPlaceholder: '通知分組',
       url: 'URL',

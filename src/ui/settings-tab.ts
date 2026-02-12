@@ -12,6 +12,7 @@ import { LanguageSelector } from './language-selector';
 import { t } from '../i18n';
 import type { BarkDevice } from '../types';
 import type { ToastManager } from './toast';
+import { setRecordingShortcut } from '../main';
 
 type ViewState = 'list' | 'form';
 
@@ -280,6 +281,7 @@ export class SettingsTab {
     if (this.isRecordingShortcut) return;
 
     this.isRecordingShortcut = true;
+    setRecordingShortcut(true); // Notify main.ts to disable global shortcut listener
     recordBtn.textContent = t('settings.keyboardShortcutRecording');
     recordBtn.disabled = true;
     input.value = t('settings.keyboardShortcutPressKeys');
@@ -340,6 +342,7 @@ export class SettingsTab {
    */
   private stopRecordingShortcut(input: HTMLInputElement, recordBtn: HTMLButtonElement, handler: (event: KeyboardEvent) => void): void {
     this.isRecordingShortcut = false;
+    setRecordingShortcut(false); // Notify main.ts to re-enable global shortcut listener
     recordBtn.textContent = t('settings.keyboardShortcutRecord');
     recordBtn.disabled = false;
     input.style.borderColor = '#ddd';

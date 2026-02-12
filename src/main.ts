@@ -17,6 +17,16 @@ let modalController: ModalController | null = null;
 let storage: StorageManager | null = null;
 let keyboardShortcutListener: ((event: KeyboardEvent) => void) | null = null;
 
+// Flag to track if we're currently recording a keyboard shortcut
+let isRecordingShortcut = false;
+
+/**
+ * Set the recording state (called by SettingsTab)
+ */
+export function setRecordingShortcut(recording: boolean): void {
+  isRecordingShortcut = recording;
+}
+
 /**
  * Initialize the userscript
  * Requirements: 17.2, 20.1
@@ -136,6 +146,9 @@ function registerKeyboardShortcut(): void {
   
   // Create new listener
   keyboardShortcutListener = (event: KeyboardEvent) => {
+    // Don't trigger if we're currently recording a shortcut
+    if (isRecordingShortcut) return;
+    
     // Don't trigger if user is typing in an input field
     const target = event.target as HTMLElement;
     const isInputField = target.tagName === 'INPUT' || 

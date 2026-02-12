@@ -133,7 +133,7 @@ export default {
     deleted: 'Device deleted',
     language: 'Language',
     languageLabel: 'Interface Language',
-    keyboardShortcut: 'Keyboard Shortcut',
+    keyboardShortcut: 'Show/Hide Shortcut',
     keyboardShortcutPlaceholder: 'Click Record to set shortcut',
     keyboardShortcutHint: 'Press modifier keys (Ctrl/Alt/Shift) + any key',
     keyboardShortcutRecord: 'Record',

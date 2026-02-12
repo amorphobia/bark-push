@@ -133,7 +133,7 @@ export default {
     deleted: '기기가 삭제되었습니다',
     language: '언어',
     languageLabel: '인터페이스 언어',
-    keyboardShortcut: '키보드 단축키',
+    keyboardShortcut: '표시/숨기기 단축키',
     keyboardShortcutPlaceholder: '기록을 클릭하여 단축키 설정',
     keyboardShortcutHint: '수정 키(Ctrl/Alt/Shift) + 임의의 키를 누르세요',
     keyboardShortcutRecord: '기록',

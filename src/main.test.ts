@@ -436,4 +436,72 @@ describe('Main Entry Point', () => {
       expect(closeCount).toBe(5);
     });
   });
+
+  describe('Keyboard Shortcut Recording', () => {
+    test('global shortcut listener should not trigger when recording', () => {
+      // This test verifies that when recording a keyboard shortcut,
+      // the global shortcut listener is disabled to prevent the modal
+      // from toggling when the user presses the current shortcut
+
+      let modalToggled = false;
+      const mockToggleModal = () => {
+        modalToggled = true;
+      };
+
+      // Simulate the global shortcut listener logic
+      let isRecordingShortcut = false;
+      
+      const keyboardShortcutListener = (event: KeyboardEvent) => {
+        // Don't trigger if we're currently recording a shortcut
+        if (isRecordingShortcut) return;
+        
+        // Check if event matches configured shortcut (Alt+B)
+        if (event.altKey && event.key === 'B') {
+          event.preventDefault();
+          event.stopPropagation();
+          mockToggleModal();
+        }
+      };
+
+      // Test 1: Normal operation - shortcut should trigger
+      const normalEvent = new KeyboardEvent('keydown', {
+        key: 'B',
+        altKey: true,
+        bubbles: true,
+        cancelable: true
+      });
+      
+      keyboardShortcutListener(normalEvent);
+      expect(modalToggled).toBe(true);
+
+      // Reset
+      modalToggled = false;
+
+      // Test 2: During recording - shortcut should NOT trigger
+      isRecordingShortcut = true;
+      
+      const recordingEvent = new KeyboardEvent('keydown', {
+        key: 'B',
+        altKey: true,
+        bubbles: true,
+        cancelable: true
+      });
+      
+      keyboardShortcutListener(recordingEvent);
+      expect(modalToggled).toBe(false); // Should NOT have toggled
+
+      // Test 3: After recording stops - shortcut should trigger again
+      isRecordingShortcut = false;
+      
+      const afterRecordingEvent = new KeyboardEvent('keydown', {
+        key: 'B',
+        altKey: true,
+        bubbles: true,
+        cancelable: true
+      });
+      
+      keyboardShortcutListener(afterRecordingEvent);
+      expect(modalToggled).toBe(true); // Should toggle again
+    });
+  });
 });

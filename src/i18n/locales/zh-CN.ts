@@ -133,7 +133,7 @@ export default {
     deleted: '设备已删除',
     language: '语言',
     languageLabel: '界面语言',
-    keyboardShortcut: '键盘快捷键',
+    keyboardShortcut: '显示/隐藏快捷键',
     keyboardShortcutPlaceholder: '点击录制以设置快捷键',
     keyboardShortcutHint: '按修饰键（Ctrl/Alt/Shift）+ 任意键',
     keyboardShortcutRecord: '录制',

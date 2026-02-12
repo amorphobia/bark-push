@@ -133,7 +133,7 @@ export default {
     deleted: 'デバイスを削除しました',
     language: '言語',
     languageLabel: 'インターフェース言語',
-    keyboardShortcut: 'キーボードショートカット',
+    keyboardShortcut: '表示/非表示ショートカット',
     keyboardShortcutPlaceholder: '記録をクリックしてショートカットを設定',
     keyboardShortcutHint: '修飾キー（Ctrl/Alt/Shift）+ 任意のキーを押す',
     keyboardShortcutRecord: '記録',

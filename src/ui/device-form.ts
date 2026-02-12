@@ -64,7 +64,7 @@ export class DeviceForm {
     header.className = 'form-header';
 
     const backButton = document.createElement('button');
-    backButton.className = 'btn btn-text back-button';
+    backButton.className = 'btn btn-secondary back-button';
     backButton.textContent = '← ' + t('common.back');
     backButton.type = 'button';
     backButton.onclick = (e) => {

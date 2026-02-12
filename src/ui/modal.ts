@@ -214,13 +214,6 @@ export class ModalController {
   private injectStyles(): void {
     if (!this.shadowRoot) return;
 
-    // Load Font Awesome 6 from CDN
-    const fontAwesomeLink = document.createElement('link');
-    fontAwesomeLink.rel = 'stylesheet';
-    fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
-    fontAwesomeLink.crossOrigin = 'anonymous';
-    this.shadowRoot.appendChild(fontAwesomeLink);
-
     const style = document.createElement('style');
     style.textContent = `
       * {
@@ -600,13 +593,18 @@ export class ModalController {
         cursor: pointer;
         padding: 4px;
         color: #007AFF;
-        font-size: 15px;
         transition: color 0.2s;
         display: flex;
         align-items: center;
         justify-content: center;
         min-width: 28px;
         min-height: 28px;
+      }
+
+      .device-action-btn svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
       }
 
       .device-action-btn:hover {
@@ -617,8 +615,10 @@ export class ModalController {
         color: #FF3B30;
       }
 
-      .device-url-key .fa-lock {
-        font-size: 11px;
+      .device-url-key svg {
+        width: 11px;
+        height: 11px;
+        fill: currentColor;
         flex-shrink: 0;
       }
 

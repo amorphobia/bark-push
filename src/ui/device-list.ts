@@ -104,8 +104,8 @@ export class DeviceList {
    * DESIGN CHANGE: Compact layout with radio button for default selection
    * Requirement 11.3: Display device with name, URL/key
    * Requirement 11.4: Radio button indicates default device (replaces star emoji)
-   * Requirement 11.5: Display Font Awesome lock icon for devices with custom headers
-   * Requirement 11.7: Display Font Awesome action icons (edit, delete)
+   * Requirement 11.5: Display inline SVG lock icon for devices with custom headers
+   * Requirement 11.7: Display inline SVG action icons (edit, delete)
    */
   private renderDeviceCard(device: BarkDevice): HTMLElement {
     const card = document.createElement('div');
@@ -151,9 +151,11 @@ export class DeviceList {
 
     // Font Awesome lock icon for custom headers
     if (device.customHeaders && device.customHeaders.trim().length > 0) {
-      const lockIcon = document.createElement('i');
-      lockIcon.className = 'fa-solid fa-lock';
-      lockIcon.title = t('settings.hasCustomHeaders');
+      const lockIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      lockIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      lockIcon.setAttribute('viewBox', '0 0 384 512');
+      lockIcon.setAttribute('title', t('settings.hasCustomHeaders'));
+      lockIcon.innerHTML = '<path fill="currentColor" d="M128 96l0 64 128 0 0-64c0-35.3-28.7-64-64-64s-64 28.7-64 64zM64 160l0-64C64 25.3 121.3-32 192-32S320 25.3 320 96l0 64c35.3 0 64 28.7 64 64l0 224c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 224c0-35.3 28.7-64 64-64z"/>';
       urlKeyDisplay.appendChild(lockIcon);
     }
 
@@ -164,11 +166,11 @@ export class DeviceList {
     const actionsContainer = document.createElement('div');
     actionsContainer.className = 'device-actions';
 
-    // Edit icon button (Font Awesome)
+    // Edit icon button (inline SVG)
     const editBtn = document.createElement('button');
     editBtn.className = 'device-action-btn edit';
     editBtn.title = t('common.edit');
-    editBtn.innerHTML = '<i class="fa-solid fa-pencil"></i>';
+    editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M36.4 353.2c4.1-14.6 11.8-27.9 22.6-38.7l181.2-181.2 33.9-33.9c16.6 16.6 51.3 51.3 104 104l33.9 33.9-33.9 33.9-181.2 181.2c-10.7 10.7-24.1 18.5-38.7 22.6L30.4 510.6c-8.3 2.3-17.3 0-23.4-6.2S-1.4 489.3 .9 481L36.4 353.2zm55.6-3.7c-4.4 4.7-7.6 10.4-9.3 16.6l-24.1 86.9 86.9-24.1c6.4-1.8 12.2-5.1 17-9.7L91.9 349.5zm354-146.1c-16.6-16.6-51.3-51.3-104-104L308 65.5C334.5 39 349.4 24.1 352.9 20.6 366.4 7 384.8-.6 404-.6S441.6 7 455.1 20.6l35.7 35.7C504.4 69.9 512 88.3 512 107.4s-7.6 37.6-21.2 51.1c-3.5 3.5-18.4 18.4-44.9 44.9z"/></svg>';
     editBtn.onclick = (e) => {
       e.stopPropagation();
       if (this.onEditDevice) {
@@ -177,11 +179,11 @@ export class DeviceList {
     };
     actionsContainer.appendChild(editBtn);
 
-    // Delete icon button (Font Awesome)
+    // Delete icon button (inline SVG)
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'device-action-btn delete';
     deleteBtn.title = t('common.delete');
-    deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+    deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M136.7 5.9L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-8.7-26.1C306.9-7.2 294.7-16 280.9-16L167.1-16c-13.8 0-26 8.8-30.4 21.9zM416 144L32 144 53.1 467.1C54.7 492.4 75.7 512 101 512L347 512c25.3 0 46.3-19.6 47.9-44.9L416 144z"/></svg>';
     deleteBtn.onclick = (e) => {
       e.stopPropagation();
       if (this.onDeleteDevice) {

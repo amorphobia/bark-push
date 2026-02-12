@@ -60,10 +60,10 @@ main.ts (Entry Point)
 │   ├── Translation Loader
 │   └── t() Function
 └── External Dependencies
-    └── Font Awesome 6 (CDN)
-        ├── fa-pencil (edit icon)
-        ├── fa-trash (delete icon)
-        └── fa-lock (custom headers indicator)
+    └── Inline SVG Icons
+        ├── Pencil icon (edit action)
+        ├── Trash icon (delete action)
+        └── Lock icon (custom headers indicator)
 ```
 
 ### Data Flow
@@ -120,7 +120,7 @@ function hideModal(): void
 - Handle modal open/close
 - Inject into shadow DOM
 - Manage modal height responsiveness
-- Load Font Awesome CSS into shadow DOM
+- Use inline SVG icons for UI elements
 
 **Interface**:
 ```typescript
@@ -136,7 +136,6 @@ class ModalController {
   render(): void;
   attachEventListeners(): void;
   updateModalHeight(): void;
-  loadFontAwesome(): void; // Load Font Awesome CSS into shadow DOM
 }
 ```
 
@@ -162,10 +161,14 @@ class ModalController {
 </div>
 ```
 
-**Font Awesome Integration**:
-- Font Awesome 6 Free (Solid style) loaded via CDN
-- CDN URL: `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css`
-- Loaded as `<link>` element inside shadow DOM to ensure style isolation
+**Inline SVG Icons**:
+- Inline SVG icons embedded directly in HTML for reliability
+- Icons used:
+  - Pencil icon for edit action
+  - Trash icon for delete action
+  - Lock icon for custom headers indicator
+- SVG paths from Font Awesome 6 Free (Solid style) for consistency
+- Styled via CSS `fill: currentColor` to inherit button color
 - Icons used throughout the UI:
   - `<i class="fa-solid fa-pencil"></i>` or `<i class="fa-solid fa-pen"></i>` for edit
   - `<i class="fa-solid fa-trash"></i>` or `<i class="fa-solid fa-trash-can"></i>` for delete
@@ -380,7 +383,7 @@ interface PushFormData {
 - Handle device CRUD operations
 - Manage default device via radio button selection
 - Handle language selection
-- Integrate Font Awesome icons for UI elements
+- Use inline SVG icons for UI elements
 
 **DESIGN CHANGE: Device List UI Improvements**
 
@@ -400,13 +403,13 @@ Device Name
   - Unselected radio (○) for non-default devices
   - Clicking radio sets that device as default
 - **Action Icons**: Positioned on the right, vertically centered with radio button
-  - Font Awesome pencil icon (fa-pencil) for edit action
-  - Font Awesome trash icon (fa-trash) for delete action
+  - Inline SVG pencil icon for edit action
+  - Inline SVG trash icon for delete action
   - Icons are clickable buttons with hover states
 - **URL/Key Display**: Shown below device name in smaller font (12px) with dimmed color (#8e8e93)
   - Format: `{serverUrl}/{deviceKey}`
   - Example: `https://api.day.app/somesecretkeys`
-- **Lock Icon**: Font Awesome lock icon (fa-lock) displayed inline after URL/key when device has custom headers
+- **Lock Icon**: Inline SVG lock icon displayed inline after URL/key when device has custom headers
   - Replaces the 🔒 emoji
   - Same dimmed color as URL/key text
 - **Vertical Spacing**: Compact layout with minimal height per device card
@@ -414,15 +417,16 @@ Device Name
 **Removed Elements**:
 - ❌ "Set Default" button (replaced by radio button)
 - ❌ ⭐ star emoji prefix on default device name (replaced by selected radio button)
-- ❌ 🔒 lock emoji (replaced by Font Awesome lock icon)
+- ❌ 🔒 lock emoji (replaced by inline SVG lock icon)
 
-**Font Awesome Integration**:
-- Use Font Awesome 6 Free (Solid style)
-- Load via CDN: `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css`
+**Inline SVG Icons**:
+- Use inline SVG icons embedded directly in HTML
 - Icons used:
-  - `fa-pencil` or `fa-pen` for edit
-  - `fa-trash` or `fa-trash-can` for delete
-  - `fa-lock` for custom headers indicator
+  - Pencil icon for edit action
+  - Trash icon for delete action
+  - Lock icon for custom headers indicator
+- SVG paths from Font Awesome 6 Free (Solid style)
+- Styled via CSS to inherit button color
 
 **Interface**:
 ```typescript
@@ -441,7 +445,6 @@ class SettingsTab {
   handleSetDefault(deviceId: string): void; // Now triggered by radio button click
   handleTestConnection(formData: DeviceFormData): Promise<void>;
   handleSaveDevice(formData: DeviceFormData): void;
-  loadFontAwesome(): void; // Load Font Awesome CSS
 }
 
 interface DeviceFormData {
@@ -986,7 +989,7 @@ Property 30: Default device visual indicator
 **Validates: Requirements 11.4**
 
 Property 31: Custom headers visual indicator
-*For any* device with non-empty customHeaders, its card should display a Font Awesome lock icon (fa-lock) after the URL/key
+*For any* device with non-empty customHeaders, its card should display an inline SVG lock icon after the URL/key
 **Validates: Requirements 11.5**
 
 Property 32: Device list ordering
@@ -994,7 +997,7 @@ Property 32: Device list ordering
 **Validates: Requirements 11.6**
 
 Property 33: Device action icons presence
-*For any* device card, it should display Font Awesome pencil (edit) and trash (delete) icons
+*For any* device card, it should display inline SVG pencil (edit) and trash (delete) icons
 **Validates: Requirements 11.7**
 
 Property 34: URL validation

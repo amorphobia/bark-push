@@ -166,7 +166,7 @@ describe('DeviceList', () => {
 
   // Property 31: Custom headers visual indicator
   // Feature: bark-push-userscript, Property 31: Custom headers visual indicator
-  // UPDATED: Check for Font Awesome lock icon instead of emoji
+  // UPDATED: Check for inline SVG lock icon instead of Font Awesome class
   test('Property 31: Custom headers visual indicator', () => {
     fc.assert(
       fc.property(
@@ -190,10 +190,11 @@ describe('DeviceList', () => {
           
           const deviceCard = container.querySelector('.device-card');
           
-          // DESIGN CHANGE: Should have Font Awesome lock icon instead of emoji
-          const hasLockIcon = deviceCard?.querySelector('.fa-lock') !== null;
+          // DESIGN CHANGE: Should have inline SVG lock icon
+          const urlKeyDisplay = deviceCard?.querySelector('.device-url-key');
+          const hasSvgLockIcon = urlKeyDisplay?.querySelector('svg') !== null;
           
-          return hasLockIcon;
+          return hasSvgLockIcon;
         }
       ),
       { numRuns: 100 }
@@ -253,7 +254,7 @@ describe('DeviceList', () => {
 
   // Property 33: Device action buttons presence
   // Feature: bark-push-userscript, Property 33: Device action buttons presence
-  // UPDATED: Check for Font Awesome icon buttons instead of text buttons
+  // UPDATED: Check for inline SVG icon buttons instead of Font Awesome classes
   test('Property 33: Device action buttons presence', () => {
     fc.assert(
       fc.property(
@@ -278,14 +279,16 @@ describe('DeviceList', () => {
           const deviceCard = container.querySelector('.device-card');
           const actions = deviceCard?.querySelector('.device-actions');
           
-          // DESIGN CHANGE: Should have Font Awesome icon buttons
-          const hasEditIcon = actions?.querySelector('.fa-pencil') !== null;
-          const hasDeleteIcon = actions?.querySelector('.fa-trash') !== null;
+          // DESIGN CHANGE: Should have inline SVG icon buttons
+          const editButton = actions?.querySelector('.device-action-btn.edit');
+          const deleteButton = actions?.querySelector('.device-action-btn.delete');
+          const hasEditSvg = editButton?.querySelector('svg') !== null;
+          const hasDeleteSvg = deleteButton?.querySelector('svg') !== null;
           
           // DESIGN CHANGE: Radio button replaces "Set Default" button
           const hasRadioButton = deviceCard?.querySelector('.device-radio') !== null;
           
-          return hasEditIcon && hasDeleteIcon && hasRadioButton;
+          return hasEditSvg && hasDeleteSvg && hasRadioButton;
         }
       ),
       { numRuns: 100 }
@@ -373,8 +376,9 @@ describe('DeviceList', () => {
       const testDeviceList = new DeviceList(storage);
       const container = testDeviceList.render();
       
-      // DESIGN CHANGE: Check for Font Awesome lock icon instead of emoji
-      const lockIcon = container.querySelector('.fa-lock');
+      // DESIGN CHANGE: Check for inline SVG lock icon
+      const urlKeyDisplay = container.querySelector('.device-url-key');
+      const lockIcon = urlKeyDisplay?.querySelector('svg');
       expect(lockIcon).toBeTruthy();
     });
 
@@ -393,7 +397,8 @@ describe('DeviceList', () => {
       const testDeviceList = new DeviceList(storage);
       const container = testDeviceList.render();
       
-      const lockIcon = container.querySelector('.fa-lock');
+      const urlKeyDisplay = container.querySelector('.device-url-key');
+      const lockIcon = urlKeyDisplay?.querySelector('svg');
       expect(lockIcon).toBeNull();
     });
 
@@ -412,13 +417,15 @@ describe('DeviceList', () => {
       const testDeviceList = new DeviceList(storage);
       const container = testDeviceList.render();
       
-      // DESIGN CHANGE: Check for Font Awesome icon buttons
+      // DESIGN CHANGE: Check for inline SVG icon buttons
       const actions = container.querySelector('.device-actions');
-      const editIcon = actions?.querySelector('.fa-pencil');
-      const deleteIcon = actions?.querySelector('.fa-trash');
+      const editButton = actions?.querySelector('.device-action-btn.edit');
+      const deleteButton = actions?.querySelector('.device-action-btn.delete');
+      const editSvg = editButton?.querySelector('svg');
+      const deleteSvg = deleteButton?.querySelector('svg');
       
-      expect(editIcon).toBeTruthy();
-      expect(deleteIcon).toBeTruthy();
+      expect(editSvg).toBeTruthy();
+      expect(deleteSvg).toBeTruthy();
     });
 
     test('radio button present for all devices', () => {

@@ -36,6 +36,10 @@ main.ts (Entry Point)
 │   │   └── Settings Tab Component
 │   │       ├── Device List View
 │   │       │   ├── Device Card (repeating)
+│   │       │   │   ├── Radio Button (default selection)
+│   │       │   │   ├── Device Name
+│   │       │   │   ├── URL/Key Display (with optional lock icon)
+│   │       │   │   └── Action Icons (edit, delete)
 │   │       │   └── Add Device Button
 │   │       ├── Device Form View
 │   │       │   ├── Form Fields
@@ -51,10 +55,15 @@ main.ts (Entry Point)
 │   ├── Push Notification Handler
 │   ├── Connection Tester
 │   └── Request Builder
-└── i18n System
-    ├── Locale Detector
-    ├── Translation Loader
-    └── t() Function
+├── i18n System
+│   ├── Locale Detector
+│   ├── Translation Loader
+│   └── t() Function
+└── External Dependencies
+    └── Font Awesome 6 (CDN)
+        ├── fa-pencil (edit icon)
+        ├── fa-trash (delete icon)
+        └── fa-lock (custom headers indicator)
 ```
 
 ### Data Flow
@@ -111,6 +120,7 @@ function hideModal(): void
 - Handle modal open/close
 - Inject into shadow DOM
 - Manage modal height responsiveness
+- Load Font Awesome CSS into shadow DOM
 
 **Interface**:
 ```typescript
@@ -126,12 +136,14 @@ class ModalController {
   render(): void;
   attachEventListeners(): void;
   updateModalHeight(): void;
+  loadFontAwesome(): void; // Load Font Awesome CSS into shadow DOM
 }
 ```
 
 **Shadow DOM Structure**:
 ```html
 <div id="bark-modal-container">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>/* Scoped styles */</style>
   <div class="backdrop">
     <div class="modal">
@@ -149,6 +161,15 @@ class ModalController {
   </div>
 </div>
 ```
+
+**Font Awesome Integration**:
+- Font Awesome 6 Free (Solid style) loaded via CDN
+- CDN URL: `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css`
+- Loaded as `<link>` element inside shadow DOM to ensure style isolation
+- Icons used throughout the UI:
+  - `<i class="fa-solid fa-pencil"></i>` or `<i class="fa-solid fa-pen"></i>` for edit
+  - `<i class="fa-solid fa-trash"></i>` or `<i class="fa-solid fa-trash-can"></i>` for delete
+  - `<i class="fa-solid fa-lock"></i>` for custom headers indicator
 
 **DESIGN CHANGE: Fixed Modal Height Behavior**
 
@@ -357,8 +378,51 @@ interface PushFormData {
 **Responsibilities**:
 - Render device list or device form
 - Handle device CRUD operations
-- Manage default device
+- Manage default device via radio button selection
 - Handle language selection
+- Integrate Font Awesome icons for UI elements
+
+**DESIGN CHANGE: Device List UI Improvements**
+
+**New Device Card Layout**:
+Each device displays in a compact single-row format with the following structure:
+
+```
+Device Name
+◉                 [pencil icon] [trash icon]
+{url}/{key}
+```
+
+**Layout Details**:
+- **Device Name**: Normal font size (16px), displayed at the top
+- **Radio Button**: Positioned on the left, vertically centered with action icons
+  - Selected radio (◉) indicates this is the default device
+  - Unselected radio (○) for non-default devices
+  - Clicking radio sets that device as default
+- **Action Icons**: Positioned on the right, vertically centered with radio button
+  - Font Awesome pencil icon (fa-pencil) for edit action
+  - Font Awesome trash icon (fa-trash) for delete action
+  - Icons are clickable buttons with hover states
+- **URL/Key Display**: Shown below device name in smaller font (12px) with dimmed color (#8e8e93)
+  - Format: `{serverUrl}/{deviceKey}`
+  - Example: `https://api.day.app/somesecretkeys`
+- **Lock Icon**: Font Awesome lock icon (fa-lock) displayed inline after URL/key when device has custom headers
+  - Replaces the 🔒 emoji
+  - Same dimmed color as URL/key text
+- **Vertical Spacing**: Compact layout with minimal height per device card
+
+**Removed Elements**:
+- ❌ "Set Default" button (replaced by radio button)
+- ❌ ⭐ star emoji prefix on default device name (replaced by selected radio button)
+- ❌ 🔒 lock emoji (replaced by Font Awesome lock icon)
+
+**Font Awesome Integration**:
+- Use Font Awesome 6 Free (Solid style)
+- Load via CDN: `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css`
+- Icons used:
+  - `fa-pencil` or `fa-pen` for edit
+  - `fa-trash` or `fa-trash-can` for delete
+  - `fa-lock` for custom headers indicator
 
 **Interface**:
 ```typescript
@@ -369,13 +433,15 @@ class SettingsTab {
   
   render(): HTMLElement;
   renderDeviceList(): HTMLElement;
+  renderDeviceCard(device: BarkDevice): HTMLElement;
   renderDeviceForm(deviceId?: string): HTMLElement;
   handleAddDevice(): void;
   handleEditDevice(deviceId: string): void;
   handleDeleteDevice(deviceId: string): void;
-  handleSetDefault(deviceId: string): void;
+  handleSetDefault(deviceId: string): void; // Now triggered by radio button click
   handleTestConnection(formData: DeviceFormData): Promise<void>;
   handleSaveDevice(formData: DeviceFormData): void;
+  loadFontAwesome(): void; // Load Font Awesome CSS
 }
 
 interface DeviceFormData {
@@ -384,6 +450,81 @@ interface DeviceFormData {
   serverUrl: string;
   deviceKey: string;
   customHeaders?: string;
+}
+```
+
+**CSS Structure for Device Card**:
+```css
+.device-card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  gap: 4px;
+}
+
+.device-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+}
+
+.device-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+  margin-bottom: 4px;
+}
+
+.device-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.device-radio {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.device-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.device-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #007AFF;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.device-action-btn:hover {
+  color: #0051D5;
+}
+
+.device-action-btn.delete:hover {
+  color: #FF3B30;
+}
+
+.device-url-key {
+  font-size: 12px;
+  color: #8e8e93;
+  word-break: break-all;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.device-url-key .fa-lock {
+  font-size: 11px;
 }
 ```
 
@@ -837,23 +978,23 @@ Property 28: Server error message display
 **Validates: Requirements 10.8, 22.4**
 
 Property 29: Device list display completeness
-*For any* device in storage, the device list should display a card with name, server URL, and truncated device key
+*For any* device in storage, the device list should display a card with name, server URL/key combination, radio button, and action icons
 **Validates: Requirements 11.3**
 
 Property 30: Default device visual indicator
-*For any* device with isDefault=true, its card should display a ⭐ star icon
+*For any* device with isDefault=true, its radio button should be in the selected state (◉)
 **Validates: Requirements 11.4**
 
 Property 31: Custom headers visual indicator
-*For any* device with non-empty customHeaders, its card should display a 🔒 lock icon
+*For any* device with non-empty customHeaders, its card should display a Font Awesome lock icon (fa-lock) after the URL/key
 **Validates: Requirements 11.5**
 
 Property 32: Device list ordering
 *For any* list of devices, they should be ordered by createdAt timestamp in ascending order
 **Validates: Requirements 11.6**
 
-Property 33: Device action buttons presence
-*For any* device card, it should display [Set Default] [Edit] [Delete] buttons
+Property 33: Device action icons presence
+*For any* device card, it should display Font Awesome pencil (edit) and trash (delete) icons
 **Validates: Requirements 11.7**
 
 Property 34: URL validation
@@ -893,7 +1034,7 @@ Property 42: Default device cleared on deletion
 **Validates: Requirements 14.3**
 
 Property 43: Set default operation
-*For any* device, clicking Set Default should set its isDefault to true
+*For any* device, clicking its radio button should set its isDefault to true
 **Validates: Requirements 15.1**
 
 Property 44: Single default device constraint

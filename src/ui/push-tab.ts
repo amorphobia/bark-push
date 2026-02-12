@@ -91,6 +91,11 @@ export class PushTab {
     messageLabel.textContent = t('push.message');
     messageLabel.htmlFor = 'push-message';
     
+    // Message textarea wrapper with position: relative for icon button positioning
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = 'message-wrapper';
+    messageWrapper.style.position = 'relative';
+    
     const messageTextarea = document.createElement('textarea');
     messageTextarea.id = 'push-message';
     messageTextarea.className = 'form-textarea';
@@ -110,31 +115,52 @@ export class PushTab {
       this.updateSendButtonState();
     });
     
-    messageGroup.appendChild(messageLabel);
-    messageGroup.appendChild(messageTextarea);
-    container.appendChild(messageGroup);
-
-    // Markdown toggle (Requirement 5.1)
-    const markdownGroup = document.createElement('div');
-    markdownGroup.className = 'form-group form-checkbox';
+    // Markdown icon button (Requirements 5.1, 5.3, 5.4, 5.5, 5.6, 5.7)
+    const markdownButton = document.createElement('button');
+    markdownButton.type = 'button';
+    markdownButton.id = 'push-markdown-toggle';
+    markdownButton.className = 'markdown-toggle-icon';
     
-    const markdownLabel = document.createElement('label');
-    const markdownCheckbox = document.createElement('input');
-    markdownCheckbox.type = 'checkbox';
-    markdownCheckbox.id = 'push-markdown';
-    markdownCheckbox.checked = this.markdownEnabled;
-    markdownCheckbox.addEventListener('change', () => {
-      this.markdownEnabled = markdownCheckbox.checked;
+    // Create official Markdown logo SVG
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '20');
+    svg.setAttribute('height', '20');
+    svg.setAttribute('viewBox', '0 0 208 128');
+    
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('width', '198');
+    rect.setAttribute('height', '118');
+    rect.setAttribute('x', '5');
+    rect.setAttribute('y', '5');
+    rect.setAttribute('ry', '10');
+    rect.setAttribute('stroke', 'currentColor');
+    rect.setAttribute('stroke-width', '10');
+    rect.setAttribute('fill', 'none');
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z');
+    path.setAttribute('fill', 'currentColor');
+    
+    svg.appendChild(rect);
+    svg.appendChild(path);
+    markdownButton.appendChild(svg);
+    
+    // Handle click to toggle markdown state
+    markdownButton.addEventListener('click', () => {
+      this.markdownEnabled = !this.markdownEnabled;
       this.storage.setMarkdownEnabled(this.markdownEnabled);
+      this.updateMarkdownButton(markdownButton);
     });
     
-    const markdownText = document.createElement('span');
-    markdownText.textContent = t('push.markdown');
+    // Set initial state using updateMarkdownButton
+    this.updateMarkdownButton(markdownButton);
     
-    markdownLabel.appendChild(markdownCheckbox);
-    markdownLabel.appendChild(markdownText);
-    markdownGroup.appendChild(markdownLabel);
-    container.appendChild(markdownGroup);
+    messageWrapper.appendChild(messageTextarea);
+    messageWrapper.appendChild(markdownButton);
+    
+    messageGroup.appendChild(messageLabel);
+    messageGroup.appendChild(messageWrapper);
+    container.appendChild(messageGroup);
 
     // Device selector (Requirement 6.1)
     const deviceGroup = document.createElement('div');
@@ -180,6 +206,22 @@ export class PushTab {
     }
 
     return container;
+  }
+
+  /**
+   * Update markdown button state
+   * Requirements: 5.3, 5.4, 5.5, 5.6
+   */
+  private updateMarkdownButton(button: HTMLButtonElement): void {
+    if (this.markdownEnabled) {
+      button.classList.add('active');
+      button.setAttribute('aria-label', t('push.markdownDisable'));
+      button.title = t('push.markdownDisable');
+    } else {
+      button.classList.remove('active');
+      button.setAttribute('aria-label', t('push.markdownEnable'));
+      button.title = t('push.markdownEnable');
+    }
   }
 
   /**

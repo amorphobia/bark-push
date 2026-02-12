@@ -19,6 +19,8 @@ vi.mock('../i18n', () => {
     'push.message': 'Message',
     'push.messagePlaceholder': 'Notification content',
     'push.markdown': 'Markdown',
+    'push.markdownEnable': 'Enable Markdown',
+    'push.markdownDisable': 'Disable Markdown',
     'push.selectDevice': 'Select Device',
     'push.noDevicesHint': 'Add a device in Settings to get started',
     'push.tips.markdown': '💡 Tip: Enable Markdown for rich text formatting',
@@ -197,9 +199,9 @@ describe('PushTab', () => {
           // Create new push tab
           const newPushTab = new PushTab(testStorage, barkClient, mockToast);
           const container = newPushTab.render();
-          const markdownCheckbox = container.querySelector('#push-markdown') as HTMLInputElement;
+          const markdownButton = container.querySelector('#push-markdown-toggle') as HTMLButtonElement;
 
-          const result = markdownCheckbox.checked === markdownState;
+          const result = markdownButton.classList.contains('active') === markdownState;
           newPushTab.destroy();
           return result;
         }
@@ -511,7 +513,7 @@ describe('PushTab', () => {
 
       expect(container.querySelector('#push-title')).toBeTruthy();
       expect(container.querySelector('#push-message')).toBeTruthy();
-      expect(container.querySelector('#push-markdown')).toBeTruthy();
+      expect(container.querySelector('#push-markdown-toggle')).toBeTruthy();
       expect(container.querySelector('.device-selector')).toBeTruthy();
       expect(container.querySelector('#push-send-button')).toBeTruthy();
     });
@@ -681,14 +683,167 @@ describe('PushTab', () => {
       newPushTab.destroy();
     });
 
-    test('markdown checkbox toggles state', () => {
+    // DESIGN CHANGE: Markdown icon button tests (Requirements 5.1, 5.3, 5.4, 5.5, 5.6, 5.7)
+    test('markdown icon button renders in both states', () => {
+      // Test disabled state
+      vi.clearAllMocks();
+      vi.mocked(GM_getValue).mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'bark_markdown_enabled') {
+          return false;
+        }
+        return defaultValue;
+      });
+      
+      const testStorageDisabled = new StorageManager();
+      testStorageDisabled.setMarkdownEnabled(false);
+      const pushTabDisabled = new PushTab(testStorageDisabled, barkClient, mockToast);
+      const containerDisabled = pushTabDisabled.render();
+      const buttonDisabled = containerDisabled.querySelector('#push-markdown-toggle') as HTMLButtonElement;
+
+      expect(buttonDisabled).toBeTruthy();
+      expect(buttonDisabled.classList.contains('active')).toBe(false);
+      expect(buttonDisabled.title).toBe('Enable Markdown');
+      expect(buttonDisabled.getAttribute('aria-label')).toBe('Enable Markdown');
+
+      pushTabDisabled.destroy();
+
+      // Test enabled state
+      vi.clearAllMocks();
+      vi.mocked(GM_getValue).mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'bark_markdown_enabled') {
+          return true;
+        }
+        return defaultValue;
+      });
+      
+      const testStorageEnabled = new StorageManager();
+      testStorageEnabled.setMarkdownEnabled(true);
+      const pushTabEnabled = new PushTab(testStorageEnabled, barkClient, mockToast);
+      const containerEnabled = pushTabEnabled.render();
+      const buttonEnabled = containerEnabled.querySelector('#push-markdown-toggle') as HTMLButtonElement;
+
+      expect(buttonEnabled).toBeTruthy();
+      expect(buttonEnabled.classList.contains('active')).toBe(true);
+      expect(buttonEnabled.title).toBe('Disable Markdown');
+      expect(buttonEnabled.getAttribute('aria-label')).toBe('Disable Markdown');
+
+      pushTabEnabled.destroy();
+    });
+
+    test('markdown icon button click toggles state', () => {
+      vi.clearAllMocks();
+      vi.mocked(GM_getValue).mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'bark_markdown_enabled') {
+          return false;
+        }
+        return defaultValue;
+      });
+      
+      const testStorage = new StorageManager();
+      testStorage.setMarkdownEnabled(false);
+      const testPushTab = new PushTab(testStorage, barkClient, mockToast);
+      const container = testPushTab.render();
+      const markdownButton = container.querySelector('#push-markdown-toggle') as HTMLButtonElement;
+
+      expect(markdownButton.classList.contains('active')).toBe(false);
+      
+      // Click to enable
+      markdownButton.click();
+      expect(markdownButton.classList.contains('active')).toBe(true);
+      expect(markdownButton.title).toBe('Disable Markdown');
+      
+      // Click to disable
+      markdownButton.click();
+      expect(markdownButton.classList.contains('active')).toBe(false);
+      expect(markdownButton.title).toBe('Enable Markdown');
+      
+      testPushTab.destroy();
+    });
+
+    test('markdown icon button updates tooltip on state change', () => {
+      vi.clearAllMocks();
+      vi.mocked(GM_getValue).mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'bark_markdown_enabled') {
+          return false;
+        }
+        return defaultValue;
+      });
+      
+      const testStorage = new StorageManager();
+      testStorage.setMarkdownEnabled(false);
+      const testPushTab = new PushTab(testStorage, barkClient, mockToast);
+      const container = testPushTab.render();
+      const markdownButton = container.querySelector('#push-markdown-toggle') as HTMLButtonElement;
+
+      // Initial state - disabled
+      expect(markdownButton.title).toBe('Enable Markdown');
+      expect(markdownButton.getAttribute('aria-label')).toBe('Enable Markdown');
+
+      // Toggle to enabled
+      markdownButton.click();
+      expect(markdownButton.title).toBe('Disable Markdown');
+      expect(markdownButton.getAttribute('aria-label')).toBe('Disable Markdown');
+
+      // Toggle back to disabled
+      markdownButton.click();
+      expect(markdownButton.title).toBe('Enable Markdown');
+      expect(markdownButton.getAttribute('aria-label')).toBe('Enable Markdown');
+      
+      testPushTab.destroy();
+    });
+
+    test('markdown icon button positioned at top-right of textarea', () => {
       const container = pushTab.render();
-      const markdownCheckbox = container.querySelector('#push-markdown') as HTMLInputElement;
+      const messageWrapper = container.querySelector('.message-wrapper') as HTMLElement;
+      const markdownButton = container.querySelector('#push-markdown-toggle') as HTMLButtonElement;
 
-      const initialState = markdownCheckbox.checked;
-      markdownCheckbox.click();
+      expect(messageWrapper).toBeTruthy();
+      expect(messageWrapper.style.position).toBe('relative');
+      expect(markdownButton.parentElement).toBe(messageWrapper);
+    });
 
-      expect(markdownCheckbox.checked).toBe(!initialState);
+    test('markdown icon button has SVG with Markdown logo', () => {
+      const container = pushTab.render();
+      const markdownButton = container.querySelector('#push-markdown-toggle') as HTMLButtonElement;
+      const svg = markdownButton.querySelector('svg');
+      const rect = svg?.querySelector('rect');
+      const path = svg?.querySelector('path');
+
+      expect(svg).toBeTruthy();
+      expect(rect).toBeTruthy();
+      expect(path).toBeTruthy();
+      // Verify it's the official Markdown logo by checking the path data
+      expect(path?.getAttribute('d')).toContain('M30 98V30h20l20 25');
+    });
+
+    test('markdown state persists after toggle', () => {
+      vi.clearAllMocks();
+      vi.mocked(GM_getValue).mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'bark_markdown_enabled') {
+          return false;
+        }
+        return defaultValue;
+      });
+      
+      const testStorage = new StorageManager();
+      testStorage.setMarkdownEnabled(false);
+      const testPushTab = new PushTab(testStorage, barkClient, mockToast);
+      const container = testPushTab.render();
+      const markdownButton = container.querySelector('#push-markdown-toggle') as HTMLButtonElement;
+
+      // Toggle markdown on
+      markdownButton.click();
+      
+      // Verify storage was updated
+      expect(vi.mocked(GM_setValue)).toHaveBeenCalledWith('bark_markdown_enabled', true);
+
+      // Toggle markdown off
+      markdownButton.click();
+      
+      // Verify storage was updated again
+      expect(vi.mocked(GM_setValue)).toHaveBeenCalledWith('bark_markdown_enabled', false);
+      
+      testPushTab.destroy();
     });
 
     test('advanced options fields are present', () => {

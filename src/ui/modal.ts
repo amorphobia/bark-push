@@ -758,6 +758,52 @@ export class ModalController {
       .advanced-content .form-group {
         padding: 0 16px;
       }
+
+      /* Message Wrapper - Position relative for icon button */
+      .message-wrapper {
+        position: relative;
+      }
+
+      /* Markdown Toggle Icon Button */
+      .markdown-toggle-icon {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        color: #8e8e93; /* Gray when disabled */
+        padding: 0;
+      }
+
+      .markdown-toggle-icon:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .markdown-toggle-icon:focus {
+        outline: 2px solid #007aff;
+        outline-offset: 2px;
+      }
+
+      .markdown-toggle-icon.active {
+        background: #007AFF; /* Blue circular background when enabled */
+        color: white;
+      }
+
+      .markdown-toggle-icon.active:hover {
+        background: #0051D5; /* Darker blue on hover */
+      }
+
+      .markdown-toggle-icon svg {
+        display: block;
+      }
     `;
     this.shadowRoot.appendChild(style);
   }

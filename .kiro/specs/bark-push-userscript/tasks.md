@@ -560,6 +560,50 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test minimum and maximum height constraints
     - Test scrollable content in modal-body
     - _Design Change: Verify fixed height behavior works correctly_
+  
+  - [ ] 23.5 **DESIGN CHANGE: Replace Markdown checkbox with icon button**
+    - Remove checkbox form-group from push tab rendering
+    - Create message textarea wrapper with `position: relative`
+    - Implement Markdown icon button with "M↓" SVG icon
+    - Position icon button at top-right corner of textarea (`position: absolute; top: 8px; right: 8px`)
+    - Implement `updateMarkdownButton()` method to update button state
+    - _Design Change: See design.md "DESIGN CHANGE: Markdown Toggle UI" section_
+    - _Requirements: 5.1, 5.3, 5.4, 5.5, 5.6, 5.7_
+  
+  - [ ] 23.6 Implement Markdown icon button styling
+    - Style disabled state: gray outlined icon, transparent background
+    - Style enabled state: white icon, blue circular background (#007AFF)
+    - Add hover effects for both states
+    - Implement smooth transitions (0.2s ease)
+    - Ensure 32x32px button size for touch-friendliness
+    - _Design Change: Icon button visual states_
+    - _Requirements: 5.3, 5.5, 23.4, 24.5_
+  
+  - [ ] 23.7 Implement Markdown icon button tooltips
+    - Set tooltip to "Enable Markdown" (translated) when disabled
+    - Set tooltip to "Disable Markdown" (translated) when enabled
+    - Update tooltip dynamically on state change
+    - Use `title` attribute and `aria-label` for accessibility
+    - _Design Change: Tooltips for icon button states_
+    - _Requirements: 5.4, 5.6_
+  
+  - [ ] 23.8 Update Markdown toggle event handling
+    - Handle click event on icon button to toggle state
+    - Update storage on state change (existing behavior)
+    - Update button visual state after toggle
+    - Update tooltip text after toggle
+    - Ensure state persistence works correctly (existing behavior)
+    - _Design Change: Event handling for icon button_
+    - _Requirements: 5.7, 5.10_
+  
+  - [ ] 23.9 Write unit tests for Markdown icon button
+    - Test icon button rendering in both states
+    - Test click toggles state correctly
+    - Test visual state updates (classes, styles)
+    - Test tooltip text updates
+    - Test state persistence (existing property test still valid)
+    - _Design Change: Verify icon button behavior_
+    - _Requirements: 5.1, 5.3, 5.4, 5.5, 5.6, 5.7_
 
 - [ ] 24. Performance optimization
   - [ ] 24.1 Optimize modal appearance time

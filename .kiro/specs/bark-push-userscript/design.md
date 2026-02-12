@@ -111,6 +111,7 @@ function hideModal(): void
 - Manage tab switching
 - Handle modal open/close
 - Inject into shadow DOM
+- Manage modal height responsiveness
 
 **Interface**:
 ```typescript
@@ -125,6 +126,7 @@ class ModalController {
   switchTab(tab: 'push' | 'settings'): void;
   render(): void;
   attachEventListeners(): void;
+  updateModalHeight(): void;
 }
 ```
 
@@ -148,6 +150,85 @@ class ModalController {
   </div>
 </div>
 ```
+
+**DESIGN CHANGE: Fixed Modal Height Behavior**
+
+**Problem**: The original design allowed modal height to change dynamically based on tab content, causing jarring height jumps when switching between Push and Settings tabs.
+
+**New Design**: The modal now uses a fixed height that remains consistent across tab switches, improving UX stability.
+
+**Height Calculation Logic**:
+1. **Fixed Height Mode** (when viewport has sufficient space):
+   - Calculate: `min(600px, window.innerHeight - 80px)`
+   - The 80px margin provides breathing room (40px top + 40px bottom)
+   - This ensures the modal never touches viewport edges
+   - Height remains constant regardless of tab content
+
+2. **Responsive Mode** (when viewport is constrained):
+   - When `window.innerHeight < 680px` (600px + 80px margin):
+   - Use: `window.innerHeight - 80px`
+   - Modal shrinks proportionally to fit viewport
+   - Minimum effective height: ~200px on very small screens
+
+3. **Viewport Resize Handling**:
+   - Listen to `window.resize` events
+   - Recalculate and update modal height dynamically
+   - Smooth transition between fixed and responsive modes
+   - No height jumps during tab switches
+
+**Implementation Details**:
+```typescript
+// Height calculation function
+function calculateModalHeight(): number {
+  const viewportHeight = window.innerHeight;
+  const verticalMargin = 80; // 40px top + 40px bottom
+  const maxHeight = 600;
+  
+  return Math.min(maxHeight, viewportHeight - verticalMargin);
+}
+
+// Apply height to modal
+function updateModalHeight(): void {
+  const height = calculateModalHeight();
+  modalElement.style.height = `${height}px`;
+  modalElement.style.maxHeight = `${height}px`;
+}
+
+// Resize listener
+window.addEventListener('resize', () => {
+  updateModalHeight();
+});
+```
+
+**CSS Changes**:
+```css
+.modal {
+  width: 450px;
+  height: var(--modal-height); /* Calculated dynamically */
+  max-height: var(--modal-height); /* Same as height */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent modal itself from scrolling */
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto; /* Only body scrolls */
+  overflow-x: hidden;
+}
+```
+
+**Benefits**:
+- ✅ No height jumps when switching tabs
+- ✅ Consistent, predictable UI behavior
+- ✅ Better UX on both desktop and mobile
+- ✅ Responsive to viewport changes
+- ✅ Content remains scrollable as before
+
+**Backward Compatibility**:
+- Still respects the 600px maximum height requirement (Requirement 23.3)
+- Still provides scrollable content
+- Still works on mobile and desktop browsers
 
 ### 3. Push Tab Component
 

@@ -541,6 +541,107 @@ export class ModalController {
       /* Text color #333 on white: 12.6:1 ratio */
       /* Secondary text #666 on white: 5.7:1 ratio */
       /* Error color #ff3b30 on white: 4.5:1 ratio */
+
+      /* Device Selector - Select-like Dropdown with Checkboxes */
+      .device-selector {
+        position: relative;
+        width: 100%;
+      }
+
+      .device-selector-toggle {
+        width: 100%;
+        padding: 8px 32px 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        background-color: white;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 200ms;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 38px;
+      }
+
+      .device-selector-toggle:hover {
+        border-color: #bbb;
+      }
+
+      .device-selector-toggle:focus {
+        outline: none;
+        border-color: #007aff;
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      }
+
+      .device-selector-toggle:disabled {
+        background-color: #f5f5f5;
+        color: #999;
+        cursor: not-allowed;
+      }
+
+      .device-selector-text {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .device-selector-arrow {
+        margin-left: 8px;
+        font-size: 10px;
+        color: #666;
+        transition: transform 200ms;
+        flex-shrink: 0;
+      }
+
+      .device-selector-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 4px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+      }
+
+      .device-selector-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 200ms;
+        user-select: none;
+      }
+
+      .device-selector-item:hover {
+        background-color: #f5f5f5;
+      }
+
+      .device-selector-item input[type="checkbox"] {
+        margin-right: 8px;
+        flex-shrink: 0;
+      }
+
+      .device-selector-item span {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .device-selector-empty {
+        padding: 12px;
+        text-align: center;
+        color: #999;
+        font-size: 14px;
+      }
     `;
     this.shadowRoot.appendChild(style);
   }

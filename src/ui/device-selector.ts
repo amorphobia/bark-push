@@ -76,14 +76,25 @@ export class DeviceSelector {
     container.className = 'device-selector';
     this.containerElement = container;
 
-    // Dropdown button
+    // Select-like button (looks like a native select)
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'device-selector-button';
+    button.className = 'device-selector-toggle';
     button.addEventListener('click', () => this.toggle());
+    
+    // Add dropdown arrow
+    const buttonText = document.createElement('span');
+    buttonText.className = 'device-selector-text';
+    button.appendChild(buttonText);
+    
+    const arrow = document.createElement('span');
+    arrow.className = 'device-selector-arrow';
+    arrow.textContent = '▼';
+    button.appendChild(arrow);
+    
     container.appendChild(button);
 
-    // Dropdown menu
+    // Dropdown menu (positioned absolutely like a select dropdown)
     const dropdown = document.createElement('div');
     dropdown.className = 'device-selector-dropdown';
     dropdown.style.display = 'none';
@@ -157,23 +168,30 @@ export class DeviceSelector {
   updateDisplay(): void {
     if (!this.containerElement) return;
 
-    const button = this.containerElement.querySelector('.device-selector-button') as HTMLButtonElement;
+    const buttonText = this.containerElement.querySelector('.device-selector-text') as HTMLElement;
+    const arrow = this.containerElement.querySelector('.device-selector-arrow') as HTMLElement;
+    const button = this.containerElement.querySelector('.device-selector-toggle') as HTMLButtonElement;
     const dropdown = this.containerElement.querySelector('.device-selector-dropdown') as HTMLElement;
 
-    if (!button || !dropdown) return;
+    if (!buttonText || !dropdown || !button) return;
 
     // Update button text
     // Requirement 6.4: Show "X device(s) selected"
     if (this.devices.length === 0) {
-      button.textContent = t('push.noDevices');
+      buttonText.textContent = t('push.noDevices');
       button.disabled = true;
     } else if (this.selectedIds.length === 0) {
-      button.textContent = t('push.selectDevicePlaceholder');
+      buttonText.textContent = t('push.selectDevicePlaceholder');
       button.disabled = false;
     } else {
       const count = this.selectedIds.length;
-      button.textContent = t('push.deviceSelected').replace('{count}', count.toString());
+      buttonText.textContent = t('push.deviceSelected').replace('{count}', count.toString());
       button.disabled = false;
+    }
+
+    // Rotate arrow when open
+    if (arrow) {
+      arrow.style.transform = this.isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
     }
 
     // Update dropdown visibility

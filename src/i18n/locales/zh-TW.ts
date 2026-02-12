@@ -15,7 +15,7 @@ export default {
     no: '否',
   },
   menu: {
-    sendToBark: '📱 發送到 Bark',
+    sendToBark: '📱 發送到 Bark（按 {shortcut} 顯示對話框）',
   },
   tabs: {
     push: '推送',
@@ -47,6 +47,7 @@ export default {
       keyboard: '💡 提示：按 Ctrl+Enter 快速發送',
       multiDevice: '💡 提示：選擇多個裝置以廣播通知',
       advanced: '💡 提示：使用進階選項設定聲音、圖示等',
+      shortcut: '💡 提示：按 {shortcut} 顯示/隱藏對話框',
     },
     advanced: {
       sound: '聲音',

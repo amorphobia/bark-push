@@ -15,7 +15,7 @@ export default {
     no: '아니오',
   },
   menu: {
-    sendToBark: '📱 Bark로 전송',
+    sendToBark: '📱 Bark로 전송 ({shortcut}을 눌러 대화상자 표시)',
   },
   tabs: {
     push: '푸시',
@@ -47,6 +47,7 @@ export default {
       keyboard: '💡 팁: Ctrl+Enter를 눌러 빠르게 전송',
       multiDevice: '💡 팁: 여러 기기를 선택하여 브로드캐스트',
       advanced: '💡 팁: 고급 옵션에서 소리, 아이콘 등을 설정',
+      shortcut: '💡 팁: {shortcut}을 눌러 대화상자 표시/숨기기',
     },
     advanced: {
       sound: '소리',

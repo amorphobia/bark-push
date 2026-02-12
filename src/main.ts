@@ -177,7 +177,10 @@ function registerKeyboardShortcut(): void {
 function registerMenuCommand(): void {
   try {
     if (typeof GM_registerMenuCommand !== 'undefined') {
-      GM_registerMenuCommand(t('menu.sendToBark'), showModal);
+      // Get configured shortcut and replace placeholder
+      const shortcut = storage?.getKeyboardShortcut() || 'Alt+B';
+      const menuText = t('menu.sendToBark').replace('{shortcut}', shortcut);
+      GM_registerMenuCommand(menuText, showModal);
       console.log('[Bark Push] Menu command registered');
     } else {
       console.warn('[Bark Push] GM_registerMenuCommand not available');

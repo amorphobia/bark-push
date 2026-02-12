@@ -25,6 +25,7 @@ vi.mock('../i18n', () => {
     'push.tips.keyboard': '💡 Tip: Press Ctrl+Enter to send quickly',
     'push.tips.multiDevice': '💡 Tip: Select multiple devices to broadcast',
     'push.tips.advanced': '💡 Tip: Use Advanced Options for sounds, icons, and more',
+    'push.tips.shortcut': '💡 Tip: Press {shortcut} to show/hide the dialog',
     'push.advancedOptionsExpand': '▼ Advanced Options',
     'push.advancedOptionsCollapse': '▲ Advanced Options',
     'push.advanced.sound': 'Sound',
@@ -326,8 +327,8 @@ describe('PushTab', () => {
 
     const tips: string[] = [];
     
-    // Collect tips over multiple rotations (4 tips * 5 seconds + buffer)
-    for (let i = 0; i < 5; i++) {
+    // Collect tips over multiple rotations (5 tips * 5 seconds + buffer)
+    for (let i = 0; i < 6; i++) {
       tips.push(tipsElement.textContent || '');
       await new Promise(resolve => setTimeout(resolve, 5100));
     }

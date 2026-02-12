@@ -202,11 +202,15 @@ export class PushTab {
    * Requirement 7.4: Tips content
    */
   private getCurrentTip(): string {
+    // Get configured shortcut for the shortcut tip
+    const shortcut = this.storage.getKeyboardShortcut() || 'Alt+B';
+    
     const tips = [
       t('push.tips.markdown'),
       t('push.tips.keyboard'),
       t('push.tips.multiDevice'),
       t('push.tips.advanced'),
+      t('push.tips.shortcut').replace('{shortcut}', shortcut),
     ];
     return tips[this.currentTipIndex % tips.length];
   }

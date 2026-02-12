@@ -15,7 +15,7 @@ export default {
     no: 'No',
   },
   menu: {
-    sendToBark: '📱 Send to Bark',
+    sendToBark: '📱 Send to Bark (press {shortcut} to show the dialog)',
   },
   tabs: {
     push: 'Push',
@@ -47,6 +47,7 @@ export default {
       keyboard: '💡 Tip: Press Ctrl+Enter to send quickly',
       multiDevice: '💡 Tip: Select multiple devices to broadcast',
       advanced: '💡 Tip: Use Advanced Options for sounds, icons, and more',
+      shortcut: '💡 Tip: Press {shortcut} to show/hide the dialog',
     },
     advanced: {
       sound: 'Sound',

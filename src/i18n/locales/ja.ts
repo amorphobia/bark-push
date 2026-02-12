@@ -15,7 +15,7 @@ export default {
     no: 'いいえ',
   },
   menu: {
-    sendToBark: '📱 Bark に送信',
+    sendToBark: '📱 Bark に送信（{shortcut} を押してダイアログを表示）',
   },
   tabs: {
     push: 'プッシュ',
@@ -47,6 +47,7 @@ export default {
       keyboard: '💡 ヒント：Ctrl+Enter で素早く送信',
       multiDevice: '💡 ヒント：複数のデバイスを選択してブロードキャスト',
       advanced: '💡 ヒント：詳細オプションでサウンドやアイコンを設定',
+      shortcut: '💡 ヒント：{shortcut} を押してダイアログを表示/非表示',
     },
     advanced: {
       sound: 'サウンド',

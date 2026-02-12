@@ -256,27 +256,69 @@ export class PushTab {
     const section = document.createElement('div');
     section.className = 'advanced-section';
 
+    // Card-style container
+    const card = document.createElement('div');
+    card.className = 'advanced-card';
+
     // Toggle button (Requirement 8.2)
     const toggleButton = document.createElement('button');
     toggleButton.type = 'button';
     toggleButton.className = 'advanced-toggle';
-    toggleButton.textContent = this.advancedExpanded 
-      ? t('push.advancedOptionsCollapse')
-      : t('push.advancedOptionsExpand');
+    
+    // Arrow icon
+    const arrow = document.createElement('span');
+    arrow.className = 'advanced-arrow';
+    arrow.textContent = '▾';
+    
+    // Text label
+    const label = document.createElement('span');
+    label.textContent = t('push.advancedOptions');
+    
+    toggleButton.appendChild(arrow);
+    toggleButton.appendChild(label);
+    
     toggleButton.addEventListener('click', () => {
       this.advancedExpanded = !this.advancedExpanded;
       this.storage.setAdvancedExpanded(this.advancedExpanded);
-      toggleButton.textContent = this.advancedExpanded
-        ? t('push.advancedOptionsCollapse')
-        : t('push.advancedOptionsExpand');
-      content.style.display = this.advancedExpanded ? 'block' : 'none';
+      
+      // Update arrow rotation
+      arrow.style.transform = this.advancedExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+      
+      // Toggle content visibility with smooth animation
+      if (this.advancedExpanded) {
+        content.style.display = 'block';
+        // Trigger reflow to enable transition
+        content.offsetHeight;
+        content.style.maxHeight = content.scrollHeight + 'px';
+        content.style.opacity = '1';
+      } else {
+        content.style.maxHeight = '0';
+        content.style.opacity = '0';
+        // Hide after animation completes
+        setTimeout(() => {
+          if (!this.advancedExpanded) {
+            content.style.display = 'none';
+          }
+        }, 300);
+      }
     });
-    section.appendChild(toggleButton);
+    card.appendChild(toggleButton);
 
     // Advanced options content
     const content = document.createElement('div');
     content.className = 'advanced-content';
-    content.style.display = this.advancedExpanded ? 'block' : 'none';
+    
+    // Set initial state
+    if (this.advancedExpanded) {
+      content.style.display = 'block';
+      content.style.maxHeight = 'none';
+      content.style.opacity = '1';
+      arrow.style.transform = 'rotate(180deg)';
+    } else {
+      content.style.display = 'none';
+      content.style.maxHeight = '0';
+      content.style.opacity = '0';
+    }
 
     // Sound dropdown (Requirement 8.3)
     const soundGroup = document.createElement('div');
@@ -399,7 +441,8 @@ export class PushTab {
     archiveGroup.appendChild(archiveLabel);
     content.appendChild(archiveGroup);
 
-    section.appendChild(content);
+    card.appendChild(content);
+    section.appendChild(card);
     return section;
   }
 

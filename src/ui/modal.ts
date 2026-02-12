@@ -642,6 +642,72 @@ export class ModalController {
         color: #999;
         font-size: 14px;
       }
+
+      /* Advanced Options - Card Style with Smooth Animation */
+      .advanced-section {
+        margin-top: 16px;
+      }
+
+      .advanced-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 200ms;
+      }
+
+      .advanced-card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .advanced-toggle {
+        width: 100%;
+        padding: 12px 16px;
+        border: none;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        transition: background-color 200ms;
+      }
+
+      .advanced-toggle:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+      }
+
+      .advanced-toggle:focus {
+        outline: 2px solid #007aff;
+        outline-offset: -2px;
+      }
+
+      .advanced-arrow {
+        font-size: 12px;
+        color: #666;
+        transition: transform 300ms ease;
+        display: inline-block;
+      }
+
+      .advanced-content {
+        overflow: hidden;
+        transition: max-height 300ms ease, opacity 300ms ease;
+        border-top: 1px solid #e5e5e5;
+      }
+
+      .advanced-content > .form-group:first-child {
+        margin-top: 16px;
+      }
+
+      .advanced-content > .form-group:last-child {
+        margin-bottom: 16px;
+      }
+
+      .advanced-content .form-group {
+        padding: 0 16px;
+      }
     `;
     this.shadowRoot.appendChild(style);
   }

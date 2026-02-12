@@ -119,16 +119,16 @@ describe('DeviceSelector', () => {
             testSelector.selectDevice(devices[i].id);
           }
 
-          const button = container.querySelector('.device-selector-toggle') as HTMLButtonElement;
-          expect(button).toBeTruthy();
+          const buttonText = container.querySelector('.device-selector-text') as HTMLElement;
+          expect(buttonText).toBeTruthy();
 
           if (actualSelectCount === 0) {
             // Should show "Select device(s)"
-            return button.textContent === t('push.selectDevicePlaceholder');
+            return buttonText.textContent === t('push.selectDevicePlaceholder');
           } else {
             // Should show "N device(s) selected"
             const expectedText = t('push.deviceSelected').replace('{count}', actualSelectCount.toString());
-            return button.textContent === expectedText;
+            return buttonText.textContent === expectedText;
           }
         }
       ),

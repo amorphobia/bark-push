@@ -326,18 +326,18 @@ describe('PushTab', () => {
     const tipsElement = container.querySelector('#push-tips') as HTMLElement;
 
     const tips: string[] = [];
+    const firstTip = tipsElement.textContent || '';
+    tips.push(firstTip);
     
-    // Collect tips over multiple rotations (5 tips * 5 seconds + buffer)
-    for (let i = 0; i < 6; i++) {
-      tips.push(tipsElement.textContent || '');
+    // Wait for tips to cycle (there are 5 tips, so after 5 rotations we should see the first tip again)
+    // Collect 6 tips total to ensure we see the cycle
+    for (let i = 0; i < 5; i++) {
       await new Promise(resolve => setTimeout(resolve, 5100));
+      tips.push(tipsElement.textContent || '');
     }
 
-    // Should have cycled back to first tip (tips should repeat)
-    const firstTip = tips[0];
-    const hasCycled = tips.slice(1).some(tip => tip === firstTip);
-    
-    expect(hasCycled).toBe(true);
+    // The 6th tip (index 5) should be the same as the first tip (index 0)
+    expect(tips[5]).toBe(firstTip);
     
     newPushTab.destroy();
   }, 30000); // 30 second timeout
@@ -582,20 +582,28 @@ describe('PushTab', () => {
       newPushTab.destroy();
     });
 
-    test('advanced options expand/collapse', () => {
+    test('advanced options expand/collapse', async () => {
       const container = pushTab.render();
       const toggleButton = container.querySelector('.advanced-toggle') as HTMLButtonElement;
       const advancedContent = container.querySelector('.advanced-content') as HTMLElement;
 
       // Initially collapsed
       expect(advancedContent.style.display).toBe('none');
+      expect(advancedContent.style.maxHeight).toBe('0');
+      expect(advancedContent.style.opacity).toBe('0');
 
       // Click to expand
       toggleButton.click();
       expect(advancedContent.style.display).toBe('block');
+      expect(advancedContent.style.opacity).toBe('1');
 
       // Click to collapse
       toggleButton.click();
+      expect(advancedContent.style.maxHeight).toBe('0');
+      expect(advancedContent.style.opacity).toBe('0');
+      
+      // Wait for animation to complete (300ms)
+      await new Promise(resolve => setTimeout(resolve, 350));
       expect(advancedContent.style.display).toBe('none');
     });
 

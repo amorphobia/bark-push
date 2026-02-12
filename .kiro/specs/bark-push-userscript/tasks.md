@@ -605,7 +605,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: Verify icon button behavior_
     - _Requirements: 5.1, 5.3, 5.4, 5.5, 5.6, 5.7_
   
-  - [ ] 23.10 **DESIGN CHANGE: Implement device list UI redesign**
+  - [x] 23.10 **DESIGN CHANGE: Implement device list UI redesign**
     - Load Font Awesome 6 CSS into shadow DOM via CDN link
     - Update device card layout to compact single-row format
     - Replace "Set Default" button with radio button for each device
@@ -615,7 +615,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: See design.md "DESIGN CHANGE: Device List UI Improvements" section_
     - _Requirements: 11.3, 11.4, 11.5, 11.7, 15.1_
   
-  - [ ] 23.11 Implement device card compact layout
+  - [x] 23.11 Implement device card compact layout
     - Display device name at normal font size (16px) at top
     - Display URL/key string below in format: `{serverUrl}/{deviceKey}`
     - Style URL/key with smaller font size (12px) and dimmed color (#8e8e93)
@@ -624,7 +624,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: Compact device card layout_
     - _Requirements: 11.3, 11.5_
   
-  - [ ] 23.12 Implement radio button default device selection
+  - [x] 23.12 Implement radio button default device selection
     - Render radio button for each device (name attribute groups them)
     - Set radio as checked when device.isDefault === true
     - Handle radio button click to set that device as default
@@ -633,7 +633,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: Radio button replaces "Set Default" button_
     - _Requirements: 11.4, 15.1, 15.2_
   
-  - [ ] 23.13 Implement Font Awesome action icons
+  - [x] 23.13 Implement Font Awesome action icons
     - Replace text buttons with Font Awesome icons
     - Use `fa-pencil` or `fa-pen` for edit action
     - Use `fa-trash` or `fa-trash-can` for delete action
@@ -643,7 +643,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: Font Awesome icons for actions_
     - _Requirements: 11.7, 13.1, 14.1_
   
-  - [ ] 23.14 Update device card CSS styling
+  - [x] 23.14 Update device card CSS styling
     - Style device card with compact layout (minimal padding/margins)
     - Style device name: 16px font, normal weight, black color
     - Style URL/key display: 12px font, #8e8e93 color, word-break for long URLs
@@ -654,7 +654,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: CSS for new device card layout_
     - _Requirements: 11.3, 11.4, 11.5, 11.7, 24.1, 24.2_
   
-  - [ ] 23.15 Update Font Awesome CDN integration
+  - [x] 23.15 Update Font Awesome CDN integration
     - Add Font Awesome 6 CDN link to shadow DOM: `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css`
     - Load as `<link>` element inside shadow DOM for style isolation
     - Ensure icons render correctly in device list
@@ -662,7 +662,7 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - _Design Change: Font Awesome integration_
     - _Requirements: 11.5_
   
-  - [ ] 23.16 Write unit tests for device list UI redesign
+  - [x] 23.16 Write unit tests for device list UI redesign
     - Test radio button rendering for each device
     - Test radio button checked state matches default device
     - Test radio button click updates default device

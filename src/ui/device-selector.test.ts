@@ -372,7 +372,7 @@ describe('DeviceSelector', () => {
       expect((checkboxes[1] as HTMLInputElement).checked).toBe(false);
     });
 
-    test('default device shows star icon', () => {
+    test('device names are displayed correctly', () => {
       const device1 = createTestDevice({ id: 'device-1', name: 'iPhone', isDefault: true });
       const device2 = createTestDevice({ id: 'device-2', name: 'iPad', isDefault: false });
       selector.setDevices([device1, device2]);
@@ -381,9 +381,8 @@ describe('DeviceSelector', () => {
       selector.toggle();
 
       const labels = container.querySelectorAll('.device-selector-item span');
-      expect(labels[0].textContent).toContain('⭐');
-      expect(labels[0].textContent).toContain('iPhone');
-      expect(labels[1].textContent).not.toContain('⭐');
+      expect(labels[0].textContent).toBe('iPhone');
+      expect(labels[1].textContent).toBe('iPad');
     });
 
     test('selection change callback is called', () => {

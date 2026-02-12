@@ -73,11 +73,8 @@ describe('SettingsTab', () => {
 
       const container = settingsTab.render();
       
-      // Find edit button (should be second button after "Set Default")
-      const buttons = container.querySelectorAll('button');
-      const editButton = Array.from(buttons).find(btn => 
-        btn.textContent?.includes('Edit')
-      ) as HTMLButtonElement;
+      // DESIGN CHANGE: Find edit icon button instead of text button
+      const editButton = container.querySelector('.device-action-btn.edit') as HTMLButtonElement;
       
       expect(editButton).toBeTruthy();
       editButton.click();
@@ -117,11 +114,8 @@ describe('SettingsTab', () => {
       const { ConfirmDialog } = await import('./confirm-dialog');
       vi.spyOn(ConfirmDialog, 'show').mockResolvedValue(true);
 
-      // Find delete button
-      const buttons = container.querySelectorAll('button');
-      const deleteButton = Array.from(buttons).find(btn => 
-        btn.textContent?.includes('Delete')
-      ) as HTMLButtonElement;
+      // DESIGN CHANGE: Find delete icon button instead of text button
+      const deleteButton = container.querySelector('.device-action-btn.delete') as HTMLButtonElement;
       
       expect(deleteButton).toBeTruthy();
       
@@ -156,14 +150,13 @@ describe('SettingsTab', () => {
 
       const container = settingsTab.render();
 
-      // Find set default button for device2 (non-default device)
-      const buttons = container.querySelectorAll('button');
-      const setDefaultButton = Array.from(buttons).find(btn => 
-        btn.textContent?.includes('Set Default')
-      ) as HTMLButtonElement;
+      // DESIGN CHANGE: Find radio button for device2 instead of "Set Default" button
+      const deviceCards = container.querySelectorAll('.device-card');
+      const device2Card = Array.from(deviceCards)[1]; // Second device
+      const radioButton = device2Card.querySelector('.device-radio') as HTMLInputElement;
       
-      expect(setDefaultButton).toBeTruthy();
-      setDefaultButton.click();
+      expect(radioButton).toBeTruthy();
+      radioButton.click();
 
       // Verify device2 was set as default
       const defaultId = storage.getDefaultDeviceId();
@@ -268,11 +261,8 @@ describe('SettingsTab', () => {
       // Start in list view
       expect(settingsTab.getCurrentView()).toBe('list');
       
-      // Click edit device
-      const buttons = container.querySelectorAll('button');
-      const editButton = Array.from(buttons).find(btn => 
-        btn.textContent?.includes('Edit')
-      ) as HTMLButtonElement;
+      // DESIGN CHANGE: Click edit icon button instead of text button
+      const editButton = container.querySelector('.device-action-btn.edit') as HTMLButtonElement;
       editButton.click();
       
       // Should be in form view

@@ -109,6 +109,7 @@ export default {
     editDevice: '編輯裝置',
     deleteDevice: '刪除裝置',
     setDefault: '設為預設',
+    setAsDefault: '設為預設',
     defaultDevice: '⭐ 預設',
     hasCustomHeaders: '🔒 自訂請求標頭',
     deviceName: '裝置名稱',

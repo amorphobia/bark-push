@@ -109,6 +109,7 @@ export default {
     editDevice: '기기 편집',
     deleteDevice: '기기 삭제',
     setDefault: '기본값으로 설정',
+    setAsDefault: '기본값으로 설정',
     defaultDevice: '⭐ 기본',
     hasCustomHeaders: '🔒 사용자 정의 헤더',
     deviceName: '기기 이름',

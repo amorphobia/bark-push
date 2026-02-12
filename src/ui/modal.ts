@@ -214,6 +214,13 @@ export class ModalController {
   private injectStyles(): void {
     if (!this.shadowRoot) return;
 
+    // Load Font Awesome 6 from CDN
+    const fontAwesomeLink = document.createElement('link');
+    fontAwesomeLink.rel = 'stylesheet';
+    fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
+    fontAwesomeLink.crossOrigin = 'anonymous';
+    this.shadowRoot.appendChild(fontAwesomeLink);
+
     const style = document.createElement('style');
     style.textContent = `
       * {
@@ -518,11 +525,101 @@ export class ModalController {
 
       /* Device cards spacing */
       .device-card {
-        margin-bottom: 16px;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        cursor: pointer;
+        transition: background-color 200ms;
+      }
+
+      .device-card:hover {
+        background-color: #f8f9fa;
       }
 
       .device-card:last-of-type {
-        margin-bottom: 16px;
+        margin-bottom: 12px;
+      }
+
+      /* Main row: radio | device info | action icons */
+      .device-main-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 28px;
+      }
+
+      .device-radio {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        margin: 0;
+        flex-shrink: 0;
+      }
+
+      /* Device info container (center, aligned left) */
+      .device-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .device-name {
+        font-size: 15px;
+        font-weight: 500;
+        color: #000;
+        line-height: 1.3;
+      }
+
+      .device-url-key {
+        font-size: 11px;
+        color: #8e8e93;
+        word-break: break-all;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        line-height: 1.3;
+      }
+
+      /* Action icons on the right (vertically centered) */
+      .device-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      .device-action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        color: #007AFF;
+        font-size: 15px;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        min-height: 28px;
+      }
+
+      .device-action-btn:hover {
+        color: #0051D5;
+      }
+
+      .device-action-btn.delete:hover {
+        color: #FF3B30;
+      }
+
+      .device-url-key .fa-lock {
+        font-size: 11px;
+        flex-shrink: 0;
       }
 
       /* Button spacing when not in form-actions */

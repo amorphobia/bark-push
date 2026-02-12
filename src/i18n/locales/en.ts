@@ -109,6 +109,7 @@ export default {
     editDevice: 'Edit Device',
     deleteDevice: 'Delete Device',
     setDefault: 'Set Default',
+    setAsDefault: 'Set as default',
     defaultDevice: '⭐ Default',
     hasCustomHeaders: '🔒 Custom Headers',
     deviceName: 'Device Name',

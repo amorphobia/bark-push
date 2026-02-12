@@ -18,6 +18,7 @@ vi.mock('../i18n', () => {
     'settings.noDevicesHint': 'Add your first device below',
     'settings.addDevice': 'Add Device',
     'settings.setDefault': 'Set Default',
+    'settings.setAsDefault': 'Set as default',
     'settings.defaultDevice': '⭐ Default',
     'settings.hasCustomHeaders': '🔒 Custom Headers',
     'settings.deviceName': 'Device Name',
@@ -59,6 +60,7 @@ describe('DeviceList', () => {
 
   // Property 29: Device list display completeness
   // Feature: bark-push-userscript, Property 29: Device list display completeness
+  // UPDATED: Check for URL/key format instead of truncated key
   test('Property 29: Device list display completeness', () => {
     fc.assert(
       fc.property(
@@ -93,20 +95,15 @@ describe('DeviceList', () => {
           const deviceCards = container.querySelectorAll('.device-card');
           const hasAllDevices = deviceCards.length === devices.length;
           
-          // Each card should display name, URL, and key
+          // Each card should display name, URL/key in format {url}/{key}
           let allDetailsPresent = true;
           deviceCards.forEach((card, index) => {
             const device = devices[index];
             const cardText = card.textContent || '';
             
-            // Check if URL is present
-            if (!cardText.includes(device.serverUrl)) {
-              allDetailsPresent = false;
-            }
-            
-            // Check if truncated key is present (first 6 chars)
-            const keyPrefix = device.deviceKey.substring(0, 6);
-            if (!cardText.includes(keyPrefix)) {
+            // Check if URL/key format is present: {serverUrl}/{deviceKey}
+            const expectedFormat = `${device.serverUrl}/${device.deviceKey}`;
+            if (!cardText.includes(expectedFormat)) {
               allDetailsPresent = false;
             }
           });
@@ -120,6 +117,7 @@ describe('DeviceList', () => {
 
   // Property 30: Default device visual indicator
   // Feature: bark-push-userscript, Property 30: Default device visual indicator
+  // UPDATED: Check for radio button checked state instead of star emoji
   test('Property 30: Default device visual indicator', () => {
     fc.assert(
       fc.property(
@@ -154,12 +152,12 @@ describe('DeviceList', () => {
           const deviceCards = container.querySelectorAll('.device-card');
           const defaultCard = Array.from(deviceCards)[defaultIndex];
           
-          // Should have star icon
-          const hasStarIcon = defaultCard?.querySelector('.default-icon') !== null;
-          const starText = defaultCard?.textContent || '';
-          const hasStarEmoji = starText.includes('⭐');
+          // DESIGN CHANGE: Should have checked radio button instead of star emoji
+          const radioButton = defaultCard?.querySelector('.device-radio') as HTMLInputElement;
+          const hasRadioButton = radioButton !== null;
+          const isRadioChecked = radioButton?.checked === true;
           
-          return hasStarIcon && hasStarEmoji;
+          return hasRadioButton && isRadioChecked;
         }
       ),
       { numRuns: 100 }
@@ -168,6 +166,7 @@ describe('DeviceList', () => {
 
   // Property 31: Custom headers visual indicator
   // Feature: bark-push-userscript, Property 31: Custom headers visual indicator
+  // UPDATED: Check for Font Awesome lock icon instead of emoji
   test('Property 31: Custom headers visual indicator', () => {
     fc.assert(
       fc.property(
@@ -191,12 +190,10 @@ describe('DeviceList', () => {
           
           const deviceCard = container.querySelector('.device-card');
           
-          // Should have lock icon
-          const hasLockIcon = deviceCard?.querySelector('.lock-icon') !== null;
-          const cardText = deviceCard?.textContent || '';
-          const hasLockEmoji = cardText.includes('🔒');
+          // DESIGN CHANGE: Should have Font Awesome lock icon instead of emoji
+          const hasLockIcon = deviceCard?.querySelector('.fa-lock') !== null;
           
-          return hasLockIcon && hasLockEmoji;
+          return hasLockIcon;
         }
       ),
       { numRuns: 100 }
@@ -256,6 +253,7 @@ describe('DeviceList', () => {
 
   // Property 33: Device action buttons presence
   // Feature: bark-push-userscript, Property 33: Device action buttons presence
+  // UPDATED: Check for Font Awesome icon buttons instead of text buttons
   test('Property 33: Device action buttons presence', () => {
     fc.assert(
       fc.property(
@@ -280,15 +278,14 @@ describe('DeviceList', () => {
           const deviceCard = container.querySelector('.device-card');
           const actions = deviceCard?.querySelector('.device-actions');
           
-          // Should always have Edit and Delete buttons
-          const hasEditButton = actions?.textContent?.includes('Edit') || false;
-          const hasDeleteButton = actions?.textContent?.includes('Delete') || false;
+          // DESIGN CHANGE: Should have Font Awesome icon buttons
+          const hasEditIcon = actions?.querySelector('.fa-pencil') !== null;
+          const hasDeleteIcon = actions?.querySelector('.fa-trash') !== null;
           
-          // Should have Set Default button only if not default
-          const hasSetDefaultButton = actions?.textContent?.includes('Set Default') || false;
-          const setDefaultCorrect = isDefault ? !hasSetDefaultButton : hasSetDefaultButton;
+          // DESIGN CHANGE: Radio button replaces "Set Default" button
+          const hasRadioButton = deviceCard?.querySelector('.device-radio') !== null;
           
-          return hasEditButton && hasDeleteButton && setDefaultCorrect;
+          return hasEditIcon && hasDeleteIcon && hasRadioButton;
         }
       ),
       { numRuns: 100 }
@@ -310,7 +307,7 @@ describe('DeviceList', () => {
       expect(container.textContent).toContain('Add your first device below');
     });
 
-    test('device card rendering', () => {
+    test('device card rendering with new compact layout', () => {
       const device = createTestDevice({
         name: 'My iPhone',
         serverUrl: 'https://api.day.app',
@@ -332,11 +329,13 @@ describe('DeviceList', () => {
       const deviceCard = container.querySelector('.device-card');
       expect(deviceCard).toBeTruthy();
       expect(deviceCard?.textContent).toContain('My iPhone');
-      expect(deviceCard?.textContent).toContain('https://api.day.app');
-      expect(deviceCard?.textContent).toContain('abcdef...stuv'); // Truncated key
+      
+      // DESIGN CHANGE: Check for URL/key format instead of truncated key
+      const expectedFormat = 'https://api.day.app/abcdefghijklmnopqrstuv';
+      expect(deviceCard?.textContent).toContain(expectedFormat);
     });
 
-    test('star icon display for default device', () => {
+    test('radio button checked for default device', () => {
       const device = createTestDevice({ isDefault: true });
       
       storage.saveDevice(device);
@@ -351,12 +350,13 @@ describe('DeviceList', () => {
       const testDeviceList = new DeviceList(storage);
       const container = testDeviceList.render();
       
-      const starIcon = container.querySelector('.default-icon');
-      expect(starIcon).toBeTruthy();
-      expect(starIcon?.textContent).toBe('⭐');
+      // DESIGN CHANGE: Check for checked radio button instead of star icon
+      const radioButton = container.querySelector('.device-radio') as HTMLInputElement;
+      expect(radioButton).toBeTruthy();
+      expect(radioButton?.checked).toBe(true);
     });
 
-    test('lock icon display for custom headers', () => {
+    test('Font Awesome lock icon display for custom headers', () => {
       const device = createTestDevice({ 
         customHeaders: 'Authorization: Bearer token123' 
       });
@@ -373,9 +373,9 @@ describe('DeviceList', () => {
       const testDeviceList = new DeviceList(storage);
       const container = testDeviceList.render();
       
-      const lockIcon = container.querySelector('.lock-icon');
+      // DESIGN CHANGE: Check for Font Awesome lock icon instead of emoji
+      const lockIcon = container.querySelector('.fa-lock');
       expect(lockIcon).toBeTruthy();
-      expect(lockIcon?.textContent).toBe('🔒');
     });
 
     test('no lock icon when no custom headers', () => {
@@ -393,11 +393,11 @@ describe('DeviceList', () => {
       const testDeviceList = new DeviceList(storage);
       const container = testDeviceList.render();
       
-      const lockIcon = container.querySelector('.lock-icon');
+      const lockIcon = container.querySelector('.fa-lock');
       expect(lockIcon).toBeNull();
     });
 
-    test('button rendering - non-default device', () => {
+    test('Font Awesome icon buttons rendering', () => {
       const device = createTestDevice({ isDefault: false });
       
       storage.saveDevice(device);
@@ -412,13 +412,16 @@ describe('DeviceList', () => {
       const testDeviceList = new DeviceList(storage);
       const container = testDeviceList.render();
       
+      // DESIGN CHANGE: Check for Font Awesome icon buttons
       const actions = container.querySelector('.device-actions');
-      expect(actions?.textContent).toContain('Set Default');
-      expect(actions?.textContent).toContain('Edit');
-      expect(actions?.textContent).toContain('Delete');
+      const editIcon = actions?.querySelector('.fa-pencil');
+      const deleteIcon = actions?.querySelector('.fa-trash');
+      
+      expect(editIcon).toBeTruthy();
+      expect(deleteIcon).toBeTruthy();
     });
 
-    test('button rendering - default device', () => {
+    test('radio button present for all devices', () => {
       const device = createTestDevice({ isDefault: true });
       
       storage.saveDevice(device);
@@ -433,10 +436,9 @@ describe('DeviceList', () => {
       const testDeviceList = new DeviceList(storage);
       const container = testDeviceList.render();
       
-      const actions = container.querySelector('.device-actions');
-      expect(actions?.textContent).not.toContain('Set Default');
-      expect(actions?.textContent).toContain('Edit');
-      expect(actions?.textContent).toContain('Delete');
+      // DESIGN CHANGE: Radio button replaces "Set Default" button
+      const radioButton = container.querySelector('.device-radio');
+      expect(radioButton).toBeTruthy();
     });
 
     test('add device button present', () => {
@@ -448,7 +450,7 @@ describe('DeviceList', () => {
     });
 
     test('callbacks are invoked', () => {
-      const device = createTestDevice({ isDefault: false }); // Not default so Set Default button appears
+      const device = createTestDevice({ isDefault: false });
       
       vi.clearAllMocks();
       vi.mocked(GM_getValue).mockImplementation((key: string, defaultValue: any) => {
@@ -479,19 +481,18 @@ describe('DeviceList', () => {
       addButton.click();
       expect(onAddDevice).toHaveBeenCalled();
       
-      // Click set default button (first secondary button)
-      const setDefaultButton = container.querySelector('.btn-secondary') as HTMLButtonElement;
-      setDefaultButton.click();
+      // DESIGN CHANGE: Click radio button instead of "Set Default" button
+      const radioButton = container.querySelector('.device-radio') as HTMLInputElement;
+      radioButton.click();
       expect(onSetDefault).toHaveBeenCalledWith(device);
       
-      // Click edit button (second secondary button)
-      const buttons = container.querySelectorAll('.btn-secondary');
-      const editButton = buttons[1] as HTMLButtonElement;
+      // DESIGN CHANGE: Click edit icon button
+      const editButton = container.querySelector('.device-action-btn.edit') as HTMLButtonElement;
       editButton.click();
       expect(onEditDevice).toHaveBeenCalledWith(device);
       
-      // Click delete button
-      const deleteButton = container.querySelector('.btn-danger') as HTMLButtonElement;
+      // DESIGN CHANGE: Click delete icon button
+      const deleteButton = container.querySelector('.device-action-btn.delete') as HTMLButtonElement;
       deleteButton.click();
       expect(onDeleteDevice).toHaveBeenCalledWith(device);
     });

@@ -226,11 +226,6 @@ export class DeviceSelector {
 
           const label = document.createElement('span');
           label.textContent = device.name || device.deviceKey.substring(0, 8) + '...';
-          
-          // Show star for default device
-          if (device.isDefault) {
-            label.textContent = '⭐ ' + label.textContent;
-          }
 
           item.appendChild(checkbox);
           item.appendChild(label);

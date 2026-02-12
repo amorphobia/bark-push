@@ -109,6 +109,7 @@ export default {
     editDevice: '编辑设备',
     deleteDevice: '删除设备',
     setDefault: '设为默认',
+    setAsDefault: '设为默认',
     defaultDevice: '⭐ 默认',
     hasCustomHeaders: '🔒 自定义请求头',
     deviceName: '设备名称',

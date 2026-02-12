@@ -101,129 +101,107 @@ export class DeviceList {
 
   /**
    * Render a device card
-   * Requirement 11.3: Display device with name, URL, truncated key
-   * Requirement 11.4: Display ⭐ icon for default device
-   * Requirement 11.5: Display 🔒 icon for devices with custom headers
-   * Requirement 11.7: Display action buttons
+   * DESIGN CHANGE: Compact layout with radio button for default selection
+   * Requirement 11.3: Display device with name, URL/key
+   * Requirement 11.4: Radio button indicates default device (replaces star emoji)
+   * Requirement 11.5: Display Font Awesome lock icon for devices with custom headers
+   * Requirement 11.7: Display Font Awesome action icons (edit, delete)
    */
   private renderDeviceCard(device: BarkDevice): HTMLElement {
     const card = document.createElement('div');
     card.className = 'device-card';
     card.dataset.deviceId = device.id;
 
-    // Device header with name and icons
-    const header = document.createElement('div');
-    header.className = 'device-header';
+    // Main row: radio | device info | action icons
+    const mainRow = document.createElement('div');
+    mainRow.className = 'device-main-row';
 
-    const nameContainer = document.createElement('div');
-    nameContainer.className = 'device-name-container';
+    // Radio button for default device selection (left side, vertically centered)
+    const radioButton = document.createElement('input');
+    radioButton.type = 'radio';
+    radioButton.name = 'default-device';
+    radioButton.className = 'device-radio';
+    radioButton.checked = device.isDefault;
+    radioButton.title = device.isDefault ? t('settings.defaultDevice') : t('settings.setAsDefault');
+    radioButton.onclick = (e) => {
+      e.stopPropagation();
+      if (this.onSetDefault) {
+        this.onSetDefault(device);
+      }
+    };
+    mainRow.appendChild(radioButton);
 
-    // Requirement 11.4: Show ⭐ for default device
-    if (device.isDefault) {
-      const starIcon = document.createElement('span');
-      starIcon.className = 'device-icon default-icon';
-      starIcon.textContent = '⭐';
-      starIcon.title = t('settings.defaultDevice');
-      nameContainer.appendChild(starIcon);
-    }
+    // Device info container (center, aligned left)
+    const infoContainer = document.createElement('div');
+    infoContainer.className = 'device-info';
 
-    const name = document.createElement('span');
-    name.className = 'device-name';
-    name.textContent = device.name || t('settings.deviceName');
-    nameContainer.appendChild(name);
+    // Device name
+    const nameElement = document.createElement('div');
+    nameElement.className = 'device-name';
+    nameElement.textContent = device.name || t('settings.deviceName');
+    infoContainer.appendChild(nameElement);
 
-    // Requirement 11.5: Show 🔒 for devices with custom headers
+    // URL/Key display with optional lock icon
+    const urlKeyDisplay = document.createElement('div');
+    urlKeyDisplay.className = 'device-url-key';
+    
+    const urlKeyText = document.createElement('span');
+    urlKeyText.textContent = `${device.serverUrl}/${device.deviceKey}`;
+    urlKeyDisplay.appendChild(urlKeyText);
+
+    // Font Awesome lock icon for custom headers
     if (device.customHeaders && device.customHeaders.trim().length > 0) {
-      const lockIcon = document.createElement('span');
-      lockIcon.className = 'device-icon lock-icon';
-      lockIcon.textContent = '🔒';
+      const lockIcon = document.createElement('i');
+      lockIcon.className = 'fa-solid fa-lock';
       lockIcon.title = t('settings.hasCustomHeaders');
-      nameContainer.appendChild(lockIcon);
+      urlKeyDisplay.appendChild(lockIcon);
     }
 
-    header.appendChild(nameContainer);
-    card.appendChild(header);
+    infoContainer.appendChild(urlKeyDisplay);
+    mainRow.appendChild(infoContainer);
 
-    // Device details
-    const details = document.createElement('div');
-    details.className = 'device-details';
+    // Action icons on the right (vertically centered)
+    const actionsContainer = document.createElement('div');
+    actionsContainer.className = 'device-actions';
 
-    const urlLabel = document.createElement('div');
-    urlLabel.className = 'device-detail-label';
-    urlLabel.textContent = t('settings.serverUrl') + ':';
-    details.appendChild(urlLabel);
-
-    const url = document.createElement('div');
-    url.className = 'device-detail-value';
-    url.textContent = device.serverUrl;
-    details.appendChild(url);
-
-    const keyLabel = document.createElement('div');
-    keyLabel.className = 'device-detail-label';
-    keyLabel.textContent = t('settings.deviceKey') + ':';
-    details.appendChild(keyLabel);
-
-    const key = document.createElement('div');
-    key.className = 'device-detail-value device-key';
-    // Truncate key: show first 6 and last 4 characters
-    key.textContent = this.truncateKey(device.deviceKey);
-    details.appendChild(key);
-
-    card.appendChild(details);
-
-    // Requirement 11.7: Action buttons
-    const actions = document.createElement('div');
-    actions.className = 'device-actions';
-
-    // Set Default button (only show if not already default)
-    if (!device.isDefault) {
-      const setDefaultBtn = document.createElement('button');
-      setDefaultBtn.className = 'btn btn-secondary';
-      setDefaultBtn.textContent = t('settings.setDefault');
-      setDefaultBtn.onclick = () => {
-        if (this.onSetDefault) {
-          this.onSetDefault(device);
-        }
-      };
-      actions.appendChild(setDefaultBtn);
-    }
-
-    // Edit button
+    // Edit icon button (Font Awesome)
     const editBtn = document.createElement('button');
-    editBtn.className = 'btn btn-secondary';
-    editBtn.textContent = t('common.edit');
-    editBtn.onclick = () => {
+    editBtn.className = 'device-action-btn edit';
+    editBtn.title = t('common.edit');
+    editBtn.innerHTML = '<i class="fa-solid fa-pencil"></i>';
+    editBtn.onclick = (e) => {
+      e.stopPropagation();
       if (this.onEditDevice) {
         this.onEditDevice(device);
       }
     };
-    actions.appendChild(editBtn);
+    actionsContainer.appendChild(editBtn);
 
-    // Delete button
+    // Delete icon button (Font Awesome)
     const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn btn-danger';
-    deleteBtn.textContent = t('common.delete');
-    deleteBtn.onclick = () => {
+    deleteBtn.className = 'device-action-btn delete';
+    deleteBtn.title = t('common.delete');
+    deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
       if (this.onDeleteDevice) {
         this.onDeleteDevice(device);
       }
     };
-    actions.appendChild(deleteBtn);
+    actionsContainer.appendChild(deleteBtn);
 
-    card.appendChild(actions);
+    mainRow.appendChild(actionsContainer);
+    card.appendChild(mainRow);
+
+    // Mobile-friendly: clicking the card (except action buttons) sets as default
+    card.style.cursor = 'pointer';
+    card.onclick = () => {
+      if (this.onSetDefault && !device.isDefault) {
+        this.onSetDefault(device);
+      }
+    };
 
     return card;
-  }
-
-  /**
-   * Truncate device key for display
-   * Shows first 6 and last 4 characters
-   */
-  private truncateKey(key: string): string {
-    if (key.length <= 10) {
-      return key;
-    }
-    return `${key.substring(0, 6)}...${key.substring(key.length - 4)}`;
   }
 
   /**

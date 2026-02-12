@@ -109,6 +109,7 @@ export default {
     editDevice: 'デバイスを編集',
     deleteDevice: 'デバイスを削除',
     setDefault: 'デフォルトに設定',
+    setAsDefault: 'デフォルトに設定',
     defaultDevice: '⭐ デフォルト',
     hasCustomHeaders: '🔒 カスタムヘッダー',
     deviceName: 'デバイス名',

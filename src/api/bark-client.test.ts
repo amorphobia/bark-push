@@ -136,20 +136,21 @@ describe('BarkClient', () => {
     test('multi-device requests include device_keys array and omit device_key', async () => {
       await fc.assert(
         fc.asyncProperty(
+          fc.webUrl(), // Generate one server URL for all devices
           fc.array(
-            fc.record({
-              serverUrl: fc.webUrl(),
-              deviceKey: fc.string({ minLength: 1 }),
-            }),
+            fc.string({ minLength: 1 }), // Generate device keys
             { minLength: 2, maxLength: 5 }
           ),
           fc.record({
             body: fc.string({ minLength: 1 }),
           }),
-          async (deviceInputs, payload) => {
+          async (serverUrl, deviceKeys, payload) => {
             mockXmlHttpRequest.mockClear();
             
-            const devices = deviceInputs.map(input => createDevice(input));
+            // Create devices with the SAME server URL so they're in one group
+            const devices = deviceKeys.map(deviceKey => 
+              createDevice({ serverUrl, deviceKey })
+            );
             
             mockXmlHttpRequest.mockImplementation((details: any) => {
               details.onload({ status: 200, responseText: '{}' });
@@ -157,15 +158,18 @@ describe('BarkClient', () => {
 
             await client.sendNotification(devices, payload);
 
+            // Should make exactly one request since all devices share same server
+            expect(mockXmlHttpRequest.mock.calls.length).toBe(1);
+            
             const callArgs = mockXmlHttpRequest.mock.calls[0][0];
             const requestData = JSON.parse(callArgs.data);
             
-            const expectedKeys = devices.map(d => d.deviceKey);
+            // Multi-device group should use device_keys array, not device_key
             expect(requestData.device_key).toBeUndefined();
             expect(Array.isArray(requestData.device_keys)).toBe(true);
             expect(requestData.device_keys.length).toBe(devices.length);
             requestData.device_keys.forEach((key: string, i: number) => {
-              expect(key).toBe(expectedKeys[i]);
+              expect(key).toBe(deviceKeys[i]);
             });
           }
         ),

@@ -11,7 +11,10 @@ import type { BarkDevice, NotificationPayload, BarkApiRequest } from '../types';
 export class BarkClient {
   /**
    * Send a push notification to one or more devices
-   * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7
+   * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 2.3
+   * 
+   * Handles devices on different servers by grouping them appropriately
+   * and making separate API calls for each unique server/headers combination.
    * 
    * @param devices - Array of devices to send to
    * @param payload - Notification content and options
@@ -25,44 +28,44 @@ export class BarkClient {
       throw new Error('No devices provided');
     }
 
-    // Build the API request
-    const request = this.buildRequest(devices, payload);
+    // Group devices by server URL and custom headers
+    const deviceGroups = this.groupDevicesByServer(devices);
     
-    // Use the first device's server URL (all devices should use same server for multi-device)
-    const serverUrl = devices[0].serverUrl;
+    // Send to each group in parallel
+    const results = await Promise.allSettled(
+      Array.from(deviceGroups.values()).map(group => 
+        this.sendToDeviceGroup(group, payload)
+      )
+    );
     
-    // Parse custom headers from the first device
-    const customHeaders = devices[0].customHeaders 
-      ? this.parseCustomHeaders(devices[0].customHeaders)
-      : {};
-
-    // Send the request
-    return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
-        method: 'POST',
-        url: `${serverUrl}/push`,
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          ...customHeaders,
-        },
-        data: JSON.stringify(request),
-        timeout: 10000,
-        onload: (response) => {
-          if (response.status >= 200 && response.status < 300) {
-            resolve();
-          } else {
-            const error = this.parseErrorResponse(response.responseText);
-            reject(new Error(error));
-          }
-        },
-        onerror: () => {
-          reject(new Error('Network error. Please check your connection.'));
-        },
-        ontimeout: () => {
-          reject(new Error('Request timed out. Please try again.'));
-        },
+    // Collect failures and report with device details
+    // Requirements: 3.2, 3.3, 3.4, 3.5
+    const failures: Array<{ devices: BarkDevice[], error: string }> = [];
+    let groupIndex = 0;
+    
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        const group = Array.from(deviceGroups.values())[groupIndex];
+        failures.push({
+          devices: group,
+          error: result.reason.message || 'Unknown error'
+        });
+      }
+      groupIndex++;
+    }
+    
+    // Report failures if any occurred
+    if (failures.length > 0) {
+      const errorMessages = failures.map(f => {
+        // Use device name if available, otherwise use device key
+        // Requirement 3.5: Use device key if no name configured
+        const deviceNames = f.devices
+          .map(d => d.name || d.deviceKey)
+          .join(', ');
+        return `Failed to send to: ${deviceNames} (${f.error})`;
       });
-    });
+      throw new Error(errorMessages.join('\n'));
+    }
   }
 
   /**
@@ -97,6 +100,87 @@ export class BarkClient {
         },
         ontimeout: () => {
           resolve(false);
+        },
+      });
+    });
+  }
+
+  /**
+   * Group devices by their server URL and custom headers combination
+   * Requirements: 1.1, 1.2, 1.3, 1.4, 1.5
+   * 
+   * Devices with the same server URL and custom headers are grouped together
+   * to enable batch requests. Devices with different configurations are
+   * placed in separate groups to ensure correct API calls.
+   * 
+   * @param devices - Array of devices to group
+   * @returns Map of group key to devices array
+   */
+  private groupDevicesByServer(devices: BarkDevice[]): Map<string, BarkDevice[]> {
+    const groups = new Map<string, BarkDevice[]>();
+    
+    for (const device of devices) {
+      // Create a unique key from serverUrl and customHeaders
+      // Using ||| as separator (unlikely to appear in URLs or headers)
+      const key = `${device.serverUrl}|||${device.customHeaders || ''}`;
+      
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(device);
+    }
+    
+    return groups;
+  }
+
+  /**
+   * Send notification to a single device group (same server + headers)
+   * Requirements: 2.1, 2.2, 2.3, 2.4
+   * 
+   * All devices in the group share the same server URL and custom headers,
+   * allowing us to make a single HTTP request with device_keys array.
+   * 
+   * @param devices - Devices in this group (all share same server/headers)
+   * @param payload - Notification payload
+   * @throws Error if network request fails or API returns error
+   */
+  private async sendToDeviceGroup(
+    devices: BarkDevice[],
+    payload: NotificationPayload
+  ): Promise<void> {
+    // Build the API request
+    const request = this.buildRequest(devices, payload);
+    
+    // All devices in group share same server URL and headers
+    const serverUrl = devices[0].serverUrl;
+    const customHeaders = devices[0].customHeaders 
+      ? this.parseCustomHeaders(devices[0].customHeaders)
+      : {};
+
+    // Send the request
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'POST',
+        url: `${serverUrl}/push`,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          ...customHeaders,
+        },
+        data: JSON.stringify(request),
+        timeout: 10000,
+        onload: (response) => {
+          if (response.status >= 200 && response.status < 300) {
+            resolve();
+          } else {
+            const error = this.parseErrorResponse(response.responseText);
+            reject(new Error(error));
+          }
+        },
+        onerror: () => {
+          reject(new Error('Network error. Please check your connection.'));
+        },
+        ontimeout: () => {
+          reject(new Error('Request timed out. Please try again.'));
         },
       });
     });

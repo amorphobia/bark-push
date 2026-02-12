@@ -528,28 +528,61 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test i18n initialization
     - _Requirements: 1.1, 17.2_
 
-- [ ] 23. Performance optimization
-  - [ ] 23.1 Optimize modal appearance time
+- [ ] 23. **DESIGN CHANGE: Implement fixed modal height behavior**
+  - [ ] 23.1 Update modal height calculation logic
+    - Implement `calculateModalHeight()` function: `min(600px, window.innerHeight - 80px)`
+    - Apply fixed height to modal element (both `height` and `max-height`)
+    - Ensure modal height remains constant across tab switches
+    - _Design Change: See design.md "DESIGN CHANGE: Fixed Modal Height Behavior" section_
+    - _Requirements: 23.3_
+  
+  - [ ] 23.2 Implement viewport resize handling
+    - Add `window.resize` event listener
+    - Call `updateModalHeight()` on resize events
+    - Ensure smooth transition between fixed and responsive modes
+    - Test behavior when viewport crosses 680px threshold (600px + 80px margin)
+    - _Design Change: Modal height responds to viewport changes_
+    - _Requirements: 23.3_
+  
+  - [ ] 23.3 Update modal CSS for fixed height
+    - Set modal to use CSS custom property `--modal-height`
+    - Apply `display: flex; flex-direction: column` to modal
+    - Set `overflow: hidden` on modal container
+    - Set `flex: 1; overflow-y: auto` on modal-body
+    - Ensure only modal-body scrolls, not the entire modal
+    - _Design Change: CSS structure supports fixed height with scrollable content_
+    - _Requirements: 23.3_
+  
+  - [ ] 23.4 Write unit tests for fixed height behavior
+    - Test height calculation with various viewport sizes
+    - Test height remains constant during tab switches
+    - Test resize event updates height correctly
+    - Test minimum and maximum height constraints
+    - Test scrollable content in modal-body
+    - _Design Change: Verify fixed height behavior works correctly_
+
+- [ ] 24. Performance optimization
+  - [ ] 24.1 Optimize modal appearance time
     - Lazy load modal content
     - Minimize initial render work
     - Use requestAnimationFrame for smooth appearance
     - _Requirements: 25.1_
   
-  - [ ] 23.2 Optimize device list rendering
+  - [ ] 24.2 Optimize device list rendering
     - Use document fragments for batch DOM updates
     - Minimize reflows and repaints
     - _Requirements: 25.2_
   
-  - [ ] 23.3 Write property test for modal appearance performance
+  - [ ] 24.3 Write property test for modal appearance performance
     - **Property 68: Modal appearance performance**
     - **Validates: Requirements 25.1**
   
-  - [ ] 23.4 Write property test for device list rendering performance
+  - [ ] 24.4 Write property test for device list rendering performance
     - **Property 69: Device list rendering performance**
     - **Validates: Requirements 25.2**
 
-- [ ] 24. Final integration and polish
-  - [ ] 24.1 Integration testing
+- [ ] 25. Final integration and polish
+  - [ ] 25.1 Integration testing
     - Test complete add device workflow
     - Test complete send notification workflow
     - Test complete edit device workflow
@@ -558,27 +591,27 @@ This implementation plan breaks down the Bark Push Userscript into discrete, inc
     - Test modal open/close/reopen cycles
     - _Requirements: All_
   
-  - [ ] 24.2 Error handling polish
+  - [ ] 25.2 Error handling polish
     - Ensure all error messages are user-friendly
     - Ensure all errors are properly logged
     - Test error recovery flows
     - _Requirements: 10.8, 10.9, 18.7, 22.1, 22.2, 22.3, 22.5_
   
-  - [ ] 24.3 Visual polish
+  - [ ] 25.3 Visual polish
     - Review all spacing and alignment
     - Review all colors and contrast
     - Review all transitions and animations
     - Test on different screen sizes
     - _Requirements: 24.1, 24.2, 24.3, 24.4, 24.5_
   
-  - [ ] 24.4 Bundle size optimization
+  - [ ] 25.4 Bundle size optimization
     - Review and minimize dependencies
     - Enable tree-shaking
     - Minify production build
     - Verify bundle size < 100KB
     - _Requirements: 25.4_
 
-- [ ] 25. Final checkpoint - Ensure all tests pass
+- [ ] 26. Final checkpoint - Ensure all tests pass
   - Run full test suite (unit + property tests)
   - Verify all 69 correctness properties pass
   - Test on multiple websites (simple HTML, React SPAs, complex sites)

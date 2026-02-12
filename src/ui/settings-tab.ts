@@ -21,6 +21,7 @@ export class SettingsTab {
   private currentView: ViewState = 'list';
   private editingDevice: BarkDevice | null = null;
   private isRecordingShortcut: boolean = false;
+  private onLanguageChangeCallback?: () => void;
 
   // Components
   private deviceList: DeviceList;
@@ -40,10 +41,20 @@ export class SettingsTab {
     this.deviceManager = new DeviceManager(storage, toast);
     this.languageSelector = new LanguageSelector(storage, toast);
 
-    // Set up language change callback to re-render UI
+    // Set up language change callback
     this.languageSelector.setOnLanguageChange(() => {
-      this.render();
+      if (this.onLanguageChangeCallback) {
+        this.onLanguageChangeCallback();
+      }
     });
+  }
+
+  /**
+   * Set callback for when language changes
+   * This allows the modal controller to refresh the entire UI
+   */
+  setOnLanguageChange(callback: () => void): void {
+    this.onLanguageChangeCallback = callback;
   }
 
   /**

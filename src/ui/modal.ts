@@ -763,6 +763,22 @@ export class ModalController {
   }
 
   /**
+   * Refresh the entire modal UI (useful after language changes)
+   */
+  private refreshUI(): void {
+    if (!this.isOpen()) return;
+    
+    // Re-render the modal
+    this.render();
+    
+    // Re-attach event listeners
+    this.attachEventListeners();
+    
+    // Update modal height
+    this.updateModalHeight();
+  }
+
+  /**
    * Render modal content
    */
   private render(): void {
@@ -829,6 +845,8 @@ export class ModalController {
         // Create SettingsTab if not exists
         if (!this.settingsTab) {
           this.settingsTab = new SettingsTab(this.storage, this.barkClient, toast);
+          // Set up callback to refresh entire modal when language changes
+          this.settingsTab.setOnLanguageChange(() => this.refreshUI());
         }
         
         // Clear container and append rendered component

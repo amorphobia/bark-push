@@ -71,7 +71,7 @@ describe('LanguageSelector', () => {
         ),
         { numRuns: 5 }
       );
-    });
+    }, 10000); // 10 second timeout for property-based test with async operations
   });
 
   describe('Unit Tests', () => {

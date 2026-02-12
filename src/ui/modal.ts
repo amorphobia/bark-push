@@ -484,6 +484,56 @@ export class ModalController {
         color: #ff3b30;
       }
 
+      /* Form Header - Back button and title */
+      .form-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .form-header h3 {
+        margin: 0;
+        flex: 1;
+      }
+
+      /* Form Actions - Button container */
+      .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+      }
+
+      .form-actions button {
+        flex: 1;
+        min-width: 120px;
+      }
+
+      /* Add Device Button - Standalone with spacing */
+      .add-device-btn {
+        margin-top: 16px;
+        width: 100%;
+      }
+
+      /* Device cards spacing */
+      .device-card {
+        margin-bottom: 16px;
+      }
+
+      .device-card:last-of-type {
+        margin-bottom: 16px;
+      }
+
+      /* Button spacing when not in form-actions */
+      button + button {
+        margin-left: 8px;
+      }
+
+      .form-actions button + button {
+        margin-left: 0; /* Reset for flex gap */
+      }
+
       /* Checkbox and Radio - Touch-friendly */
       input[type="checkbox"],
       input[type="radio"] {

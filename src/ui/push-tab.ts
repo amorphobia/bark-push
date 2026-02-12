@@ -158,13 +158,18 @@ export class PushTab {
     container.appendChild(advancedSection);
 
     // Send button (Requirement 9.1)
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'form-actions';
+    
     const sendButton = document.createElement('button');
     sendButton.type = 'button';
     sendButton.id = 'push-send-button';
     sendButton.className = 'btn btn-primary';
     sendButton.textContent = t('push.sendButton');
     sendButton.addEventListener('click', () => this.handleSend());
-    container.appendChild(sendButton);
+    buttonContainer.appendChild(sendButton);
+    
+    container.appendChild(buttonContainer);
 
     // Update button state
     this.updateSendButtonState();

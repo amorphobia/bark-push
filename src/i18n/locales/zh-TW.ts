@@ -28,6 +28,8 @@ export default {
     messagePlaceholder: '通知內容',
     messageRequired: '訊息不能為空',
     markdown: 'Markdown',
+    markdownEnable: '啟用 Markdown 格式',
+    markdownDisable: '取消 Markdown 格式',
     selectDevice: '選擇裝置',
     selectDevicePlaceholder: '選擇裝置',
     noDevicesSelected: '未選擇裝置',

@@ -28,6 +28,8 @@ export default {
     messagePlaceholder: '알림 내용',
     messageRequired: '메시지는 필수입니다',
     markdown: 'Markdown',
+    markdownEnable: 'Markdown 활성화',
+    markdownDisable: 'Markdown 비활성화',
     selectDevice: '기기 선택',
     selectDevicePlaceholder: '기기 선택',
     noDevicesSelected: '선택된 기기 없음',

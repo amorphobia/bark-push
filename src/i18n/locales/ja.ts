@@ -28,6 +28,8 @@ export default {
     messagePlaceholder: '通知内容',
     messageRequired: 'メッセージは必須です',
     markdown: 'Markdown',
+    markdownEnable: 'Markdown を有効にする',
+    markdownDisable: 'Markdown を無効にする',
     selectDevice: 'デバイスを選択',
     selectDevicePlaceholder: 'デバイスを選択',
     noDevicesSelected: 'デバイスが選択されていません',

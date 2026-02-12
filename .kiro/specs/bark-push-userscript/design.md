@@ -28,8 +28,7 @@ main.ts (Entry Point)
 │   ├── Modal Controller
 │   │   ├── Push Tab Component
 │   │   │   ├── Title Input
-│   │   │   ├── Message Textarea
-│   │   │   ├── Markdown Toggle
+│   │   │   ├── Message Textarea (with Markdown Icon Button)
 │   │   │   ├── Device Selector
 │   │   │   ├── Tips Rotator
 │   │   │   ├── Advanced Options Panel
@@ -241,6 +240,85 @@ window.addEventListener('resize', () => {
 - Rotate tips
 - Send notifications
 
+**DESIGN CHANGE: Markdown Toggle UI**
+
+**Old Design (Deprecated):**
+- Markdown toggle was a checkbox in a separate form-group
+- Occupied vertical space below the message textarea
+- Used standard checkbox with label "☐ Markdown"
+
+**New Design:**
+- Markdown toggle is an icon button positioned at the top-right corner of the message textarea
+- Icon displays "M↓" (letter M with down arrow) in a rectangular border
+- **Disabled state**: Gray outlined icon with transparent background, tooltip shows "Enable Markdown" (translated)
+- **Enabled state**: White icon with blue circular background (#007AFF), tooltip shows "Disable Markdown" (translated)
+- Saves vertical space and provides better visual feedback
+- Position: `position: absolute; top: 8px; right: 8px;` relative to textarea wrapper
+
+**Implementation Details**:
+```typescript
+// Markdown icon button structure
+const markdownButton = document.createElement('button');
+markdownButton.type = 'button';
+markdownButton.className = 'markdown-toggle-icon';
+markdownButton.setAttribute('aria-label', t('push.markdownEnable'));
+markdownButton.title = t('push.markdownEnable');
+
+// Icon content (M with down arrow)
+markdownButton.innerHTML = `
+  <svg width="20" height="20" viewBox="0 0 20 20">
+    <rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" fill="none" stroke-width="1.5"/>
+    <text x="10" y="13" text-anchor="middle" font-size="10" font-weight="600" fill="currentColor">M↓</text>
+  </svg>
+`;
+
+// Toggle state on click
+markdownButton.addEventListener('click', () => {
+  this.markdownEnabled = !this.markdownEnabled;
+  this.storage.setMarkdownEnabled(this.markdownEnabled);
+  this.updateMarkdownButton(markdownButton);
+});
+```
+
+**CSS Styling**:
+```css
+/* Message textarea wrapper needs position: relative */
+.message-wrapper {
+  position: relative;
+}
+
+/* Markdown toggle icon button */
+.markdown-toggle-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: #8e8e93; /* Gray when disabled */
+}
+
+.markdown-toggle-icon:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.markdown-toggle-icon.active {
+  background: #007AFF; /* Blue circular background when enabled */
+  color: white;
+}
+
+.markdown-toggle-icon.active:hover {
+  background: #0051D5; /* Darker blue on hover */
+}
+```
+
 **Interface**:
 ```typescript
 class PushTab {
@@ -253,6 +331,7 @@ class PushTab {
   handleSend(): Promise<void>;
   validateForm(): ValidationResult;
   updateDeviceSelector(): void;
+  updateMarkdownButton(button: HTMLButtonElement): void; // NEW: Update markdown button state
   startTipsRotation(): void;
   stopTipsRotation(): void;
 }

@@ -75,10 +75,24 @@ This document specifies the requirements for a universal Tampermonkey userscript
 
 #### Acceptance Criteria
 
-1. THE Push_Tab SHALL display a "☐ Markdown" checkbox toggle
-2. WHEN the Markdown toggle is unchecked, THE System SHALL send the message content in the `body` parameter
-3. WHEN the Markdown toggle is checked, THE System SHALL send the message content in the `markdown` parameter instead of `body`
-4. THE System SHALL persist the Markdown toggle state between modal opens
+**UPDATED:** Changed from checkbox to icon button for better UX and space efficiency.
+
+**OLD (Deprecated):**
+1. ~~THE Push_Tab SHALL display a "☐ Markdown" checkbox toggle~~
+
+**NEW:**
+1. THE Push_Tab SHALL display a Markdown toggle icon button positioned at the top-right corner of the message textarea
+2. THE Markdown_Icon SHALL display "M↓" (letter M with down arrow) in a rectangular border
+3. WHEN Markdown is disabled, THE Icon SHALL have a gray outline with transparent background
+4. WHEN Markdown is disabled, THE Icon tooltip SHALL display the translated text for "Enable Markdown"
+5. WHEN Markdown is enabled, THE Icon SHALL have a white color with blue circular background (#007AFF)
+6. WHEN Markdown is enabled, THE Icon tooltip SHALL display the translated text for "Disable Markdown"
+7. WHEN the user clicks the Markdown icon, THE System SHALL toggle the Markdown state
+
+**UNCHANGED:**
+8. WHEN the Markdown toggle is disabled, THE System SHALL send the message content in the `body` parameter
+9. WHEN the Markdown toggle is enabled, THE System SHALL send the message content in the `markdown` parameter instead of `body`
+10. THE System SHALL persist the Markdown toggle state between modal opens
 
 ### Requirement 6: Device Selection
 

@@ -28,6 +28,8 @@ export default {
     messagePlaceholder: 'Notification content',
     messageRequired: 'Message is required',
     markdown: 'Markdown',
+    markdownEnable: 'Enable Markdown',
+    markdownDisable: 'Disable Markdown',
     selectDevice: 'Select Device',
     selectDevicePlaceholder: 'Choose device(s)',
     noDevicesSelected: 'No devices selected',

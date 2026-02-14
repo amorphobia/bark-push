@@ -139,33 +139,63 @@ export class ThemeManager {
         return this.detectSystemTheme();
       }
 
-      // Get computed styles from document body
-      const bodyStyle = getComputedStyle(document.body);
+      // Get computed styles from body
+      let bodyStyle = getComputedStyle(document.body);
+      let bgColor = bodyStyle.backgroundColor;
+      let element: Element | null = document.body;
 
-      // Check background color brightness
-      const bgColor = bodyStyle.backgroundColor;
-      const textColor = bodyStyle.color;
+      // If background is transparent, walk up the DOM tree to find a solid background
+      let attempts = 0;
+      while (this.isTransparent(bgColor) && element && attempts < 10) {
+        element = element.parentElement;
+        if (element) {
+          bodyStyle = getComputedStyle(element);
+          bgColor = bodyStyle.backgroundColor;
+        }
+        attempts++;
+      }
 
-      // Parse RGB values from computed styles
-      const bgRgb = this.parseRgb(bgColor);
-      const textRgb = this.parseRgb(textColor);
-
-      if (!bgRgb || !textRgb) {
-        // Fallback to system theme if parsing fails
+      // If still transparent, fall back to system theme
+      if (this.isTransparent(bgColor)) {
         return this.detectSystemTheme();
       }
 
-      // Calculate relative luminance
-      const bgLuminance = this.getLuminance(bgRgb.r, bgRgb.g, bgRgb.b);
-      const textLuminance = this.getLuminance(textRgb.r, textRgb.g, textRgb.b);
+      // Parse RGB values from computed styles
+      const bgRgb = this.parseRgb(bgColor);
 
-      // If text is brighter than background, it's likely dark mode
-      // (dark background with light text = typical dark mode)
-      return textLuminance > bgLuminance ? 'dark' : 'light';
+      if (!bgRgb) {
+        return this.detectSystemTheme();
+      }
+
+      // Calculate background luminance
+      const bgLuminance = this.getLuminance(bgRgb.r, bgRgb.g, bgRgb.b);
+
+      // DEBUG: Remove after fixing
+      console.log('[Theme Debug] Page detection:', {
+        bgColor,
+        bgLuminance: bgLuminance.toFixed(4),
+        result: bgLuminance < 0.5 ? 'dark' : 'light'
+      });
+
+      // Detect dark mode by checking if background is dark (luminance < 0.5)
+      return bgLuminance < 0.5 ? 'dark' : 'light';
     } catch {
       // Fallback to system theme on error
       return this.detectSystemTheme();
     }
+  }
+
+  /**
+   * Check if a color is transparent (alpha = 0)
+   */
+  private isTransparent(colorString: string): boolean {
+    // Check for rgba(0, 0, 0, 0) or similar transparent patterns
+    const match = colorString.match(/rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)/);
+    if (match) {
+      const alpha = parseFloat(match[1]);
+      return alpha === 0;
+    }
+    return false;
   }
 
   /**

@@ -136,6 +136,13 @@ export default {
     deleted: 'Device deleted',
     language: 'Language',
     languageLabel: 'Interface Language',
+    themeTitle: 'Theme',
+    themeLabel: 'Appearance',
+    themeOptions: {
+      light: 'Light',
+      dark: 'Dark',
+      auto: 'Auto (System)',
+    },
     keyboardShortcut: 'Show/Hide Shortcut',
     keyboardShortcutPlaceholder: 'Click Record to set shortcut',
     keyboardShortcutHint: 'Press modifier keys (Ctrl/Alt/Shift) + any key',

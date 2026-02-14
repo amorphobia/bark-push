@@ -3,7 +3,7 @@
  * Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7
  */
 
-import type { BarkDevice, TabType } from '../types';
+import type { BarkDevice, TabType, ThemeType } from '../types';
 import { STORAGE_KEYS } from '../types';
 
 /**
@@ -330,6 +330,30 @@ export class StorageManager {
   }
 
   /**
+   * Get user's theme preference
+   */
+  getTheme(): ThemeType {
+    try {
+      return GM_getValue(STORAGE_KEYS.THEME, 'auto');
+    } catch (error) {
+      console.error('Failed to get theme preference:', error);
+      return 'auto';
+    }
+  }
+
+  /**
+   * Set user's theme preference
+   */
+  setTheme(theme: ThemeType): void {
+    try {
+      GM_setValue(STORAGE_KEYS.THEME, theme);
+    } catch (error) {
+      console.error('Failed to set theme preference:', error);
+      throw new Error('Failed to save theme preference. Storage may be unavailable.');
+    }
+  }
+
+  /**
    * Clear all storage (for testing purposes)
    * Requirement 18.7: Handle storage errors gracefully
    */
@@ -344,6 +368,7 @@ export class StorageManager {
       GM_setValue(STORAGE_KEYS.ADVANCED_EXPANDED, false);
       GM_setValue(STORAGE_KEYS.LAST_TAB, 'push');
       GM_setValue(STORAGE_KEYS.KEYBOARD_SHORTCUT, 'Alt+B');
+      GM_setValue(STORAGE_KEYS.THEME, 'auto');
     } catch (error) {
       console.error('Failed to clear storage:', error);
       throw new Error('Failed to clear storage. Storage may be unavailable.');

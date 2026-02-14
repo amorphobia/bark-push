@@ -199,10 +199,14 @@ export const STORAGE_KEYS = {
   ADVANCED_EXPANDED: 'bark_advanced_expanded',
   LAST_TAB: 'bark_last_tab',
   KEYBOARD_SHORTCUT: 'bark_keyboard_shortcut',
+  THEME: 'bark_theme',
 } as const;
 
 /** Type for tab selection */
 export type TabType = 'push' | 'settings';
+
+/** Type for theme selection */
+export type ThemeType = 'light' | 'dark' | 'auto';
 
 /** Complete storage schema */
 export interface StorageSchema {
@@ -214,6 +218,7 @@ export interface StorageSchema {
   [STORAGE_KEYS.ADVANCED_EXPANDED]: boolean;
   [STORAGE_KEYS.LAST_TAB]: TabType;
   [STORAGE_KEYS.KEYBOARD_SHORTCUT]: string;
+  [STORAGE_KEYS.THEME]: ThemeType;
 }
 
 /**

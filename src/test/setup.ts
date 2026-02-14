@@ -6,6 +6,19 @@ fc.configureGlobal({
   verbose: true,
 });
 
+// Mock window.matchMedia for theme detection tests
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+  })),
+});
+
 // Mock Tampermonkey APIs for testing
 (globalThis as any).GM_setValue = (key: string, value: any) => {
   localStorage.setItem(key, JSON.stringify(value));

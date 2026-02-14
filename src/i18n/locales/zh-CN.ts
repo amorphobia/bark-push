@@ -136,6 +136,13 @@ export default {
     deleted: '设备已删除',
     language: '语言',
     languageLabel: '界面语言',
+    themeTitle: '主题',
+    themeLabel: '外观',
+    themeOptions: {
+      light: '浅色',
+      dark: '深色',
+      auto: '自动（跟随系统）',
+    },
     keyboardShortcut: '显示/隐藏快捷键',
     keyboardShortcutPlaceholder: '点击录制以设置快捷键',
     keyboardShortcutHint: '按修饰键（Ctrl/Alt/Shift）+ 任意键',

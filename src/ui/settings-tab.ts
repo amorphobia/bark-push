@@ -9,6 +9,7 @@ import { DeviceList } from './device-list';
 import { DeviceForm } from './device-form';
 import { DeviceManager } from './device-manager';
 import { LanguageSelector } from './language-selector';
+import { ThemeSelector } from './theme-selector';
 import { t } from '../i18n';
 import type { BarkDevice } from '../types';
 import type { ToastManager } from './toast';
@@ -22,29 +23,39 @@ export class SettingsTab {
   private editingDevice: BarkDevice | null = null;
   private isRecordingShortcut: boolean = false;
   private onLanguageChangeCallback?: () => void;
+  private onThemeChangeCallback?: () => void;
 
   // Components
   private deviceList: DeviceList;
   private deviceForm: DeviceForm;
   private deviceManager: DeviceManager;
   private languageSelector: LanguageSelector;
+  private themeSelector: ThemeSelector;
   private storage: StorageManager;
   private toast: ToastManager;
 
   constructor(storage: StorageManager, apiClient: BarkClient, toast: ToastManager) {
     this.storage = storage;
     this.toast = toast;
-    
+
     // Initialize components
     this.deviceList = new DeviceList(storage);
     this.deviceForm = new DeviceForm(storage, apiClient);
     this.deviceManager = new DeviceManager(storage, toast);
     this.languageSelector = new LanguageSelector(storage, toast);
+    this.themeSelector = new ThemeSelector(storage, toast);
 
     // Set up language change callback
     this.languageSelector.setOnLanguageChange(() => {
       if (this.onLanguageChangeCallback) {
         this.onLanguageChangeCallback();
+      }
+    });
+
+    // Set up theme change callback
+    this.themeSelector.setOnThemeChange(() => {
+      if (this.onThemeChangeCallback) {
+        this.onThemeChangeCallback();
       }
     });
   }
@@ -55,6 +66,14 @@ export class SettingsTab {
    */
   setOnLanguageChange(callback: () => void): void {
     this.onLanguageChangeCallback = callback;
+  }
+
+  /**
+   * Set callback for when theme changes
+   * This allows the modal controller to refresh the entire UI
+   */
+  setOnThemeChange(callback: () => void): void {
+    this.onThemeChangeCallback = callback;
   }
 
   /**
@@ -104,17 +123,27 @@ export class SettingsTab {
     languageSelectorWrapper.style.cssText = `
       margin-top: 24px;
       padding-top: 24px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid var(--bark-border);
     `;
     languageSelectorWrapper.appendChild(this.languageSelector.render());
     view.appendChild(languageSelectorWrapper);
 
+    // Add theme selector
+    const themeSelectorWrapper = document.createElement('div');
+    themeSelectorWrapper.style.cssText = `
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--bark-border);
+    `;
+    themeSelectorWrapper.appendChild(this.themeSelector.render());
+    view.appendChild(themeSelectorWrapper);
+
     // Add keyboard shortcut settings
     const keyboardShortcutWrapper = document.createElement('div');
     keyboardShortcutWrapper.style.cssText = `
-      margin-top: 24px;
-      padding-top: 24px;
-      border-top: 1px solid #eee;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--bark-border);
     `;
     keyboardShortcutWrapper.appendChild(this.renderKeyboardShortcut());
     view.appendChild(keyboardShortcutWrapper);
@@ -230,26 +259,26 @@ export class SettingsTab {
 
     container.innerHTML = `
       <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #333;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--bark-text-primary);">
           ${t('settings.keyboardShortcut')}
         </label>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <input 
-            type="text" 
+          <input
+            type="text"
             id="bark-shortcut-input"
             value="${currentShortcut || ''}"
             readonly
             placeholder="${t('settings.keyboardShortcutPlaceholder')}"
-            style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: #f5f5f5; cursor: pointer;"
+            style="flex: 1; padding: 8px 12px; border: 1px solid var(--bark-border); border-radius: 6px; font-size: 14px; background: var(--bark-bg-secondary); color: var(--bark-text-primary); cursor: pointer;"
           />
-          <button 
+          <button
             id="bark-shortcut-record"
             class="btn-secondary"
             style="white-space: nowrap;"
           >
             ${t('settings.keyboardShortcutRecord')}
           </button>
-          <button 
+          <button
             id="bark-shortcut-clear"
             class="btn-secondary"
             style="white-space: nowrap;"
@@ -257,7 +286,7 @@ export class SettingsTab {
             ${t('settings.keyboardShortcutClear')}
           </button>
         </div>
-        <span style="display: block; margin-top: 4px; font-size: 12px; color: #666;">
+        <span style="display: block; margin-top: 4px; font-size: 12px; color: var(--bark-text-secondary);">
           ${t('settings.keyboardShortcutHint')}
         </span>
       </div>
@@ -356,7 +385,7 @@ export class SettingsTab {
     setRecordingShortcut(false); // Notify main.ts to re-enable global shortcut listener
     recordBtn.textContent = t('settings.keyboardShortcutRecord');
     recordBtn.disabled = false;
-    input.style.borderColor = '#ddd';
+    input.style.borderColor = 'var(--bark-border)';
 
     // Remove event listener
     document.removeEventListener('keydown', handler, true);

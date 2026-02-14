@@ -136,6 +136,13 @@ export default {
     deleted: 'デバイスを削除しました',
     language: '言語',
     languageLabel: 'インターフェース言語',
+    themeTitle: 'テーマ',
+    themeLabel: '外観',
+    themeOptions: {
+      light: 'ライト',
+      dark: 'ダーク',
+      auto: '自動（システムに合わせる）',
+    },
     keyboardShortcut: '表示/非表示ショートカット',
     keyboardShortcutPlaceholder: '記録をクリックしてショートカットを設定',
     keyboardShortcutHint: '修飾キー（Ctrl/Alt/Shift）+ 任意のキーを押す',

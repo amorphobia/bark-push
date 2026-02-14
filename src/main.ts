@@ -10,6 +10,7 @@
 
 import { i18n, t } from './i18n';
 import { ModalController } from './ui/modal';
+import { themeManager } from './ui/theme-manager';
 import { StorageManager } from './storage/storage-manager';
 
 // Global instances
@@ -33,16 +34,20 @@ export function setRecordingShortcut(recording: boolean): void {
  */
 async function init(): Promise<void> {
   try {
+    // Create storage manager instance first (needed for theme manager)
+    storage = new StorageManager();
+
+    // Initialize theme manager early to prevent flash of wrong theme
+    // This applies CSS variables to document root before any UI renders
+    themeManager.init(storage);
+
     // Initialize i18n system (Requirement 17.2)
     await i18n.init();
-    
-    // Create storage manager instance
-    storage = new StorageManager();
-    
+
     // Create modal controller instance (lazy initialization)
     // Modal will be injected on demand when user clicks menu item
     modalController = new ModalController(storage);
-    
+
     console.log('[Bark Push] Userscript initialized successfully');
   } catch (error) {
     console.error('[Bark Push] Failed to initialize userscript:', error);

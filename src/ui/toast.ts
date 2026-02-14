@@ -132,7 +132,7 @@ export class ToastManager {
           max-width: 400px;
           padding: 12px 16px;
           border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px var(--bark-shadow, rgba(0, 0, 0, 0.15));
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           font-size: 14px;
           line-height: 1.5;
@@ -149,15 +149,15 @@ export class ToastManager {
         }
 
         .bark-toast.success {
-          background-color: #34c759;
+          background-color: var(--bark-success, #34c759);
         }
 
         .bark-toast.error {
-          background-color: #ff3b30;
+          background-color: var(--bark-danger, #ff3b30);
         }
 
         .bark-toast.info {
-          background-color: #007aff;
+          background-color: var(--bark-primary, #007aff);
         }
 
         @media (max-width: 470px) {

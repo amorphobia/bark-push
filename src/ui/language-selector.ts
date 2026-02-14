@@ -42,7 +42,7 @@ export class LanguageSelector {
       display: block;
       margin-bottom: 8px;
       font-weight: 500;
-      color: #333;
+      color: var(--bark-text-primary);
     `;
 
     const select = document.createElement('select');
@@ -50,10 +50,11 @@ export class LanguageSelector {
     select.style.cssText = `
       width: 100%;
       padding: 8px 12px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--bark-border);
       border-radius: 4px;
       font-size: 14px;
-      background: white;
+      background: var(--bark-bg-primary);
+      color: var(--bark-text-primary);
       cursor: pointer;
     `;
 

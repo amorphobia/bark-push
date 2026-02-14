@@ -136,6 +136,13 @@ export default {
     deleted: '裝置已刪除',
     language: '語言',
     languageLabel: '介面語言',
+    themeTitle: '主題',
+    themeLabel: '外觀',
+    themeOptions: {
+      light: '淺色',
+      dark: '深色',
+      auto: '自動（跟隨系統）',
+    },
     keyboardShortcut: '顯示/隱藏快速鍵',
     keyboardShortcutPlaceholder: '點擊錄製以設定快速鍵',
     keyboardShortcutHint: '按修飾鍵（Ctrl/Alt/Shift）+ 任意鍵',

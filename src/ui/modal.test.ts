@@ -33,15 +33,15 @@ describe('ModalController', () => {
           // Check that styles are injected
           const styleElement = shadowRoot?.querySelector('style');
           expect(styleElement).toBeTruthy();
-          
+
           const styleContent = styleElement?.textContent || '';
-          
-          // Check modal has white background in CSS
-          expect(styleContent).toContain('background: white');
-          
+
+          // Check modal has background CSS variable (resolves to white in light mode)
+          expect(styleContent).toContain('--bark-bg-primary');
+
           // Check border-radius is 8px
           expect(styleContent).toContain('border-radius: 8px');
-          
+
           // Check box-shadow exists (drop shadow)
           expect(styleContent).toContain('box-shadow');
 
@@ -156,12 +156,12 @@ describe('ModalController', () => {
           // Check that WCAG AA compliance is documented in styles
           expect(styleContent).toContain('WCAG AA');
 
-          // Check primary color is used
-          expect(styleContent).toContain('#007aff');
+          // Check primary color is defined
+          expect(styleContent).toContain('--bark-primary');
 
           // Check text colors are defined
-          expect(styleContent).toContain('#333'); // Main text
-          expect(styleContent).toContain('#666'); // Secondary text
+          expect(styleContent).toContain('--bark-text-primary');
+          expect(styleContent).toContain('--bark-text-secondary');
 
           modalController.close();
         }),
@@ -180,7 +180,7 @@ describe('ModalController', () => {
 
           // Check that focus styles are defined
           expect(styleContent).toContain(':focus');
-          expect(styleContent).toContain('outline: 2px solid #007aff');
+          expect(styleContent).toContain('--bark-primary');
           expect(styleContent).toContain('outline-offset: 2px');
 
           modalController.close();
@@ -583,14 +583,15 @@ describe('ModalController', () => {
   });
 
   describe('Unit Tests: Responsive Design and Styling', () => {
-    it('should have iOS-style primary color #007aff', () => {
+    it('should have iOS-style primary color #007aff (via CSS variable)', () => {
       modalController.open();
 
       const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
       const styleElement = shadowRoot?.querySelector('style');
       const styleContent = styleElement?.textContent || '';
 
-      expect(styleContent).toContain('#007aff');
+      // CSS variables are used - the actual color is applied via CSS custom properties
+      expect(styleContent).toContain('--bark-primary');
     });
 
     it('should have consistent spacing (8px, 16px, 24px)', () => {

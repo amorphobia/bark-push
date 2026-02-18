@@ -504,17 +504,73 @@ export class ModalController {
         color: var(--bark-danger);
       }
 
+      /* Device Form Fields - Same spacing as form-group */
+      .device-form-fields .form-field {
+        margin-bottom: 16px;
+      }
+
+      .device-form-fields .form-field label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--bark-text-primary);
+      }
+
+      .device-form-fields .form-field input,
+      .device-form-fields .form-field textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--bark-border-light);
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        background: var(--bark-bg-primary);
+        color: var(--bark-text-primary);
+        transition: border-color 200ms;
+      }
+
+      .device-form-fields .form-field input:focus,
+      .device-form-fields .form-field textarea:focus {
+        outline: none;
+        border-color: var(--bark-primary);
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      }
+
+      .device-form-fields .form-field input.error,
+      .device-form-fields .form-field textarea.error {
+        border-color: var(--bark-danger);
+      }
+
+      .device-form-fields .form-field textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .device-form-fields .field-error {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--bark-danger);
+      }
+
       /* Form Header - Back button and title */
       .form-header {
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
       }
 
       .form-header h3 {
         margin: 0;
         flex: 1;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .form-header .back-button {
+        padding: 8px 12px;
+        font-size: 14px;
       }
 
       /* Form Actions - Button container */

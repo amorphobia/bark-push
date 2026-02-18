@@ -93,9 +93,7 @@ export class DeviceForm {
       'name',
       t('settings.deviceName'),
       t('settings.deviceNamePlaceholder'),
-      this.editingDevice?.name || '',
-      false,
-      t('settings.deviceNameHint')
+      this.editingDevice?.name || ''
     );
     form.appendChild(nameField);
 
@@ -105,8 +103,7 @@ export class DeviceForm {
       'serverUrl',
       t('settings.serverUrl'),
       t('settings.serverUrlPlaceholder'),
-      this.editingDevice?.serverUrl || '',
-      true
+      this.editingDevice?.serverUrl || ''
     );
     form.appendChild(urlField);
 
@@ -116,8 +113,7 @@ export class DeviceForm {
       'deviceKey',
       t('settings.deviceKey'),
       t('settings.deviceKeyPlaceholder'),
-      this.editingDevice?.deviceKey || '',
-      true
+      this.editingDevice?.deviceKey || ''
     );
     form.appendChild(keyField);
 
@@ -127,9 +123,7 @@ export class DeviceForm {
       'customHeaders',
       t('settings.customHeaders'),
       t('settings.customHeadersPlaceholder'),
-      this.editingDevice?.customHeaders || '',
-      false,
-      t('settings.customHeadersHint')
+      this.editingDevice?.customHeaders || ''
     );
     form.appendChild(headersField);
 
@@ -185,9 +179,7 @@ export class DeviceForm {
     name: string,
     label: string,
     placeholder: string,
-    value: string,
-    required: boolean,
-    hint?: string
+    value: string
   ): HTMLElement {
     const fieldContainer = document.createElement('div');
     fieldContainer.className = 'form-field';
@@ -195,12 +187,6 @@ export class DeviceForm {
     const labelElement = document.createElement('label');
     labelElement.htmlFor = `device-${name}`;
     labelElement.textContent = label;
-    if (required) {
-      const requiredMark = document.createElement('span');
-      requiredMark.className = 'required-mark';
-      requiredMark.textContent = ' *';
-      labelElement.appendChild(requiredMark);
-    }
     fieldContainer.appendChild(labelElement);
 
     const input = document.createElement('input');
@@ -210,7 +196,7 @@ export class DeviceForm {
     input.placeholder = placeholder;
     input.value = value;
     input.className = this.errors[name] ? 'error' : '';
-    
+
     // Clear error on input
     // Requirement 22.7: Clear error when user corrects input
     input.oninput = () => {
@@ -223,16 +209,8 @@ export class DeviceForm {
         }
       }
     };
-    
-    fieldContainer.appendChild(input);
 
-    // Show hint if provided
-    if (hint) {
-      const hintElement = document.createElement('div');
-      hintElement.className = 'field-hint';
-      hintElement.textContent = hint;
-      fieldContainer.appendChild(hintElement);
-    }
+    fieldContainer.appendChild(input);
 
     // Show error if exists
     if (this.errors[name]) {
@@ -253,9 +231,7 @@ export class DeviceForm {
     name: string,
     label: string,
     placeholder: string,
-    value: string,
-    required: boolean,
-    hint?: string
+    value: string
   ): HTMLElement {
     const fieldContainer = document.createElement('div');
     fieldContainer.className = 'form-field';
@@ -263,12 +239,6 @@ export class DeviceForm {
     const labelElement = document.createElement('label');
     labelElement.htmlFor = `device-${name}`;
     labelElement.textContent = label;
-    if (required) {
-      const requiredMark = document.createElement('span');
-      requiredMark.className = 'required-mark';
-      requiredMark.textContent = ' *';
-      labelElement.appendChild(requiredMark);
-    }
     fieldContainer.appendChild(labelElement);
 
     const textarea = document.createElement('textarea');
@@ -276,9 +246,9 @@ export class DeviceForm {
     textarea.name = name;
     textarea.placeholder = placeholder;
     textarea.value = value;
-    textarea.rows = 3;
+    textarea.rows = 4;
     textarea.className = this.errors[name] ? 'error' : '';
-    
+
     // Clear error on input
     textarea.oninput = () => {
       if (this.errors[name]) {
@@ -290,16 +260,8 @@ export class DeviceForm {
         }
       }
     };
-    
-    fieldContainer.appendChild(textarea);
 
-    // Show hint if provided
-    if (hint) {
-      const hintElement = document.createElement('div');
-      hintElement.className = 'field-hint';
-      hintElement.textContent = hint;
-      fieldContainer.appendChild(hintElement);
-    }
+    fieldContainer.appendChild(textarea);
 
     // Show error if exists
     if (this.errors[name]) {

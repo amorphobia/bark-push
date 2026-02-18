@@ -5,6 +5,18 @@
 
 import type { BarkDevice, NotificationPayload, BarkApiRequest } from '../types';
 
+// Error types for translation in UI layer
+export const BarkErrorType = {
+  noDevicesProvided: 'noDevicesProvided',
+  networkError: 'networkError',
+  timeout: 'timeout',
+  serverError: 'serverError',
+  unknownError: 'unknownError',
+  sendFailed: 'sendFailed',
+} as const;
+
+export type BarkErrorType = typeof BarkErrorType[keyof typeof BarkErrorType];
+
 /**
  * BarkClient handles all communication with Bark servers
  */
@@ -25,7 +37,7 @@ export class BarkClient {
     payload: NotificationPayload
   ): Promise<void> {
     if (devices.length === 0) {
-      throw new Error('No devices provided');
+      throw new Error(BarkErrorType.noDevicesProvided);
     }
 
     // Group devices by server URL and custom headers
@@ -42,18 +54,18 @@ export class BarkClient {
     // Requirements: 3.2, 3.3, 3.4, 3.5
     const failures: Array<{ devices: BarkDevice[], error: string }> = [];
     let groupIndex = 0;
-    
+
     for (const result of results) {
       if (result.status === 'rejected') {
         const group = Array.from(deviceGroups.values())[groupIndex];
         failures.push({
           devices: group,
-          error: result.reason.message || 'Unknown error'
+          error: result.reason.message || BarkErrorType.unknownError
         });
       }
       groupIndex++;
     }
-    
+
     // Report failures if any occurred
     if (failures.length > 0) {
       const errorMessages = failures.map(f => {
@@ -62,9 +74,9 @@ export class BarkClient {
         const deviceNames = f.devices
           .map(d => d.name || d.deviceKey)
           .join(', ');
-        return `Failed to send to: ${deviceNames} (${f.error})`;
+        return JSON.stringify({ devices: deviceNames, error: f.error });
       });
-      throw new Error(errorMessages.join('\n'));
+      throw new Error(JSON.stringify(errorMessages));
     }
   }
 
@@ -177,10 +189,10 @@ export class BarkClient {
           }
         },
         onerror: () => {
-          reject(new Error('Network error. Please check your connection.'));
+          reject(new Error(BarkErrorType.networkError));
         },
         ontimeout: () => {
-          reject(new Error('Request timed out. Please try again.'));
+          reject(new Error(BarkErrorType.timeout));
         },
       });
     });
@@ -311,6 +323,6 @@ export class BarkClient {
       // Not JSON or no message field
     }
 
-    return 'Server error. Please check your settings.';
+    return BarkErrorType.serverError;
   }
 }

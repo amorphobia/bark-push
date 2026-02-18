@@ -5,7 +5,7 @@
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { fc } from '@fast-check/vitest';
-import { BarkClient } from './bark-client';
+import { BarkClient, BarkErrorType } from './bark-client';
 import { createDevice } from '../utils/device-factory';
 import type { NotificationPayload } from '../types';
 
@@ -358,7 +358,7 @@ describe('BarkClient', () => {
     test('throws error when no devices provided', async () => {
       const payload: NotificationPayload = { body: 'Test' };
 
-      await expect(client.sendNotification([], payload)).rejects.toThrow('No devices provided');
+      await expect(client.sendNotification([], payload)).rejects.toThrow(BarkErrorType.noDevicesProvided);
     });
 
     test('handles network timeout', async () => {
@@ -372,7 +372,7 @@ describe('BarkClient', () => {
         details.ontimeout();
       });
 
-      await expect(client.sendNotification([device], payload)).rejects.toThrow('Request timed out');
+      await expect(client.sendNotification([device], payload)).rejects.toThrow(BarkErrorType.timeout);
     });
 
     test('handles network error', async () => {
@@ -386,7 +386,7 @@ describe('BarkClient', () => {
         details.onerror();
       });
 
-      await expect(client.sendNotification([device], payload)).rejects.toThrow('Network error');
+      await expect(client.sendNotification([device], payload)).rejects.toThrow(BarkErrorType.networkError);
     });
 
     test('parses API error response', async () => {
@@ -420,7 +420,7 @@ describe('BarkClient', () => {
         });
       });
 
-      await expect(client.sendNotification([device], payload)).rejects.toThrow('Server error');
+      await expect(client.sendNotification([device], payload)).rejects.toThrow(BarkErrorType.serverError);
     });
   });
 

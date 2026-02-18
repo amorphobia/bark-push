@@ -166,5 +166,7 @@ export default {
     storageError: '保存数据失败。请检查 Tampermonkey 权限。',
     noDeviceSelected: '请至少选择一个设备',
     messageEmpty: '消息不能为空',
+    noDevicesProvided: '未配置设备',
+    sendFailed: '发送到以下设备失败: {device} ({error})',
   },
 } as const;

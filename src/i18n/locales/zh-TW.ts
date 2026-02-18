@@ -166,5 +166,7 @@ export default {
     storageError: '儲存資料失敗。請檢查 Tampermonkey 權限。',
     noDeviceSelected: '請至少選擇一個裝置',
     messageEmpty: '訊息不能為空',
+    noDevicesProvided: '未設定裝置',
+    sendFailed: '發送到以下裝置失敗: {device} ({error})',
   },
 } as const;

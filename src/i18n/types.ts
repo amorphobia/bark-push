@@ -11,3 +11,7 @@ export type SupportedLocale = 'en' | 'zh-CN' | 'zh-TW' | 'ja' | 'ko';
 export interface TranslationObject {
   [key: string]: string | TranslationObject;
 }
+
+export interface I18nInterface {
+  t(key: string, replacements?: Record<string, string>): string;
+}

@@ -137,24 +137,29 @@ class I18n {
   /**
    * Translate a key to the current locale
    * Supports nested keys with dot notation (e.g., "push.title")
+   * Supports template variables with {variable} syntax
    */
-  t(key: string): string {
+  t(key: string, replacements?: Record<string, string>): string {
     const value = this.getNestedValue(this.translations, key);
-    if (value !== undefined) {
-      return value;
-    }
+    let result = value !== undefined ? value : undefined;
 
     // Try fallback translations
-    if (this.currentLocale !== 'en') {
-      const fallbackValue = this.getNestedValue(this.fallbackTranslations, key);
-      if (fallbackValue !== undefined) {
-        return fallbackValue;
-      }
+    if (result === undefined && this.currentLocale !== 'en') {
+      result = this.getNestedValue(this.fallbackTranslations, key);
     }
 
     // Return key if translation not found
-    console.warn(`Translation not found for key: ${key}`);
-    return key;
+    if (result === undefined) {
+      console.warn(`Translation not found for key: ${key}`);
+      return key;
+    }
+
+    // Replace template variables if replacements provided
+    if (replacements) {
+      return result.replace(/\{(\w+)\}/g, (_, key) => replacements[key] ?? `{${key}}`);
+    }
+
+    return result;
   }
 
   /**
@@ -216,10 +221,10 @@ class I18n {
 const i18n = new I18n();
 
 // Export convenience function
-export function t(key: string): string {
-  return i18n.t(key);
+export function t(key: string, replacements?: Record<string, string>): string {
+  return i18n.t(key, replacements);
 }
 
 // Export i18n instance
 export { i18n };
-export type { LocaleInfo, SupportedLocale };
+export type { LocaleInfo, SupportedLocale } from './types';

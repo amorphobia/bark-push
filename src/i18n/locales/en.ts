@@ -166,5 +166,7 @@ export default {
     storageError: 'Failed to save data. Check Tampermonkey permissions.',
     noDeviceSelected: 'Please select at least one device',
     messageEmpty: 'Message cannot be empty',
+    noDevicesProvided: 'No devices configured',
+    sendFailed: 'Failed to send to: {device} ({error})',
   },
 } as const;

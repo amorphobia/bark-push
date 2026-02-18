@@ -6,7 +6,7 @@
 import type { BarkDevice, NotificationPayload } from '../types';
 import { StorageManager } from '../storage/storage-manager';
 import { DeviceSelector } from './device-selector';
-import { BarkClient } from '../api/bark-client';
+import { BarkClient, BarkErrorType } from '../api/bark-client';
 import { t } from '../i18n';
 import type { ToastManager } from './toast';
 
@@ -599,7 +599,8 @@ export class PushTab {
     } catch (error) {
       // Show error message (Requirement 9.7)
       const errorMessage = error instanceof Error ? error.message : t('push.failed');
-      this.showError(errorMessage);
+      const translatedMessage = this.translateError(errorMessage);
+      this.showError(translatedMessage);
     } finally {
       // Restore button state
       this.isSending = false;
@@ -613,6 +614,50 @@ export class PushTab {
    */
   private showSuccess(message: string): void {
     this.toast.show(message, 'success');
+  }
+
+  /**
+   * Translate error message or error type to localized text
+   */
+  private translateError(errorMessage: string): string {
+    // Check if it's a JSON array of errors (batch send failures)
+    if (errorMessage.startsWith('[') && errorMessage.endsWith(']')) {
+      try {
+        const errors = JSON.parse(errorMessage) as Array<{ devices: string; error: string }>;
+        return errors.map(e => {
+          const deviceInfo = e.devices;
+          const errorKey = e.error as BarkErrorType;
+          const errorText = this.getErrorTranslation(errorKey);
+          return t('errors.sendFailed', { device: deviceInfo, error: errorText });
+        }).join('\n');
+      } catch {
+        // Not valid JSON, fall through to regular error handling
+      }
+    }
+
+    // Check if it's a single error type
+    const errorKey = errorMessage as BarkErrorType;
+    return this.getErrorTranslation(errorKey);
+  }
+
+  /**
+   * Get translated text for an error type
+   */
+  private getErrorTranslation(errorType: BarkErrorType): string {
+    switch (errorType) {
+      case BarkErrorType.noDevicesProvided:
+        return t('errors.noDevicesProvided');
+      case BarkErrorType.networkError:
+        return t('errors.networkError');
+      case BarkErrorType.timeout:
+        return t('errors.timeout');
+      case BarkErrorType.serverError:
+        return t('errors.serverError');
+      case BarkErrorType.unknownError:
+        return t('errors.unknownError');
+      default:
+        return t('errors.unknownError');
+    }
   }
 
   /**

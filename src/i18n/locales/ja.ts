@@ -166,5 +166,7 @@ export default {
     storageError: 'データの保存に失敗しました。Tampermonkey の権限を確認してください。',
     noDeviceSelected: '少なくとも 1 台のデバイスを選択してください',
     messageEmpty: 'メッセージを入力してください',
+    noDevicesProvided: 'デバイスが設定されていません',
+    sendFailed: '以下のデバイスへの送信に失敗: {device} ({error})',
   },
 } as const;

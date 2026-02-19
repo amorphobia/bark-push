@@ -1,14 +1,21 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, test } from 'vitest';
 import * as fc from 'fast-check';
 import { ModalController } from './modal';
 import { StorageManager } from '../storage/storage-manager';
+import { BarkClient } from '../api/bark-client';
+import { PushTab } from './push-tab';
+import type { ToastManager } from './toast';
 
 describe('ModalController', () => {
   let modalController: ModalController;
   let storage: StorageManager;
+  let barkClient: BarkClient;
+  let mockToast: ToastManager;
 
   beforeEach(() => {
     storage = new StorageManager();
+    barkClient = new BarkClient();
+    mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager;
     modalController = new ModalController(storage);
     document.body.innerHTML = '';
   });
@@ -873,6 +880,102 @@ describe('ModalController', () => {
       expect(modal.style.height).toBe('599px');
 
       modalController.close();
+    });
+  });
+
+  describe('Tab Layout', () => {
+    test('tabs have no gaps between them', () => {
+      const modalController = new ModalController(storage);
+      modalController.open();
+
+      const shadowRoot = (modalController as any).shadowRoot;
+      const tabsContainer = shadowRoot?.querySelector('.bark-tabs') as HTMLElement;
+      const tabs = shadowRoot?.querySelectorAll('.bark-tab');
+
+      expect(tabsContainer).toBeTruthy();
+      expect(tabs?.length).toBe(2);
+
+      // Check tabs are adjacent (no gaps)
+      const pushTab = tabs[0];
+      const settingsTab = tabs[1];
+
+      const pushRect = pushTab.getBoundingClientRect();
+      const settingsRect = settingsTab.getBoundingClientRect();
+
+      // Settings tab should start immediately after push tab ends (or very close)
+      const gap = settingsRect.left - (pushRect.left + pushRect.width);
+      expect(gap).toBeLessThanOrEqual(1);
+
+      modalController.close();
+    });
+
+    test('active tab indicator is visible', () => {
+      const modalController = new ModalController(storage);
+      modalController.open();
+
+      const shadowRoot = (modalController as any).shadowRoot;
+      const activeTab = shadowRoot?.querySelector('.bark-tab.active') as HTMLElement;
+
+      expect(activeTab).toBeTruthy();
+      // Active tab should have border-top color
+      const style = window.getComputedStyle(activeTab);
+      expect(style.borderTopColor).not.toBe('transparent');
+
+      modalController.close();
+    });
+  });
+
+  describe('Segmented Control Layout', () => {
+    test('level segmented control buttons have no gaps', () => {
+      // Set advanced expanded to show the level control
+      storage.setAdvancedExpanded(true);
+
+      const pushTab = new PushTab(storage, barkClient, mockToast);
+      const container = pushTab.render();
+
+      const levelContainer = container.querySelector('.segmented-control') as HTMLElement;
+      const buttons = levelContainer?.querySelectorAll('button');
+
+      expect(levelContainer).toBeTruthy();
+      expect(buttons?.length).toBe(4);
+
+      // Check buttons are adjacent (no gaps)
+      const btn0Rect = buttons[0].getBoundingClientRect();
+      const btn1Rect = buttons[1].getBoundingClientRect();
+      const btn2Rect = buttons[2].getBoundingClientRect();
+      const btn3Rect = buttons[3].getBoundingClientRect();
+
+      // Gap between buttons should be 0 or very close to 0
+      const gap01 = btn1Rect.left - (btn0Rect.left + btn0Rect.width);
+      const gap12 = btn2Rect.left - (btn1Rect.left + btn1Rect.width);
+      const gap23 = btn3Rect.left - (btn2Rect.left + btn2Rect.width);
+
+      expect(gap01).toBeLessThanOrEqual(1);
+      expect(gap12).toBeLessThanOrEqual(1);
+      expect(gap23).toBeLessThanOrEqual(1);
+
+      pushTab.destroy();
+    });
+
+    test('segmented control has rounded corners on outer buttons', () => {
+      storage.setAdvancedExpanded(true);
+
+      const pushTab = new PushTab(storage, barkClient, mockToast);
+      const container = pushTab.render();
+
+      const buttons = container.querySelectorAll('.segmented-control button');
+
+      // First button should have left border-radius
+      const firstStyle = window.getComputedStyle(buttons[0]);
+      expect(firstStyle.borderTopLeftRadius).not.toBe('0px');
+      expect(firstStyle.borderBottomLeftRadius).not.toBe('0px');
+
+      // Last button should have right border-radius
+      const lastStyle = window.getComputedStyle(buttons[buttons.length - 1]);
+      expect(lastStyle.borderTopRightRadius).not.toBe('0px');
+      expect(lastStyle.borderBottomRightRadius).not.toBe('0px');
+
+      pushTab.destroy();
     });
   });
 });

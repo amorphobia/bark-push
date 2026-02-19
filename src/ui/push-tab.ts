@@ -208,12 +208,12 @@ export class PushTab {
     // Device selector (Requirement 6.1)
     const deviceGroup = document.createElement('div');
     deviceGroup.className = 'form-group';
-    
+
     const deviceLabel = document.createElement('label');
     deviceLabel.textContent = t('push.selectDevice');
-    
+
     const deviceSelectorElement = this.deviceSelector.render();
-    
+
     deviceGroup.appendChild(deviceLabel);
     deviceGroup.appendChild(deviceSelectorElement);
     container.appendChild(deviceGroup);
@@ -588,11 +588,10 @@ export class PushTab {
 
     const levelContainer = document.createElement('div');
     levelContainer.className = 'segmented-control';
-    levelContainer.style.cssText = 'display: flex; border: 1px solid var(--bark-border-light); border-radius: 6px; overflow: hidden;';
+    levelContainer.style.cssText = 'display: flex; border: 1px solid var(--bark-border-light); border-radius: 6px; overflow: hidden; margin: 0 -1px -1px -1px; gap: 0;';
 
     const levels = ['active', 'critical', 'timeSensitive', 'passive'];
-    let firstLevel = true;
-    levels.forEach(level => {
+    levels.forEach((level) => {
       const levelBtn = document.createElement('button');
       levelBtn.type = 'button';
       levelBtn.value = level;
@@ -606,19 +605,11 @@ export class PushTab {
         font-size: 12px;
         cursor: pointer;
         transition: all 200ms;
-        border-right: 1px solid var(--bark-border-light);
+        margin: 0 !important;
       `;
       if (level === 'active') {
         levelBtn.style.background = 'var(--bark-primary)';
         levelBtn.style.color = 'white';
-      }
-      if (firstLevel) {
-        levelBtn.style.borderRadius = '5px 0 0 5px';
-        firstLevel = false;
-      }
-      if (level === 'passive') {
-        levelBtn.style.borderRight = 'none';
-        levelBtn.style.borderRadius = '0 5px 5px 0';
       }
 
       levelBtn.addEventListener('click', () => {

@@ -360,14 +360,14 @@ export class ModalController {
       .bark-tabs {
         display: flex;
         flex: 1;
-        gap: 0;
+        width: 100%;
       }
 
       .bark-tab {
         flex: 1;
         padding: 10px 16px;
         min-width: 44px;
-        min-height: 40px;
+        min-height: 42px;
         border: none;
         background: transparent;
         color: var(--bark-text-secondary);
@@ -378,7 +378,10 @@ export class ModalController {
         display: flex;
         align-items: center;
         justify-content: center;
-        border-top: 2px solid transparent;
+        border-top: 3px solid transparent;
+        margin-top: -1px;
+        margin-bottom: -1px;
+        margin-left: 0 !important;
       }
 
       .bark-tab:hover {
@@ -821,6 +824,8 @@ export class ModalController {
       }
 
       /* Loading Spinner */
+
+      /* Loading Spinner */
       .spinner {
         display: inline-block;
         width: 16px;
@@ -1151,7 +1156,7 @@ export class ModalController {
         if (!this.pushTab) {
           this.pushTab = new PushTab(this.storage, this.barkClient, toast);
         }
-        
+
         // Clear container and append rendered component
         container.innerHTML = '';
         container.appendChild(this.pushTab.render());

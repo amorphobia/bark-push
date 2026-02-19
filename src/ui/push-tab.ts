@@ -479,14 +479,232 @@ export class PushTab {
     const archiveCheckbox = document.createElement('input');
     archiveCheckbox.type = 'checkbox';
     archiveCheckbox.id = 'push-archive';
-    
+
     const archiveText = document.createElement('span');
     archiveText.textContent = t('push.advanced.archiveLabel');
-    
+
     archiveLabel.appendChild(archiveCheckbox);
     archiveLabel.appendChild(archiveText);
     archiveGroup.appendChild(archiveLabel);
     content.appendChild(archiveGroup);
+
+    // Subtitle field (batch 1)
+    const subtitleGroup = document.createElement('div');
+    subtitleGroup.className = 'form-group';
+
+    const subtitleLabel = document.createElement('label');
+    subtitleLabel.textContent = t('push.advanced.subtitle');
+    subtitleLabel.htmlFor = 'push-subtitle';
+
+    const subtitleInput = document.createElement('input');
+    subtitleInput.type = 'text';
+    subtitleInput.id = 'push-subtitle';
+    subtitleInput.className = 'form-input';
+    subtitleInput.placeholder = t('push.advanced.subtitlePlaceholder');
+
+    subtitleGroup.appendChild(subtitleLabel);
+    subtitleGroup.appendChild(subtitleInput);
+    content.appendChild(subtitleGroup);
+
+    // Badge field (batch 1)
+    const badgeGroup = document.createElement('div');
+    badgeGroup.className = 'form-group';
+
+    const badgeLabel = document.createElement('label');
+    badgeLabel.textContent = t('push.advanced.badge');
+    badgeLabel.htmlFor = 'push-badge';
+
+    const badgeInput = document.createElement('input');
+    badgeInput.type = 'number';
+    badgeInput.id = 'push-badge';
+    badgeInput.className = 'form-input';
+    badgeInput.min = '0';
+    badgeInput.max = '99';
+    badgeInput.placeholder = '0';
+
+    badgeGroup.appendChild(badgeLabel);
+    badgeGroup.appendChild(badgeInput);
+    content.appendChild(badgeGroup);
+
+    // Level segmented control (batch 1)
+    const levelGroup = document.createElement('div');
+    levelGroup.className = 'form-group';
+
+    const levelLabel = document.createElement('label');
+    levelLabel.textContent = t('push.advanced.level');
+
+    const levelContainer = document.createElement('div');
+    levelContainer.className = 'segmented-control';
+    levelContainer.style.cssText = 'display: flex; border: 1px solid var(--bark-border-light); border-radius: 6px; overflow: hidden;';
+
+    const levels = ['active', 'critical', 'timeSensitive', 'passive'];
+    let firstLevel = true;
+    levels.forEach(level => {
+      const levelBtn = document.createElement('button');
+      levelBtn.type = 'button';
+      levelBtn.value = level;
+      levelBtn.textContent = t(`push.advanced.levelOptions.${level}`);
+      levelBtn.style.cssText = `
+        flex: 1;
+        padding: 8px 4px;
+        border: none;
+        background: var(--bark-bg-primary);
+        color: var(--bark-text-secondary);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 200ms;
+        border-right: 1px solid var(--bark-border-light);
+      `;
+      if (level === 'active') {
+        levelBtn.style.background = 'var(--bark-primary)';
+        levelBtn.style.color = 'white';
+      }
+      if (firstLevel) {
+        levelBtn.style.borderRadius = '5px 0 0 5px';
+        firstLevel = false;
+      }
+      if (level === 'passive') {
+        levelBtn.style.borderRight = 'none';
+        levelBtn.style.borderRadius = '0 5px 5px 0';
+      }
+
+      levelBtn.addEventListener('click', () => {
+        // Update all buttons
+        const btns = levelContainer.querySelectorAll('button');
+        btns.forEach(btn => {
+          (btn as HTMLButtonElement).style.background = 'var(--bark-bg-primary)';
+          (btn as HTMLButtonElement).style.color = 'var(--bark-text-secondary)';
+        });
+        levelBtn.style.background = 'var(--bark-primary)';
+        levelBtn.style.color = 'white';
+      });
+
+      levelContainer.appendChild(levelBtn);
+    });
+
+    levelGroup.appendChild(levelLabel);
+    levelGroup.appendChild(levelContainer);
+    content.appendChild(levelGroup);
+
+    // Volume slider (batch 1)
+    const volumeGroup = document.createElement('div');
+    volumeGroup.className = 'form-group';
+
+    const volumeLabel = document.createElement('label');
+    volumeLabel.textContent = t('push.advanced.volume');
+    volumeLabel.htmlFor = 'push-volume';
+
+    const volumeContainer = document.createElement('div');
+    volumeContainer.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+
+    const volumeInput = document.createElement('input');
+    volumeInput.type = 'range';
+    volumeInput.id = 'push-volume';
+    volumeInput.className = 'form-range';
+    volumeInput.min = '0';
+    volumeInput.max = '10';
+    volumeInput.value = '5';
+
+    const volumeValue = document.createElement('span');
+    volumeValue.id = 'push-volume-value';
+    volumeValue.textContent = '5';
+    volumeValue.style.cssText = 'min-width: 20px; text-align: center; color: var(--bark-text-secondary); font-size: 12px;';
+
+    volumeInput.addEventListener('input', () => {
+      volumeValue.textContent = volumeInput.value;
+    });
+
+    volumeContainer.appendChild(volumeInput);
+    volumeContainer.appendChild(volumeValue);
+
+    volumeGroup.appendChild(volumeLabel);
+    volumeGroup.appendChild(volumeContainer);
+    content.appendChild(volumeGroup);
+
+    // Call field (batch 2)
+    const callGroup = document.createElement('div');
+    callGroup.className = 'form-group';
+
+    const callLabel = document.createElement('label');
+    callLabel.htmlFor = 'push-call';
+
+    const callCheckbox = document.createElement('input');
+    callCheckbox.type = 'checkbox';
+    callCheckbox.id = 'push-call';
+    callCheckbox.value = '1';
+
+    const callText = document.createElement('span');
+    callText.textContent = t('push.advanced.call');
+
+    const callHelp = document.createElement('span');
+    callHelp.textContent = ' - ' + t('push.advanced.callHelp');
+    callHelp.style.cssText = 'font-size: 12px; color: var(--bark-text-secondary); margin-left: 4px;';
+
+    callLabel.appendChild(callCheckbox);
+    callLabel.appendChild(callText);
+    callLabel.appendChild(callHelp);
+    callGroup.appendChild(callLabel);
+    content.appendChild(callGroup);
+
+    // Copy field (batch 2)
+    const copyGroup = document.createElement('div');
+    copyGroup.className = 'form-group';
+
+    const copyLabel = document.createElement('label');
+    copyLabel.textContent = t('push.advanced.copy');
+    copyLabel.htmlFor = 'push-copy';
+
+    const copyInput = document.createElement('input');
+    copyInput.type = 'text';
+    copyInput.id = 'push-copy';
+    copyInput.className = 'form-input';
+    copyInput.placeholder = t('push.advanced.copyPlaceholder');
+
+    copyGroup.appendChild(copyLabel);
+    copyGroup.appendChild(copyInput);
+    content.appendChild(copyGroup);
+
+    // Action dropdown (batch 2)
+    const actionGroup = document.createElement('div');
+    actionGroup.className = 'form-group';
+
+    const actionLabel = document.createElement('label');
+    actionLabel.textContent = t('push.advanced.action');
+    actionLabel.htmlFor = 'push-action';
+
+    const actionSelect = document.createElement('select');
+    actionSelect.id = 'push-action';
+    actionSelect.className = 'form-select';
+
+    const actionOptions = ['none', 'passive'];
+    actionOptions.forEach(action => {
+      const option = document.createElement('option');
+      option.value = action;
+      option.textContent = t(`push.advanced.actionOptions.${action}`);
+      actionSelect.appendChild(option);
+    });
+
+    actionGroup.appendChild(actionLabel);
+    actionGroup.appendChild(actionSelect);
+    content.appendChild(actionGroup);
+
+    // Image URL field (batch 2)
+    const imageGroup = document.createElement('div');
+    imageGroup.className = 'form-group';
+
+    const imageLabel = document.createElement('label');
+    imageLabel.textContent = t('push.advanced.image');
+    imageLabel.htmlFor = 'push-image';
+
+    const imageInput = document.createElement('input');
+    imageInput.type = 'url';
+    imageInput.id = 'push-image';
+    imageInput.className = 'form-input';
+    imageInput.placeholder = t('push.advanced.imagePlaceholder');
+
+    imageGroup.appendChild(imageLabel);
+    imageGroup.appendChild(imageInput);
+    content.appendChild(imageGroup);
 
     card.appendChild(content);
     section.appendChild(card);
@@ -564,6 +782,15 @@ export class PushTab {
     const urlInput = this.containerElement.querySelector('#push-url') as HTMLInputElement;
     const autoCopyCheckbox = this.containerElement.querySelector('#push-autocopy') as HTMLInputElement;
     const archiveCheckbox = this.containerElement.querySelector('#push-archive') as HTMLInputElement;
+    const subtitleInput = this.containerElement.querySelector('#push-subtitle') as HTMLInputElement;
+    const badgeInput = this.containerElement.querySelector('#push-badge') as HTMLInputElement;
+    const levelContainer = this.containerElement.querySelector('.segmented-control');
+    const selectedLevelBtn = levelContainer?.querySelector('button[style*="var(--bark-primary)"]') as HTMLButtonElement;
+    const volumeInput = this.containerElement.querySelector('#push-volume') as HTMLInputElement;
+    const callCheckbox = this.containerElement.querySelector('#push-call') as HTMLInputElement;
+    const copyInput = this.containerElement.querySelector('#push-copy') as HTMLInputElement;
+    const actionSelect = this.containerElement.querySelector('#push-action') as HTMLSelectElement;
+    const imageInput = this.containerElement.querySelector('#push-image') as HTMLInputElement;
 
     if (soundSelect?.value) payload.sound = soundSelect.value;
     if (iconInput?.value) payload.icon = iconInput.value;
@@ -571,6 +798,18 @@ export class PushTab {
     if (urlInput?.value) payload.url = urlInput.value;
     if (autoCopyCheckbox?.checked) payload.autoCopy = true;
     if (archiveCheckbox?.checked) payload.isArchive = '1';
+
+    // Batch 1: subtitle, badge, level, volume
+    if (subtitleInput?.value) payload.subtitle = subtitleInput.value;
+    if (badgeInput?.value) payload.badge = parseInt(badgeInput.value, 10);
+    if (selectedLevelBtn?.value && selectedLevelBtn.value !== 'active') payload.level = selectedLevelBtn.value as 'critical' | 'active' | 'timeSensitive' | 'passive';
+    if (volumeInput?.value && volumeInput.value !== '5') payload.volume = parseInt(volumeInput.value, 10);
+
+    // Batch 2: call, copy, action, image
+    if (callCheckbox?.checked) payload.call = callCheckbox.value;
+    if (copyInput?.value) payload.copy = copyInput.value;
+    if (actionSelect?.value && actionSelect.value !== 'none') payload.action = actionSelect.value;
+    if (imageInput?.value) payload.image = imageInput.value;
 
     // Show loading state (Requirement 9.5)
     this.isSending = true;

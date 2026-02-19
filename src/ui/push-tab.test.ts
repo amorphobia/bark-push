@@ -72,6 +72,27 @@ vi.mock('../i18n', () => {
     'push.sounds.tiptoes': 'Tiptoes',
     'push.sounds.typewriters': 'Typewriters',
     'push.sounds.update': 'Update',
+    // New advanced options (batch 1)
+    'push.advanced.subtitle': 'Subtitle',
+    'push.advanced.subtitlePlaceholder': 'Notification subtitle',
+    'push.advanced.badge': 'Badge',
+    'push.advanced.level': 'Level',
+    'push.advanced.levelOptions.active': 'Active',
+    'push.advanced.levelOptions.critical': 'Critical',
+    'push.advanced.levelOptions.timeSensitive': 'Time Sensitive',
+    'push.advanced.levelOptions.passive': 'Passive',
+    'push.advanced.volume': 'Volume',
+    // New advanced options (batch 2)
+    'push.advanced.call': 'Call',
+    'push.advanced.callHelp': 'Repeat ringtone for 30 seconds',
+    'push.advanced.copy': 'Copy Content',
+    'push.advanced.copyPlaceholder': 'Custom content to copy',
+    'push.advanced.action': 'Action',
+    'push.advanced.actionOptions.none': 'None',
+    'push.advanced.actionOptions.passive': 'Passive',
+    'push.advanced.image': 'Image URL',
+    'push.advanced.imagePlaceholder': 'https://example.com/image.jpg',
+    // Common
     'push.sendButton': 'Send Notification',
     'push.sending': 'Sending...',
     'errors.noDeviceSelected': 'Please select at least one device',
@@ -857,6 +878,121 @@ describe('PushTab', () => {
       expect(container.querySelector('#push-url')).toBeTruthy();
       expect(container.querySelector('#push-autocopy')).toBeTruthy();
       expect(container.querySelector('#push-archive')).toBeTruthy();
+
+      newPushTab.destroy();
+    });
+
+    test('new advanced options batch 1 fields are present', () => {
+      storage.setAdvancedExpanded(true);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
+      const container = newPushTab.render();
+
+      // Batch 1: subtitle, badge, level, volume
+      expect(container.querySelector('#push-subtitle')).toBeTruthy();
+      expect(container.querySelector('#push-badge')).toBeTruthy();
+      expect(container.querySelector('.segmented-control')).toBeTruthy();
+      expect(container.querySelector('#push-volume')).toBeTruthy();
+      expect(container.querySelector('#push-volume-value')).toBeTruthy();
+
+      newPushTab.destroy();
+    });
+
+    test('new advanced options batch 2 fields are present', () => {
+      storage.setAdvancedExpanded(true);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
+      const container = newPushTab.render();
+
+      // Batch 2: call, copy, action, image
+      expect(container.querySelector('#push-call')).toBeTruthy();
+      expect(container.querySelector('#push-copy')).toBeTruthy();
+      expect(container.querySelector('#push-action')).toBeTruthy();
+      expect(container.querySelector('#push-image')).toBeTruthy();
+
+      newPushTab.destroy();
+    });
+
+    test('level segmented control has all options', () => {
+      storage.setAdvancedExpanded(true);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
+      const container = newPushTab.render();
+
+      const segmentedControl = container.querySelector('.segmented-control');
+      const buttons = segmentedControl?.querySelectorAll('button');
+
+      expect(buttons).toBeTruthy();
+      expect(buttons?.length).toBe(4);
+
+      const buttonValues = Array.from(buttons || []).map(btn => btn.getAttribute('value'));
+      expect(buttonValues).toContain('active');
+      expect(buttonValues).toContain('critical');
+      expect(buttonValues).toContain('timeSensitive');
+      expect(buttonValues).toContain('passive');
+
+      newPushTab.destroy();
+    });
+
+    test('level segmented control click changes selection', () => {
+      storage.setAdvancedExpanded(true);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
+      const container = newPushTab.render();
+
+      const segmentedControl = container.querySelector('.segmented-control');
+      const buttons = segmentedControl?.querySelectorAll('button');
+
+      // Click on 'critical' button
+      const criticalBtn = Array.from(buttons || []).find(btn => btn.getAttribute('value') === 'critical');
+      criticalBtn?.click();
+
+      // Verify the critical button is now selected (has primary background)
+      const criticalStyle = criticalBtn?.getAttribute('style');
+      expect(criticalStyle).toContain('var(--bark-primary)');
+
+      newPushTab.destroy();
+    });
+
+    test('action dropdown has all options', () => {
+      storage.setAdvancedExpanded(true);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
+      const container = newPushTab.render();
+
+      const actionSelect = container.querySelector('#push-action') as HTMLSelectElement;
+      const options = Array.from(actionSelect.options);
+
+      expect(options.some(opt => opt.value === 'none')).toBe(true);
+      expect(options.some(opt => opt.value === 'passive')).toBe(true);
+
+      newPushTab.destroy();
+    });
+
+    test('volume slider has correct range', () => {
+      storage.setAdvancedExpanded(true);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
+      const container = newPushTab.render();
+
+      const volumeInput = container.querySelector('#push-volume') as HTMLInputElement;
+
+      expect(volumeInput.min).toBe('0');
+      expect(volumeInput.max).toBe('10');
+      expect(volumeInput.value).toBe('5');
+
+      newPushTab.destroy();
+    });
+
+    test('volume slider updates value display', () => {
+      storage.setAdvancedExpanded(true);
+      const newPushTab = new PushTab(storage, barkClient, mockToast);
+      const container = newPushTab.render();
+
+      const volumeInput = container.querySelector('#push-volume') as HTMLInputElement;
+      const volumeValue = container.querySelector('#push-volume-value') as HTMLElement;
+
+      expect(volumeValue.textContent).toBe('5');
+
+      // Change slider value
+      volumeInput.value = '8';
+      volumeInput.dispatchEvent(new Event('input'));
+
+      expect(volumeValue.textContent).toBe('8');
 
       newPushTab.destroy();
     });

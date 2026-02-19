@@ -451,6 +451,7 @@ export class ModalController {
       /* Common Form Elements */
       input[type="text"],
       input[type="url"],
+      input[type="number"],
       textarea,
       select {
         width: 100%;
@@ -466,11 +467,42 @@ export class ModalController {
 
       input[type="text"]:focus,
       input[type="url"]:focus,
+      input[type="number"]:focus,
       textarea:focus,
       select:focus {
         outline: none;
         border-color: var(--bark-primary);
         box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      }
+
+      /* Range slider */
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--bark-border-light);
+        outline: none;
+        flex: 1;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--bark-primary);
+        cursor: pointer;
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--bark-primary);
+        cursor: pointer;
+        border: none;
       }
 
       textarea {

@@ -62,7 +62,6 @@ Content-Type: application/json; charset=utf-8
 - `isArchive` (string): Value must be 1. Whether or not should be archived by the app
 - `autoCopy` (string): Must be 1
 - `copy` (string): Specific content to copy (if not specified, copies entire notification)
-- `automaticallyCopy` (boolean): Alternative name for autoCopy
 - `ciphertext` (string): The ciphertext of encrypted push notifications
 - `action` (string): Set to "none", tap notifications do nothing
 - `markdown` (string): Push content with basic Markdown. When this is provided, the body field is ignored by server (`body` also becomes optional).

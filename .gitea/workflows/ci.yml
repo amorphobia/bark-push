@@ -13,7 +13,7 @@ jobs:
       - name: Build
         run: pnpm build
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v3
         with:
           name: bark-push.user.js
           path: dist/bark-push.user.js

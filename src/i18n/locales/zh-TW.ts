@@ -13,6 +13,7 @@ export default {
     confirm: '確認',
     yes: '是',
     no: '否',
+    title: 'Bark Push',
   },
   menu: {
     sendToBark: '📱 發送到 Bark（按 {shortcut} 顯示對話框）',

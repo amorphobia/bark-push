@@ -13,7 +13,6 @@ export class DeviceForm {
   private storage: StorageManager;
   private apiClient: BarkClient;
   private editingDevice: BarkDevice | null = null;
-  private onBack?: () => void;
   private onSave?: () => void;
   private errors: Record<string, string> = {};
   private testState: 'idle' | 'testing' | 'success' | 'failed' = 'idle';
@@ -35,13 +34,6 @@ export class DeviceForm {
   }
 
   /**
-   * Set callback for back/cancel button
-   */
-  setOnBack(callback: () => void): void {
-    this.onBack = callback;
-  }
-
-  /**
    * Set callback for successful save
    */
   setOnSave(callback: () => void): void {
@@ -55,29 +47,9 @@ export class DeviceForm {
   render(): HTMLElement {
     const container = document.createElement('div');
     container.className = 'device-form';
-    
+
     // Store reference to container for querying later
     this.container = container;
-
-    // Form header
-    const header = document.createElement('div');
-    header.className = 'form-header';
-
-    const backButton = document.createElement('button');
-    backButton.className = 'btn btn-secondary back-button';
-    backButton.textContent = '← ' + t('common.back');
-    backButton.type = 'button';
-    backButton.onclick = (e) => {
-      e.preventDefault();
-      this.handleBack();
-    };
-    header.appendChild(backButton);
-
-    const title = document.createElement('h3');
-    title.textContent = this.editingDevice ? t('settings.editDevice') : t('settings.addDevice');
-    header.appendChild(title);
-
-    container.appendChild(header);
 
     // Form fields
     const form = document.createElement('form');
@@ -158,10 +130,10 @@ export class DeviceForm {
     // Save button
     const saveButton = document.createElement('button');
     saveButton.type = 'button';
+    saveButton.id = 'device-save-btn';
     saveButton.className = 'btn btn-primary';
     saveButton.textContent = t('common.save');
-    saveButton.onclick = (e) => {
-      e.preventDefault();
+    saveButton.onclick = () => {
       this.handleSave();
     };
     actions.appendChild(saveButton);
@@ -403,16 +375,6 @@ export class DeviceForm {
       console.error('Save device error:', error);
       this.errors = { _general: t('errors.storageError') };
       this.updateErrorDisplay();
-    }
-  }
-
-  /**
-   * Handle back/cancel button click
-   * Requirement 13.3: Return to device list without saving
-   */
-  private handleBack(): void {
-    if (this.onBack) {
-      this.onBack();
     }
   }
 

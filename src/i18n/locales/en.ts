@@ -13,6 +13,7 @@ export default {
     confirm: 'Confirm',
     yes: 'Yes',
     no: 'No',
+    title: 'Bark Push',
   },
   menu: {
     sendToBark: '📱 Send to Bark (press {shortcut} to show the dialog)',

@@ -24,6 +24,7 @@ export class SettingsTab {
   private isRecordingShortcut: boolean = false;
   private onLanguageChangeCallback?: () => void;
   private onThemeChangeCallback?: () => void;
+  private onViewChangeCallback?: (view: ViewState) => void;
 
   // Components
   private deviceList: DeviceList;
@@ -77,6 +78,14 @@ export class SettingsTab {
   }
 
   /**
+   * Set callback for when view state changes
+   * This allows the modal controller to show/hide back button
+   */
+  setOnViewChange(callback: (view: ViewState) => void): void {
+    this.onViewChangeCallback = callback;
+  }
+
+  /**
    * Render the settings tab
    * Requirement 11.1: Display device management interface
    */
@@ -84,7 +93,7 @@ export class SettingsTab {
     const container = document.createElement('div');
     container.className = 'bark-settings-tab';
     container.style.cssText = `
-      padding: 16px;
+      padding: 12px;
     `;
 
     // Render based on current view state
@@ -160,7 +169,6 @@ export class SettingsTab {
 
     // Set up device form before rendering
     this.deviceForm.setEditingDevice(this.editingDevice);
-    this.deviceForm.setOnBack(() => this.handleBackToList());
     this.deviceForm.setOnSave(() => this.handleBackToList());
 
     // Render device form
@@ -180,6 +188,7 @@ export class SettingsTab {
       this.editingDevice = device;
       this.currentView = 'form';
       this.refreshView();
+      this.onViewChangeCallback?.('form');
     });
   }
 
@@ -192,6 +201,7 @@ export class SettingsTab {
       this.editingDevice = editDevice;
       this.currentView = 'form';
       this.refreshView();
+      this.onViewChangeCallback?.('form');
     });
   }
 
@@ -221,6 +231,7 @@ export class SettingsTab {
     this.editingDevice = null;
     this.currentView = 'list';
     this.refreshView();
+    this.onViewChangeCallback?.('list');
   }
 
   /**
@@ -246,6 +257,13 @@ export class SettingsTab {
    */
   getCurrentView(): ViewState {
     return this.currentView;
+  }
+
+  /**
+   * Go back to list view (public method for external control)
+   */
+  goBackToList(): void {
+    this.handleBackToList();
   }
 
   /**

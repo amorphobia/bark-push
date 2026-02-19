@@ -13,6 +13,7 @@ export default {
     confirm: '確認',
     yes: 'はい',
     no: 'いいえ',
+    title: 'Bark Push',
   },
   menu: {
     sendToBark: '📱 Bark に送信（{shortcut} を押してダイアログを表示）',

@@ -84,17 +84,15 @@ describe('SettingsTab', () => {
 
     test('returns to list view after form cancel', () => {
       const container = settingsTab.render();
-      
+
       // Click add device to go to form view
       const addButton = container.querySelector('button') as HTMLButtonElement;
       addButton.click();
-      
+
       expect(settingsTab.getCurrentView()).toBe('form');
 
-      // Find and click back/cancel button in form view
-      const backButton = container.querySelector('button') as HTMLButtonElement;
-      expect(backButton).toBeTruthy();
-      backButton.click();
+      // Go back using the public method (back button is now in modal header)
+      settingsTab.goBackToList();
 
       expect(settingsTab.getCurrentView()).toBe('list');
     });
@@ -230,21 +228,20 @@ describe('SettingsTab', () => {
   describe('Navigation Flow', () => {
     test('complete add device workflow', () => {
       const container = settingsTab.render();
-      
+
       // Start in list view
       expect(settingsTab.getCurrentView()).toBe('list');
-      
+
       // Click add device
       const addButton = container.querySelector('button') as HTMLButtonElement;
       addButton.click();
-      
+
       // Should be in form view
       expect(settingsTab.getCurrentView()).toBe('form');
-      
-      // Click back
-      const backButton = container.querySelector('button') as HTMLButtonElement;
-      backButton.click();
-      
+
+      // Go back using the public method (back button is now in modal header)
+      settingsTab.goBackToList();
+
       // Should be back in list view
       expect(settingsTab.getCurrentView()).toBe('list');
     });
@@ -257,21 +254,20 @@ describe('SettingsTab', () => {
       storage.saveDevice(device);
 
       const container = settingsTab.render();
-      
+
       // Start in list view
       expect(settingsTab.getCurrentView()).toBe('list');
-      
+
       // DESIGN CHANGE: Click edit icon button instead of text button
       const editButton = container.querySelector('.device-action-btn.edit') as HTMLButtonElement;
       editButton.click();
-      
+
       // Should be in form view
       expect(settingsTab.getCurrentView()).toBe('form');
-      
-      // Click back
-      const backButton = container.querySelector('button') as HTMLButtonElement;
-      backButton.click();
-      
+
+      // Go back using the public method (back button is now in modal header)
+      settingsTab.goBackToList();
+
       // Should be back in list view
       expect(settingsTab.getCurrentView()).toBe('list');
     });

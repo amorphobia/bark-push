@@ -16,6 +16,8 @@ export class ModalController {
   private shadowRoot: ShadowRoot | null = null;
   private modalElement: HTMLElement | null = null;
   private currentTab: TabType = 'push';
+  private showBackButton: boolean = false;
+  private onBackButtonClick: (() => void) | null = null;
   private storage: StorageManager;
   private barkClient: BarkClient;
   private previousFocusElement: HTMLElement | null = null;
@@ -176,18 +178,41 @@ export class ModalController {
   switchTab(tab: TabType): void {
     this.currentTab = tab;
     this.storage.setLastTab(tab);
-    
+
     // Detach old listeners before re-rendering
     this.detachEventListeners();
-    
+
     // Re-render with new tab
     this.render();
-    
+
     // Design Change: Reapply modal height after re-render
     this.updateModalHeight();
-    
+
     // Reattach listeners
     this.attachEventListeners();
+  }
+
+  /**
+   * Set whether to show back button in header (for device form view)
+   */
+  setShowBackButton(show: boolean): void {
+    this.showBackButton = show;
+    if (this.modalElement) {
+      // Detach old listeners first to avoid duplicates
+      this.detachEventListeners();
+      this.render();
+      // Re-attach listeners after render
+      this.attachEventListeners();
+      // Ensure modal height remains fixed
+      this.updateModalHeight();
+    }
+  }
+
+  /**
+   * Set callback for back button click
+   */
+  setOnBackButtonClick(callback: () => void): void {
+    this.onBackButtonClick = callback;
   }
 
   /**
@@ -282,31 +307,78 @@ export class ModalController {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 16px;
+        padding: 8px 12px;
         border-bottom: 1px solid var(--bark-border);
+        min-height: 40px;
+      }
+
+      /* Header with title and close button */
+      .bark-modal-header-left {
+        flex: 1;
+        display: flex;
+        align-items: center;
+      }
+
+      .bark-modal-header-center {
+        flex: 2;
+        text-align: center;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .bark-modal-header-right {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      /* Back button in header */
+      .bark-back-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px 8px;
+        color: var(--bark-primary);
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 6px;
+      }
+
+      .bark-back-btn:hover {
+        background-color: var(--bark-bg-secondary);
+      }
+
+      /* Modal Footer with tabs */
+      .bark-modal-footer {
+        display: flex;
+        border-top: 1px solid var(--bark-border);
       }
 
       /* Tabs */
       .bark-tabs {
         display: flex;
-        gap: 8px;
+        flex: 1;
+        gap: 0;
       }
 
       .bark-tab {
-        padding: 8px 16px;
+        flex: 1;
+        padding: 10px 16px;
         min-width: 44px;
-        min-height: 44px;
+        min-height: 40px;
         border: none;
         background: transparent;
         color: var(--bark-text-secondary);
         font-size: 14px;
         font-weight: 500;
         cursor: pointer;
-        border-radius: 6px;
         transition: background-color 200ms, color 200ms;
         display: flex;
         align-items: center;
         justify-content: center;
+        border-top: 2px solid transparent;
       }
 
       .bark-tab:hover {
@@ -314,8 +386,9 @@ export class ModalController {
       }
 
       .bark-tab.active {
-        background-color: var(--bark-primary);
-        color: white;
+        color: var(--bark-primary);
+        border-top-color: var(--bark-primary);
+        background-color: var(--bark-bg-secondary);
       }
 
       .bark-tab:focus {
@@ -480,7 +553,7 @@ export class ModalController {
 
       /* Form Groups - Consistent Spacing */
       .form-group {
-        margin-bottom: 16px;
+        margin-bottom: 8px;
       }
 
       .form-group label {
@@ -506,7 +579,7 @@ export class ModalController {
 
       /* Device Form Fields - Same spacing as form-group */
       .device-form-fields .form-field {
-        margin-bottom: 16px;
+        margin-bottom: 8px;
       }
 
       .device-form-fields .form-field label {
@@ -773,6 +846,7 @@ export class ModalController {
         font-size: 14px;
         font-family: inherit;
         background-color: var(--bark-bg-primary);
+        color: var(--bark-text-primary);
         text-align: left;
         cursor: pointer;
         transition: border-color 200ms;
@@ -803,6 +877,7 @@ export class ModalController {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        color: var(--bark-text-primary);
       }
 
       .device-selector-arrow {
@@ -980,9 +1055,27 @@ export class ModalController {
   private render(): void {
     if (!this.modalElement) return;
 
+    const backButtonHtml = this.showBackButton
+      ? `<button class="bark-back-btn" id="bark-back-btn">← ${t('common.back')}</button>`
+      : '';
+
     this.modalElement.innerHTML = `
       <div class="bark-modal">
         <div class="bark-modal-header">
+          <div class="bark-modal-header-left">
+            ${backButtonHtml}
+          </div>
+          <div class="bark-modal-header-center">
+            ${t('common.title')}
+          </div>
+          <div class="bark-modal-header-right">
+            <button class="bark-close-btn" aria-label="${t('common.close')}">✕</button>
+          </div>
+        </div>
+        <div class="bark-modal-body">
+          ${this.renderTabContent()}
+        </div>
+        <div class="bark-modal-footer">
           <div class="bark-tabs">
             <button class="bark-tab ${this.currentTab === 'push' ? 'active' : ''}" data-tab="push">
               ${t('tabs.push')}
@@ -991,10 +1084,6 @@ export class ModalController {
               ${t('tabs.settings')}
             </button>
           </div>
-          <button class="bark-close-btn" aria-label="${t('common.close')}">✕</button>
-        </div>
-        <div class="bark-modal-body">
-          ${this.renderTabContent()}
         </div>
       </div>
     `;
@@ -1043,8 +1132,18 @@ export class ModalController {
           this.settingsTab = new SettingsTab(this.storage, this.barkClient, toast);
           // Set up callback to refresh entire modal when language changes
           this.settingsTab.setOnLanguageChange(() => this.refreshUI());
+          // Set up callback for view changes to show/hide back button
+          this.settingsTab.setOnViewChange((view) => {
+            this.setShowBackButton(view === 'form');
+          });
+          // Set up callback for back button click to go back to list
+          this.setOnBackButtonClick(() => {
+            // Access the private method via the settings tab
+            // We need to call handleBackToList - let's add a public method
+            this.settingsTab?.goBackToList();
+          });
         }
-        
+
         // Clear container and append rendered component
         container.innerHTML = '';
         container.appendChild(this.settingsTab.render());
@@ -1067,6 +1166,10 @@ export class ModalController {
     // Close button
     const closeBtn = this.shadowRoot.querySelector('.bark-close-btn');
     closeBtn?.addEventListener('click', this.handleClose);
+
+    // Back button
+    const backBtn = this.shadowRoot.querySelector('#bark-back-btn');
+    backBtn?.addEventListener('click', this.handleBackButtonClick);
 
     // Backdrop click
     const overlay = this.shadowRoot.querySelector('.bark-modal-overlay');
@@ -1092,6 +1195,10 @@ export class ModalController {
     const closeBtn = this.shadowRoot.querySelector('.bark-close-btn');
     closeBtn?.removeEventListener('click', this.handleClose);
 
+    // Back button
+    const backBtn = this.shadowRoot.querySelector('#bark-back-btn');
+    backBtn?.removeEventListener('click', this.handleBackButtonClick);
+
     // Backdrop click
     const overlay = this.shadowRoot.querySelector('.bark-modal-overlay');
     overlay?.removeEventListener('click', this.handleBackdropClick);
@@ -1116,6 +1223,15 @@ export class ModalController {
    */
   private handleClose = (): void => {
     this.close();
+  };
+
+  /**
+   * Handle back button click
+   */
+  private handleBackButtonClick = (): void => {
+    if (this.onBackButtonClick) {
+      this.onBackButtonClick();
+    }
   };
 
   /**

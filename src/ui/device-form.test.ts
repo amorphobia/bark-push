@@ -327,9 +327,7 @@ describe('DeviceForm', () => {
       const formElement = deviceForm.render();
       document.body.appendChild(formElement);
 
-      const title = document.querySelector('.form-header h3');
-      expect(title?.textContent).toBe(i18n.t('settings.addDevice'));
-
+      // Title is now in modal header, not in form
       const nameInput = document.querySelector('input[name="name"]');
       const urlInput = document.querySelector('input[name="serverUrl"]');
       const keyInput = document.querySelector('input[name="deviceKey"]');
@@ -355,9 +353,7 @@ describe('DeviceForm', () => {
       const formElement = deviceForm.render();
       document.body.appendChild(formElement);
 
-      const title = document.querySelector('.form-header h3');
-      expect(title?.textContent).toBe(i18n.t('settings.editDevice'));
-
+      // Check form fields are populated (title is now in modal header, not here)
       const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
       const urlInput = document.querySelector('input[name="serverUrl"]') as HTMLInputElement;
       const keyInput = document.querySelector('input[name="deviceKey"]') as HTMLInputElement;
@@ -427,40 +423,20 @@ describe('DeviceForm', () => {
       }
     });
 
-    test('back button triggers onBack callback', () => {
-      deviceForm.setEditingDevice(null);
-      
-      let backCalled = false;
-      deviceForm.setOnBack(() => { backCalled = true; });
-      
-      const formElement = deviceForm.render();
-      document.body.appendChild(formElement);
-
-      const backButton = document.querySelector('.back-button') as HTMLButtonElement;
-      backButton.click();
-
-      expect(backCalled).toBe(true);
-
-      const formToRemove = document.querySelector('.device-form');
-      if (formToRemove) {
-        document.body.removeChild(formToRemove);
-      }
-    });
-
     test('save button triggers onSave callback on valid data', () => {
       deviceForm.setEditingDevice(null);
-      
+
       let saveCalled = false;
       deviceForm.setOnSave(() => { saveCalled = true; });
-      
+
       const formElement = deviceForm.render();
       document.body.appendChild(formElement);
 
       const urlInput = document.querySelector('input[name="serverUrl"]') as HTMLInputElement;
       const keyInput = document.querySelector('input[name="deviceKey"]') as HTMLInputElement;
-      
+
       urlInput.value = 'https://api.day.app';
-      keyInput.value = 'test-key';
+      keyInput.value = 'a'.repeat(22); // Valid 22-character key
 
       const saveButton = document.querySelector('.btn-primary') as HTMLButtonElement;
       saveButton.click();

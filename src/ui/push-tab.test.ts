@@ -1012,6 +1012,172 @@ describe('PushTab', () => {
       newPushTab.destroy();
     });
 
+    test('form data persists in memory during session', () => {
+      storage.setAdvancedExpanded(true);
+      const pushTab = new PushTab(storage, barkClient, mockToast);
+      const container = pushTab.render();
+
+      // Fill in form data
+      const titleInput = container.querySelector('#push-title') as HTMLInputElement;
+      const messageInput = container.querySelector('#push-message') as HTMLTextAreaElement;
+      const subtitleInput = container.querySelector('#push-subtitle') as HTMLInputElement;
+
+      titleInput.value = 'Test Title';
+      messageInput.value = 'Test Message';
+      subtitleInput.value = 'Test Subtitle';
+
+      // Trigger input event to save
+      titleInput.dispatchEvent(new Event('input'));
+      messageInput.dispatchEvent(new Event('input'));
+      subtitleInput.dispatchEvent(new Event('input'));
+
+      // Re-render (simulating tab switch)
+      pushTab.destroy();
+      const newContainer = pushTab.render();
+
+      // Check data persisted
+      const newTitleInput = newContainer.querySelector('#push-title') as HTMLInputElement;
+      const newMessageInput = newContainer.querySelector('#push-message') as HTMLTextAreaElement;
+      const newSubtitleInput = newContainer.querySelector('#push-subtitle') as HTMLInputElement;
+
+      expect(newTitleInput.value).toBe('Test Title');
+      expect(newMessageInput.value).toBe('Test Message');
+      expect(newSubtitleInput.value).toBe('Test Subtitle');
+
+      pushTab.destroy();
+    });
+
+    test('send button enabled after re-render with persisted message and default device', () => {
+      // Add a default device
+      const device = {
+        id: 'test-device-1',
+        name: 'Test Device',
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-12345678901',
+        isDefault: true,
+        createdAt: new Date().toISOString(),
+      };
+      storage.saveDevice(device);
+
+      // Mock GM_getValue to return the device
+      vi.mocked(GM_getValue).mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'bark_devices') {
+          return [device];
+        }
+        if (key === 'bark_selected_device_ids') {
+          return [device.id];
+        }
+        return defaultValue;
+      });
+
+      const pushTab = new PushTab(storage, barkClient, mockToast);
+      const container = pushTab.render();
+
+      // Fill in message
+      const messageInput = container.querySelector('#push-message') as HTMLTextAreaElement;
+      messageInput.value = 'Test message';
+
+      // Trigger input event to save
+      messageInput.dispatchEvent(new Event('input'));
+
+      // Re-render (simulating dismiss and reopen modal)
+      pushTab.destroy();
+      const newContainer = pushTab.render();
+
+      // Send button should be enabled now that message is persisted
+      const sendButton = newContainer.querySelector('#push-send-button') as HTMLButtonElement;
+      expect(sendButton.disabled).toBe(false);
+
+      pushTab.destroy();
+    });
+
+    test('form data clears after successful send', async () => {
+      storage.setAdvancedExpanded(true);
+
+      // Add a device to enable send button
+      const device = {
+        id: 'test-device-1',
+        name: 'Test Device',
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-12345678901',
+        isDefault: true,
+        createdAt: new Date().toISOString(),
+      };
+      storage.saveDevice(device);
+
+      // Mock GM_getValue to return the device
+      vi.mocked(GM_getValue).mockImplementation((key: string, defaultValue: any) => {
+        if (key === 'bark_devices') {
+          return [device];
+        }
+        if (key === 'bark_selected_device_ids') {
+          return [device.id];
+        }
+        return defaultValue;
+      });
+
+      const pushTab = new PushTab(storage, barkClient, mockToast);
+      const container = pushTab.render();
+
+      // Fill in form data
+      const titleInput = container.querySelector('#push-title') as HTMLInputElement;
+      const messageInput = container.querySelector('#push-message') as HTMLTextAreaElement;
+
+      titleInput.value = 'Test Title';
+      messageInput.value = 'Test Message';
+
+      // Trigger input event to save
+      titleInput.dispatchEvent(new Event('input'));
+      messageInput.dispatchEvent(new Event('input'));
+
+      // Mock successful send - must use callback-based onload like real implementation
+      vi.mocked(GM_xmlhttpRequest).mockImplementation((details: any) => {
+        setTimeout(() => details.onload({ status: 200, responseText: '{}' }), 0);
+        return undefined as any;
+      });
+
+      // Click send button
+      const sendButton = container.querySelector('#push-send-button') as HTMLButtonElement;
+      sendButton.click();
+
+      // Wait for async operation to complete
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Check form data is cleared in memory
+      // Note: We can't directly check the internal formData, but we verify by re-rendering
+      const newContainer = pushTab.render();
+
+      // Check data cleared
+      const newTitleInput = newContainer.querySelector('#push-title') as HTMLInputElement;
+      const newMessageInput = newContainer.querySelector('#push-message') as HTMLTextAreaElement;
+
+      expect(newTitleInput.value).toBe('');
+      expect(newMessageInput.value).toBe('');
+
+      pushTab.destroy();
+    });
+
+    test('form data persists across advanced options expand/collapse', () => {
+      storage.setAdvancedExpanded(false); // Start collapsed
+      const pushTab = new PushTab(storage, barkClient, mockToast);
+      const container = pushTab.render();
+
+      // Fill in advanced options
+      const subtitleInput = container.querySelector('#push-subtitle') as HTMLInputElement;
+      subtitleInput.value = 'Test Subtitle';
+      subtitleInput.dispatchEvent(new Event('input'));
+
+      // Expand advanced options
+      const toggleButton = container.querySelector('.advanced-toggle') as HTMLButtonElement;
+      toggleButton.click();
+
+      // Check data still there
+      const newSubtitleInput = container.querySelector('#push-subtitle') as HTMLInputElement;
+      expect(newSubtitleInput.value).toBe('Test Subtitle');
+
+      pushTab.destroy();
+    });
+
     test('refresh updates device list', () => {
       // Clear all mocks to ensure clean state
       vi.clearAllMocks();

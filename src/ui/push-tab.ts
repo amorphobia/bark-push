@@ -13,6 +13,28 @@ import type { ToastManager } from './toast';
 /**
  * PushTab provides the notification composition interface
  */
+/**
+ * Interface for push form data (in-memory persistence)
+ */
+interface PushFormData {
+  title: string;
+  message: string;
+  sound: string;
+  icon: string;
+  group: string;
+  url: string;
+  autoCopy: boolean;
+  archive: boolean;
+  subtitle: string;
+  badge: string;
+  level: string;
+  volume: string;
+  call: boolean;
+  copy: string;
+  action: string;
+  image: string;
+}
+
 export class PushTab {
   private storage: StorageManager;
   private deviceSelector: DeviceSelector;
@@ -25,6 +47,8 @@ export class PushTab {
   private tipsInterval: number | null;
   private currentTipIndex: number;
   private isSending: boolean;
+  // In-memory form data persistence
+  private formData: PushFormData;
 
   constructor(storage: StorageManager, barkClient: BarkClient, toast: ToastManager) {
     this.storage = storage;
@@ -38,6 +62,25 @@ export class PushTab {
     this.tipsInterval = null;
     this.currentTipIndex = 0;
     this.isSending = false;
+    // Initialize empty form data
+    this.formData = {
+      title: '',
+      message: '',
+      sound: '',
+      icon: '',
+      group: '',
+      url: '',
+      autoCopy: false,
+      archive: false,
+      subtitle: '',
+      badge: '',
+      level: 'active',
+      volume: '5',
+      call: false,
+      copy: '',
+      action: 'none',
+      image: '',
+    };
   }
 
   /**
@@ -204,6 +247,16 @@ export class PushTab {
     if (this.devices.length > 0) {
       this.startTipsRotation();
     }
+
+    // Load persisted form data
+    this.loadFormData();
+
+    // Add input event listeners to save form data as user types
+    const formInputs = container.querySelectorAll('input, textarea, select');
+    formInputs.forEach(input => {
+      input.addEventListener('input', () => this.saveFormData());
+      input.addEventListener('change', () => this.saveFormData());
+    });
 
     return container;
   }
@@ -745,6 +798,9 @@ export class PushTab {
   private async handleSend(): Promise<void> {
     if (!this.containerElement) return;
 
+    // Save form data before sending (for persistence)
+    this.saveFormData();
+
     const titleInput = this.containerElement.querySelector('#push-title') as HTMLInputElement;
     const messageTextarea = this.containerElement.querySelector('#push-message') as HTMLTextAreaElement;
     const sendButton = this.containerElement.querySelector('#push-send-button') as HTMLButtonElement;
@@ -823,17 +879,11 @@ export class PushTab {
       // Show success message (Requirement 9.6)
       this.showSuccess(t('push.success'));
 
-      // Clear form (Requirement 9.8)
-      titleInput.value = '';
-      messageTextarea.value = '';
+      // Clear form and persisted data (Requirement 9.8)
+      this.clearFormData();
 
-      // Reset advanced options
-      if (soundSelect) soundSelect.value = '';
-      if (iconInput) iconInput.value = '';
-      if (groupInput) groupInput.value = '';
-      if (urlInput) urlInput.value = '';
-      if (autoCopyCheckbox) autoCopyCheckbox.checked = false;
-      if (archiveCheckbox) archiveCheckbox.checked = false;
+      // Reload the cleared form data to update UI
+      this.loadFormData();
 
     } catch (error) {
       // Show error message (Requirement 9.7)
@@ -897,6 +947,120 @@ export class PushTab {
       default:
         return t('errors.unknownError');
     }
+  }
+
+  /**
+   * Save form data to memory (for session persistence)
+   */
+  private saveFormData(): void {
+    if (!this.containerElement) return;
+
+    this.formData.title = (this.containerElement.querySelector('#push-title') as HTMLInputElement)?.value || '';
+    this.formData.message = (this.containerElement.querySelector('#push-message') as HTMLTextAreaElement)?.value || '';
+    this.formData.sound = (this.containerElement.querySelector('#push-sound') as HTMLSelectElement)?.value || '';
+    this.formData.icon = (this.containerElement.querySelector('#push-icon') as HTMLInputElement)?.value || '';
+    this.formData.group = (this.containerElement.querySelector('#push-group') as HTMLInputElement)?.value || '';
+    this.formData.url = (this.containerElement.querySelector('#push-url') as HTMLInputElement)?.value || '';
+    this.formData.autoCopy = (this.containerElement.querySelector('#push-autocopy') as HTMLInputElement)?.checked || false;
+    this.formData.archive = (this.containerElement.querySelector('#push-archive') as HTMLInputElement)?.checked || false;
+    this.formData.subtitle = (this.containerElement.querySelector('#push-subtitle') as HTMLInputElement)?.value || '';
+    this.formData.badge = (this.containerElement.querySelector('#push-badge') as HTMLInputElement)?.value || '';
+    this.formData.volume = (this.containerElement.querySelector('#push-volume') as HTMLInputElement)?.value || '5';
+    this.formData.call = (this.containerElement.querySelector('#push-call') as HTMLInputElement)?.checked || false;
+    this.formData.copy = (this.containerElement.querySelector('#push-copy') as HTMLInputElement)?.value || '';
+    this.formData.action = (this.containerElement.querySelector('#push-action') as HTMLSelectElement)?.value || 'none';
+    this.formData.image = (this.containerElement.querySelector('#push-image') as HTMLInputElement)?.value || '';
+
+    // Handle level from segmented control
+    const levelContainer = this.containerElement.querySelector('.segmented-control');
+    const selectedLevelBtn = levelContainer?.querySelector('button[style*="var(--bark-primary)"]') as HTMLButtonElement;
+    this.formData.level = selectedLevelBtn?.value || 'active';
+  }
+
+  /**
+   * Load form data from memory into the rendered form
+   */
+  private loadFormData(): void {
+    if (!this.containerElement) return;
+
+    const titleInput = this.containerElement.querySelector('#push-title') as HTMLInputElement;
+    const messageInput = this.containerElement.querySelector('#push-message') as HTMLTextAreaElement;
+    const soundSelect = this.containerElement.querySelector('#push-sound') as HTMLSelectElement;
+    const iconInput = this.containerElement.querySelector('#push-icon') as HTMLInputElement;
+    const groupInput = this.containerElement.querySelector('#push-group') as HTMLInputElement;
+    const urlInput = this.containerElement.querySelector('#push-url') as HTMLInputElement;
+    const autoCopyCheckbox = this.containerElement.querySelector('#push-autocopy') as HTMLInputElement;
+    const archiveCheckbox = this.containerElement.querySelector('#push-archive') as HTMLInputElement;
+    const subtitleInput = this.containerElement.querySelector('#push-subtitle') as HTMLInputElement;
+    const badgeInput = this.containerElement.querySelector('#push-badge') as HTMLInputElement;
+    const volumeInput = this.containerElement.querySelector('#push-volume') as HTMLInputElement;
+    const volumeValue = this.containerElement.querySelector('#push-volume-value') as HTMLElement;
+    const callCheckbox = this.containerElement.querySelector('#push-call') as HTMLInputElement;
+    const copyInput = this.containerElement.querySelector('#push-copy') as HTMLInputElement;
+    const actionSelect = this.containerElement.querySelector('#push-action') as HTMLSelectElement;
+    const imageInput = this.containerElement.querySelector('#push-image') as HTMLInputElement;
+
+    if (titleInput) titleInput.value = this.formData.title;
+    if (messageInput) messageInput.value = this.formData.message;
+    if (soundSelect) soundSelect.value = this.formData.sound;
+    if (iconInput) iconInput.value = this.formData.icon;
+    if (groupInput) groupInput.value = this.formData.group;
+    if (urlInput) urlInput.value = this.formData.url;
+    if (autoCopyCheckbox) autoCopyCheckbox.checked = this.formData.autoCopy;
+    if (archiveCheckbox) archiveCheckbox.checked = this.formData.archive;
+    if (subtitleInput) subtitleInput.value = this.formData.subtitle;
+    if (badgeInput) badgeInput.value = this.formData.badge;
+    if (volumeInput) {
+      volumeInput.value = this.formData.volume;
+      if (volumeValue) volumeValue.textContent = this.formData.volume;
+    }
+    if (callCheckbox) callCheckbox.checked = this.formData.call;
+    if (copyInput) copyInput.value = this.formData.copy;
+    if (actionSelect) actionSelect.value = this.formData.action;
+    if (imageInput) imageInput.value = this.formData.image;
+
+    // Load level from segmented control
+    const levelContainer = this.containerElement.querySelector('.segmented-control');
+    if (levelContainer) {
+      const buttons = levelContainer.querySelectorAll('button');
+      buttons.forEach(btn => {
+        const htmlBtn = btn as HTMLButtonElement;
+        if (htmlBtn.value === this.formData.level) {
+          htmlBtn.style.background = 'var(--bark-primary)';
+          htmlBtn.style.color = 'white';
+        } else {
+          htmlBtn.style.background = 'var(--bark-bg-primary)';
+          htmlBtn.style.color = 'var(--bark-text-secondary)';
+        }
+      });
+    }
+
+    // Update send button state after restoring form data
+    this.updateSendButtonState();
+  }
+
+  /**
+   * Clear form data after successful send
+   */
+  private clearFormData(): void {
+    this.formData = {
+      title: '',
+      message: '',
+      sound: '',
+      icon: '',
+      group: '',
+      url: '',
+      autoCopy: false,
+      archive: false,
+      subtitle: '',
+      badge: '',
+      level: 'active',
+      volume: '5',
+      call: false,
+      copy: '',
+      action: 'none',
+      image: '',
+    };
   }
 
   /**

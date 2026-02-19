@@ -15,5 +15,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: bark-push.user.js
+          name: artifact
           path: dist/bark-push.user.js

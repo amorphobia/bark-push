@@ -898,7 +898,6 @@ describe('ModalController', () => {
       // Check tabs are adjacent (no gaps) - push, history, settings
       const pushTab = tabs[0];
       const historyTab = tabs[1];
-      const settingsTab = tabs[2];
 
       const pushRect = pushTab.getBoundingClientRect();
       const historyRect = historyTab.getBoundingClientRect();

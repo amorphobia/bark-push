@@ -7,7 +7,7 @@ import { HistoryTab } from './history-tab';
 import { StorageManager } from '../storage/storage-manager';
 import { BarkClient } from '../api/bark-client';
 import { ToastManager } from './toast';
-import type { PushHistoryItem, PushHistoryDevice, PushHistoryResponse } from '../types';
+import type { PushHistoryItem } from '../types';
 
 describe('HistoryTab', () => {
   let storage: StorageManager;

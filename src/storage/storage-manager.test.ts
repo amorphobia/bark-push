@@ -533,9 +533,9 @@ describe('StorageManager', () => {
   });
 
   describe('Push History Management', () => {
-    const createMockHistoryItem = (id: string, content: string) => ({
+    const createMockHistoryItem = (id: string, content: string, options?: { sound?: string; icon?: string; group?: string }) => ({
       id,
-      status: undefined as const,
+      status: undefined as undefined,
       title: 'Test',
       content,
       markdownEnabled: false,
@@ -544,6 +544,7 @@ describe('StorageManager', () => {
       timezone: 'UTC',
       isEncrypted: false,
       responseJson: [{ code: 200, message: 'success', timestamp: Date.now() }],
+      options,
     });
 
     test('getPushHistory returns empty array initially', () => {
@@ -641,15 +642,14 @@ describe('StorageManager', () => {
     });
 
     test('history items are stored correctly with all fields', () => {
-      const item = createMockHistoryItem('test-id', 'Test content');
-      item.title = 'Test Title';
-      item.markdownEnabled = true;
-      item.timezone = 'America/New_York';
-      item.options = {
+      const item = createMockHistoryItem('test-id', 'Test content', {
         sound: 'alarm',
         icon: 'https://example.com/icon.png',
         group: 'test-group',
-      };
+      });
+      item.title = 'Test Title';
+      item.markdownEnabled = true;
+      item.timezone = 'America/New_York';
 
       storage.addPushHistoryItem(item);
       const history = storage.getPushHistory();

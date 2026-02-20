@@ -29,5 +29,7 @@ jobs:
         if: startsWith(gitea.ref, 'refs/heads/')
         uses: akkuman/gitea-release-action@v1
         with:
+          prerelease: true
+          name: "Nightly Build"
           tag_name: "nightly"
           files: dist/bark-push.user.js

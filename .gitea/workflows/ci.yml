@@ -25,6 +25,15 @@ jobs:
         with:
           files: dist/bark-push.user.js
 
+      - name: Move nightly tag
+        if: startsWith(gitea.ref, 'refs/heads/')
+        run: |
+          git config user.name "Gitea Actions[bot]"
+          git config user.email "actions@noreply.xuesong.eu.org"
+          git push --delete origin nightly 2>$null
+          git tag --force nightly
+          git push origin nightly --force
+
       - name: Create nightly release
         if: startsWith(gitea.ref, 'refs/heads/')
         uses: akkuman/gitea-release-action@v1

@@ -30,6 +30,7 @@ jobs:
         uses: akkuman/gitea-release-action@v1
         with:
           prerelease: true
+          target_commitish: ${{ github.sha }}
           name: "Nightly Build"
           tag_name: "nightly"
           files: dist/bark-push.user.js

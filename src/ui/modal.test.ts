@@ -535,13 +535,13 @@ describe('ModalController', () => {
       expect(shadowRoot?.querySelector('.bark-modal-body')).toBeTruthy();
     });
 
-    it('should render both tab buttons', () => {
+    it('should render all three tab buttons', () => {
       modalController.open();
 
       const shadowRoot = document.getElementById('bark-modal-root')?.shadowRoot;
       const tabs = shadowRoot?.querySelectorAll('.bark-tab');
-      
-      expect(tabs?.length).toBe(2);
+
+      expect(tabs?.length).toBe(3);
     });
 
     it('should mark active tab with active class', () => {
@@ -893,17 +893,18 @@ describe('ModalController', () => {
       const tabs = shadowRoot?.querySelectorAll('.bark-tab');
 
       expect(tabsContainer).toBeTruthy();
-      expect(tabs?.length).toBe(2);
+      expect(tabs?.length).toBe(3);
 
-      // Check tabs are adjacent (no gaps)
+      // Check tabs are adjacent (no gaps) - push, history, settings
       const pushTab = tabs[0];
-      const settingsTab = tabs[1];
+      const historyTab = tabs[1];
+      const settingsTab = tabs[2];
 
       const pushRect = pushTab.getBoundingClientRect();
-      const settingsRect = settingsTab.getBoundingClientRect();
+      const historyRect = historyTab.getBoundingClientRect();
 
-      // Settings tab should start immediately after push tab ends (or very close)
-      const gap = settingsRect.left - (pushRect.left + pushRect.width);
+      // History tab should start immediately after push tab ends (or very close)
+      const gap = historyRect.left - (pushRect.left + pushRect.width);
       expect(gap).toBeLessThanOrEqual(1);
 
       modalController.close();

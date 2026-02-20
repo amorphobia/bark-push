@@ -126,7 +126,12 @@ describe('PushTab', () => {
     vi.clearAllMocks();
     storage = new StorageManager();
     barkClient = new BarkClient();
-    mockToast = { show: vi.fn(), hide: vi.fn(), clear: vi.fn() } as unknown as ToastManager;
+    mockToast = {
+      show: vi.fn(),
+      hide: vi.fn(),
+      clear: vi.fn(),
+      showWithActions: vi.fn(() => 'toast-id'),
+    } as unknown as ToastManager;
     pushTab = new PushTab(storage, barkClient, mockToast);
   });
 
@@ -1116,8 +1121,20 @@ describe('PushTab', () => {
         return defaultValue;
       });
 
+      // Mock successful send
+      let mockCalled = false;
+      vi.mocked(GM_xmlhttpRequest).mockImplementation((details: any) => {
+        mockCalled = true;
+        // Call onload synchronously with proper JSON response
+        details.onload({ status: 200, responseText: '{"code":200,"message":"success","timestamp":1234567890}' });
+        return undefined as any;
+      });
+
       const pushTab = new PushTab(storage, barkClient, mockToast);
       const container = pushTab.render();
+
+      // Select the device (required for send to work)
+      (pushTab as any).deviceSelector.selectDevice(device.id);
 
       // Fill in form data
       const titleInput = container.querySelector('#push-title') as HTMLInputElement;
@@ -1130,24 +1147,18 @@ describe('PushTab', () => {
       titleInput.dispatchEvent(new Event('input'));
       messageInput.dispatchEvent(new Event('input'));
 
-      // Mock successful send - must use callback-based onload like real implementation
-      vi.mocked(GM_xmlhttpRequest).mockImplementation((details: any) => {
-        setTimeout(() => details.onload({ status: 200, responseText: '{}' }), 0);
-        return undefined as any;
-      });
-
-      // Click send button
+      // Verify send button is enabled (form data was saved)
       const sendButton = container.querySelector('#push-send-button') as HTMLButtonElement;
-      sendButton.click();
+      expect(sendButton.disabled).toBe(false);
 
-      // Wait for async operation to complete
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Call handleSend
+      await (pushTab as any).handleSend();
 
-      // Check form data is cleared in memory
-      // Note: We can't directly check the internal formData, but we verify by re-rendering
+      // Verify mock was called
+      expect(mockCalled).toBe(true);
+
+      // Check form data is cleared by re-rendering
       const newContainer = pushTab.render();
-
-      // Check data cleared
       const newTitleInput = newContainer.querySelector('#push-title') as HTMLInputElement;
       const newMessageInput = newContainer.querySelector('#push-message') as HTMLTextAreaElement;
 

@@ -372,7 +372,11 @@ describe('BarkClient', () => {
         details.ontimeout();
       });
 
-      await expect(client.sendNotification([device], payload)).rejects.toThrow(BarkErrorType.timeout);
+      // Timeout returns error response instead of throwing
+      const responses = await client.sendNotification([device], payload);
+      expect(responses).toHaveLength(1);
+      expect(responses[0].code).toBe(-1);
+      expect(responses[0].message).toBe('timeout');
     });
 
     test('handles network error', async () => {
@@ -386,7 +390,11 @@ describe('BarkClient', () => {
         details.onerror();
       });
 
-      await expect(client.sendNotification([device], payload)).rejects.toThrow(BarkErrorType.networkError);
+      // Network error returns error response instead of throwing
+      const responses = await client.sendNotification([device], payload);
+      expect(responses).toHaveLength(1);
+      expect(responses[0].code).toBe(-1);
+      expect(responses[0].message).toBe('networkError');
     });
 
     test('parses API error response', async () => {
@@ -403,7 +411,11 @@ describe('BarkClient', () => {
         });
       });
 
-      await expect(client.sendNotification([device], payload)).rejects.toThrow('Invalid device key');
+      // API errors are returned in responses
+      const responses = await client.sendNotification([device], payload);
+      expect(responses).toHaveLength(1);
+      expect(responses[0].code).toBe(400);
+      expect(responses[0].message).toBe('Invalid device key');
     });
 
     test('handles non-JSON error response', async () => {
@@ -420,7 +432,10 @@ describe('BarkClient', () => {
         });
       });
 
-      await expect(client.sendNotification([device], payload)).rejects.toThrow(BarkErrorType.serverError);
+      // Non-JSON errors are returned with code 500
+      const responses = await client.sendNotification([device], payload);
+      expect(responses).toHaveLength(1);
+      expect(responses[0].code).toBe(500);
     });
   });
 
@@ -644,6 +659,143 @@ describe('BarkClient', () => {
       expect(requestData.badge).toBe(5);
       expect(requestData.level).toBe('critical');
       expect(requestData.volume).toBe(8);
+    });
+  });
+
+  describe('recallNotification', () => {
+    test('sends delete request with same ID', async () => {
+      const device = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-123',
+      });
+      const originalPayload: NotificationPayload = {
+        title: 'Test Title',
+        body: 'Test message',
+      };
+      const messageId = 'test-message-id-123';
+
+      mockXmlHttpRequest.mockImplementation((details: any) => {
+        details.onload({ status: 200, responseText: '{"code":200,"message":"success"}' });
+      });
+
+      await client.recallNotification(device, messageId, originalPayload);
+
+      expect(mockXmlHttpRequest).toHaveBeenCalled();
+      const callArgs = mockXmlHttpRequest.mock.calls[0][0];
+      const requestData = JSON.parse(callArgs.data);
+
+      expect(requestData.id).toBe(messageId);
+      expect(requestData.delete).toBe('1');
+    });
+
+    test('preserves all original fields except content fields', async () => {
+      const device = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-123',
+      });
+      const originalPayload: NotificationPayload = {
+        title: 'Test Title',
+        body: 'Test message',
+        sound: 'alarm',
+        icon: 'https://example.com/icon.png',
+        group: 'test-group',
+        url: 'https://example.com',
+        badge: 5,
+        level: 'critical',
+        volume: 8,
+      };
+      const messageId = 'test-message-id';
+
+      mockXmlHttpRequest.mockImplementation((details: any) => {
+        details.onload({ status: 200, responseText: '{}' });
+      });
+
+      await client.recallNotification(device, messageId, originalPayload);
+
+      const callArgs = mockXmlHttpRequest.mock.calls[0][0];
+      const requestData = JSON.parse(callArgs.data);
+
+      // Should include all original fields (body/markdown included)
+      expect(requestData.title).toBe('Test Title');
+      expect(requestData.body).toBe('Test message');
+      expect(requestData.sound).toBe('alarm');
+      expect(requestData.icon).toBe('https://example.com/icon.png');
+      expect(requestData.group).toBe('test-group');
+      expect(requestData.url).toBe('https://example.com');
+      expect(requestData.badge).toBe(5);
+      expect(requestData.level).toBe('critical');
+      expect(requestData.volume).toBe(8);
+    });
+
+    test('handles markdown payload correctly', async () => {
+      const device = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-123',
+      });
+      const originalPayload: NotificationPayload = {
+        title: 'Markdown Title',
+        markdown: '**Bold** *Italic*',
+      };
+      const messageId = 'markdown-message-id';
+
+      mockXmlHttpRequest.mockImplementation((details: any) => {
+        details.onload({ status: 200, responseText: '{}' });
+      });
+
+      await client.recallNotification(device, messageId, originalPayload);
+
+      const callArgs = mockXmlHttpRequest.mock.calls[0][0];
+      const requestData = JSON.parse(callArgs.data);
+
+      expect(requestData.title).toBe('Markdown Title');
+      expect(requestData.markdown).toBe('**Bold** *Italic*');
+    });
+
+    test('includes isArchive when present', async () => {
+      const device = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-123',
+      });
+      const originalPayload: NotificationPayload = {
+        body: 'Test',
+        isArchive: '1',
+      };
+      const messageId = 'archive-message-id';
+
+      mockXmlHttpRequest.mockImplementation((details: any) => {
+        details.onload({ status: 200, responseText: '{}' });
+      });
+
+      await client.recallNotification(device, messageId, originalPayload);
+
+      const callArgs = mockXmlHttpRequest.mock.calls[0][0];
+      const requestData = JSON.parse(callArgs.data);
+
+      expect(requestData.isArchive).toBe('1');
+    });
+
+    test('handles optional fields gracefully', async () => {
+      const device = createDevice({
+        serverUrl: 'https://api.day.app',
+        deviceKey: 'test-key-123',
+      });
+      const originalPayload: NotificationPayload = {
+        body: 'Simple message',
+      };
+      const messageId = 'simple-message-id';
+
+      mockXmlHttpRequest.mockImplementation((details: any) => {
+        details.onload({ status: 200, responseText: '{}' });
+      });
+
+      await client.recallNotification(device, messageId, originalPayload);
+
+      const callArgs = mockXmlHttpRequest.mock.calls[0][0];
+      const requestData = JSON.parse(callArgs.data);
+
+      expect(requestData.id).toBe(messageId);
+      expect(requestData.delete).toBe('1');
+      expect(requestData.body).toBe('Simple message');
     });
   });
 });

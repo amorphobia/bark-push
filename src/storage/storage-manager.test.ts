@@ -531,4 +531,141 @@ describe('StorageManager', () => {
       expect(storage.getSelectedDeviceIds()).toEqual([device2.id]);
     });
   });
+
+  describe('Push History Management', () => {
+    const createMockHistoryItem = (id: string, content: string) => ({
+      id,
+      status: undefined as const,
+      title: 'Test',
+      content,
+      markdownEnabled: false,
+      devices: [{ id: 'device-1', name: 'Test Device', apiUrl: 'https://api.day.app/key/' }],
+      requestTimestamp: Date.now(),
+      timezone: 'UTC',
+      isEncrypted: false,
+      responseJson: [{ code: 200, message: 'success', timestamp: Date.now() }],
+    });
+
+    test('getPushHistory returns empty array initially', () => {
+      const history = storage.getPushHistory();
+      expect(history).toEqual([]);
+    });
+
+    test('addPushHistoryItem adds item to front', () => {
+      const item1 = createMockHistoryItem('id-1', 'Message 1');
+      const item2 = createMockHistoryItem('id-2', 'Message 2');
+
+      storage.addPushHistoryItem(item1);
+      storage.addPushHistoryItem(item2);
+
+      const history = storage.getPushHistory();
+      expect(history).toHaveLength(2);
+      expect(history[0].id).toBe('id-2');
+      expect(history[1].id).toBe('id-1');
+    });
+
+    test('addPushHistoryItem trims to max size', () => {
+      // Add max size + 1 items
+      for (let i = 0; i < 501; i++) {
+        storage.addPushHistoryItem(createMockHistoryItem(`id-${i}`, `Message ${i}`));
+      }
+
+      const history = storage.getPushHistory();
+      expect(history).toHaveLength(500);
+      expect(history[0].id).toBe('id-500'); // Most recent
+    });
+
+    test('updatePushHistoryItem updates existing item', () => {
+      const item = createMockHistoryItem('id-1', 'Original');
+      storage.addPushHistoryItem(item);
+
+      storage.updatePushHistoryItem('id-1', {
+        status: 'recalled',
+        title: 'Updated',
+      });
+
+      const history = storage.getPushHistory();
+      expect(history[0].status).toBe('recalled');
+      expect(history[0].title).toBe('Updated');
+      expect(history[0].content).toBe('Original'); // Unchanged
+    });
+
+    test('updatePushHistoryItem handles undefined status correctly', () => {
+      const item = createMockHistoryItem('id-1', 'Test');
+      storage.addPushHistoryItem(item);
+
+      // Update with undefined status (new sends have undefined status)
+      storage.updatePushHistoryItem('id-1', { status: undefined });
+
+      const history = storage.getPushHistory();
+      expect(history[0].status).toBeUndefined();
+    });
+
+    test('deletePushHistoryItems removes items', () => {
+      storage.addPushHistoryItem(createMockHistoryItem('id-1', 'Message 1'));
+      storage.addPushHistoryItem(createMockHistoryItem('id-2', 'Message 2'));
+      storage.addPushHistoryItem(createMockHistoryItem('id-3', 'Message 3'));
+
+      storage.deletePushHistoryItems(['id-1', 'id-3']);
+
+      const history = storage.getPushHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0].id).toBe('id-2');
+    });
+
+    test('deletePushHistoryItems handles empty array', () => {
+      storage.addPushHistoryItem(createMockHistoryItem('id-1', 'Message 1'));
+
+      storage.deletePushHistoryItems([]);
+
+      const history = storage.getPushHistory();
+      expect(history).toHaveLength(1);
+    });
+
+    test('clearPushHistory removes all history', () => {
+      storage.addPushHistoryItem(createMockHistoryItem('id-1', 'Message 1'));
+      storage.addPushHistoryItem(createMockHistoryItem('id-2', 'Message 2'));
+
+      storage.clearPushHistory();
+
+      const history = storage.getPushHistory();
+      expect(history).toEqual([]);
+    });
+
+    test('handles corrupted history data gracefully', () => {
+      // Simulate corrupted storage
+      localStorage.setItem('bark_push_history', 'invalid json');
+
+      const history = storage.getPushHistory();
+      expect(history).toEqual([]);
+    });
+
+    test('history items are stored correctly with all fields', () => {
+      const item = createMockHistoryItem('test-id', 'Test content');
+      item.title = 'Test Title';
+      item.markdownEnabled = true;
+      item.timezone = 'America/New_York';
+      item.options = {
+        sound: 'alarm',
+        icon: 'https://example.com/icon.png',
+        group: 'test-group',
+      };
+
+      storage.addPushHistoryItem(item);
+      const history = storage.getPushHistory();
+
+      expect(history[0]).toMatchObject({
+        id: 'test-id',
+        title: 'Test Title',
+        content: 'Test content',
+        markdownEnabled: true,
+        timezone: 'America/New_York',
+        options: expect.objectContaining({
+          sound: 'alarm',
+          icon: 'https://example.com/icon.png',
+          group: 'test-group',
+        }),
+      });
+    });
+  });
 });

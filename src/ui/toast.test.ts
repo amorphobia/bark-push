@@ -251,7 +251,7 @@ describe('ToastManager', () => {
       const id1 = toastManager.show('Message 1', 'info');
       const id2 = toastManager.show('Message 2', 'success');
       const id3 = toastManager.show('Message 3', 'error');
-      
+
       expect(id1).not.toBe(id2);
       expect(id2).not.toBe(id3);
       expect(id1).not.toBe(id3);
@@ -259,12 +259,155 @@ describe('ToastManager', () => {
 
     it('should return ID that can be used to hide toast', () => {
       const toastId = toastManager.show('Test message', 'info', 0);
-      
+
       // Use returned ID to hide
       toastManager.hide(toastId);
-      
+
       const toast = document.querySelector(`[data-toast-id="${toastId}"]`);
       expect(toast?.classList.contains('show')).toBe(false);
+    });
+  });
+
+  describe('Unit Tests: Toast with actions', () => {
+    const mockActions = [
+      {
+        label: 'Action 1',
+        svg: '<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>',
+        callback: vi.fn(),
+      },
+      {
+        label: 'Action 2',
+        svg: '<svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/></svg>',
+        callback: vi.fn(),
+      },
+    ];
+
+    it('should show toast with actions', () => {
+      const toastId = toastManager.showWithActions(
+        'Message with actions',
+        mockActions,
+        'success',
+        0
+      );
+
+      const toast = document.querySelector(`[data-toast-id="${toastId}"]`);
+      expect(toast).toBeTruthy();
+      expect(toast?.textContent).toContain('Message with actions');
+    });
+
+    it('should display action buttons', () => {
+      const toastId = toastManager.showWithActions(
+        'Test message',
+        mockActions,
+        'info',
+        0
+      );
+
+      const toast = document.querySelector(`[data-toast-id="${toastId}"]`);
+      const actionButtons = toast?.querySelectorAll('.bark-toast-action');
+
+      expect(actionButtons).toHaveLength(2);
+    });
+
+    it('should call callback when action button is clicked', () => {
+      const toastId = toastManager.showWithActions(
+        'Test message',
+        mockActions,
+        'info',
+        0
+      );
+
+      const toast = document.querySelector(`[data-toast-id="${toastId}"]`);
+      const firstButton = toast?.querySelectorAll('.bark-toast-action')[0] as HTMLButtonElement;
+
+      firstButton.click();
+
+      expect(mockActions[0].callback).toHaveBeenCalledWith(toastId);
+    });
+
+    it('should stop propagation when clicking action button', () => {
+      const toastId = toastManager.showWithActions(
+        'Test message',
+        mockActions,
+        'info',
+        0
+      );
+
+      const toast = document.querySelector(`[data-toast-id="${toastId}"]`) as HTMLElement;
+      const firstButton = toast?.querySelectorAll('.bark-toast-action')[0] as HTMLButtonElement;
+
+      let toastClicked = false;
+      toast.addEventListener('click', () => { toastClicked = true; });
+
+      firstButton.click();
+
+      expect(toastClicked).toBe(false);
+    });
+
+    it('should dismiss toast when clicking message area', () => {
+      const toastId = toastManager.showWithActions(
+        'Test message',
+        mockActions,
+        'info',
+        0
+      );
+
+      const toast = document.querySelector(`[data-toast-id="${toastId}"]`) as HTMLElement;
+      const messageArea = toast?.querySelector('.bark-toast-message') as HTMLElement;
+
+      messageArea.click();
+
+      expect(toast.classList.contains('show')).toBe(false);
+    });
+
+    it('should not auto-dismiss by default when duration is 0', () => {
+      const toastId = toastManager.showWithActions(
+        'Test message',
+        mockActions,
+        'info',
+        0
+      );
+
+      // Fast-forward time
+      vi.advanceTimersByTime(10000);
+
+      const toast = document.querySelector(`[data-toast-id="${toastId}"]`);
+      expect(toast).toBeTruthy();
+    });
+
+    it('should apply correct type class to toast with actions', () => {
+      const toastId = toastManager.showWithActions(
+        'Success message',
+        mockActions,
+        'success',
+        0
+      );
+
+      const toast = document.querySelector(`[data-toast-id="${toastId}"]`);
+      expect(toast?.classList.contains('success')).toBe(true);
+    });
+
+    it('should return unique ID for toast with actions', () => {
+      const id1 = toastManager.showWithActions('Msg 1', mockActions, 'info');
+      const id2 = toastManager.showWithActions('Msg 2', mockActions, 'success');
+
+      expect(id1).not.toBe(id2);
+    });
+
+    it('should pass toastId to callback', () => {
+      const callback = vi.fn();
+      const toastId = toastManager.showWithActions(
+        'Test',
+        [{ label: 'Test', svg: '', callback }],
+        'info',
+        0
+      );
+
+      const toast = document.querySelector(`[data-toast-id="${toastId}"]`);
+      const button = toast?.querySelector('.bark-toast-action') as HTMLButtonElement;
+      button.click();
+
+      expect(callback).toHaveBeenCalledWith(toastId);
     });
   });
 });

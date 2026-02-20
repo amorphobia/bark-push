@@ -156,14 +156,14 @@ export class BarkClient {
       ? this.parseCustomHeaders(device.customHeaders)
       : {};
 
-    // Build request - all original fields plus delete: "1"
+    // Build request - all original fields plus id and delete flag
     const request: BarkApiRequest = {
       device_key: device.deviceKey,
       id: messageId,
       delete: '1',
     };
 
-    // Add all original fields (except id and delete which are already set)
+    // Add all original fields (recall request = original request + delete: "1")
     if (originalPayload.title) request.title = originalPayload.title;
     if (originalPayload.body) request.body = originalPayload.body;
     if (originalPayload.markdown) request.markdown = originalPayload.markdown;

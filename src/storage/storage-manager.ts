@@ -3,7 +3,7 @@
  * Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7
  */
 
-import type { BarkDevice, TabType, ThemeType } from '../types';
+import type { BarkDevice, TabType, ThemeType, PushHistoryItem } from '../types';
 import { STORAGE_KEYS } from '../types';
 
 /**
@@ -354,6 +354,86 @@ export class StorageManager {
   }
 
   /**
+   * Maximum number of history items to store
+   */
+  private readonly MAX_HISTORY_SIZE = 500;
+
+  /**
+   * Get push history
+   */
+  getPushHistory(): PushHistoryItem[] {
+    try {
+      const history = GM_getValue(STORAGE_KEYS.PUSH_HISTORY, []);
+      return Array.isArray(history) ? history : [];
+    } catch (error) {
+      console.error('Failed to get push history:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Add a push history item
+   * Adds to front and trims to max size
+   */
+  addPushHistoryItem(item: PushHistoryItem): void {
+    try {
+      const history = this.getPushHistory();
+      history.unshift(item);
+
+      // Trim to max size
+      if (history.length > this.MAX_HISTORY_SIZE) {
+        history.length = this.MAX_HISTORY_SIZE;
+      }
+
+      GM_setValue(STORAGE_KEYS.PUSH_HISTORY, history);
+    } catch (error) {
+      console.error('Failed to add push history item:', error);
+    }
+  }
+
+  /**
+   * Update a push history item by ID
+   */
+  updatePushHistoryItem(id: string, updates: Partial<PushHistoryItem>): void {
+    try {
+      const history = this.getPushHistory();
+      const index = history.findIndex((item) => item.id === id);
+
+      if (index !== -1) {
+        history[index] = { ...history[index], ...updates };
+        GM_setValue(STORAGE_KEYS.PUSH_HISTORY, history);
+      }
+    } catch (error) {
+      console.error('Failed to update push history item:', error);
+    }
+  }
+
+  /**
+   * Delete push history items by IDs
+   */
+  deletePushHistoryItems(ids: string[]): void {
+    try {
+      const history = this.getPushHistory();
+      const idSet = new Set(ids);
+      const filtered = history.filter((item) => !idSet.has(item.id));
+      GM_setValue(STORAGE_KEYS.PUSH_HISTORY, filtered);
+    } catch (error) {
+      console.error('Failed to delete push history items:', error);
+    }
+  }
+
+  /**
+   * Clear all push history
+   */
+  clearPushHistory(): void {
+    try {
+      GM_setValue(STORAGE_KEYS.PUSH_HISTORY, []);
+    } catch (error) {
+      console.error('Failed to clear push history:', error);
+    }
+  }
+
+  /**
    * Clear all storage (for testing purposes)
    * Requirement 18.7: Handle storage errors gracefully
    */
@@ -369,6 +449,7 @@ export class StorageManager {
       GM_setValue(STORAGE_KEYS.LAST_TAB, 'push');
       GM_setValue(STORAGE_KEYS.KEYBOARD_SHORTCUT, 'Alt+B');
       GM_setValue(STORAGE_KEYS.THEME, 'auto');
+      GM_setValue(STORAGE_KEYS.PUSH_HISTORY, []);
     } catch (error) {
       console.error('Failed to clear storage:', error);
       throw new Error('Failed to clear storage. Storage may be unavailable.');

@@ -6,11 +6,12 @@ import { StorageManager } from '../storage/storage-manager';
 import { BarkClient } from '../api/bark-client';
 import { PushTab } from './push-tab';
 import { SettingsTab } from './settings-tab';
+import { HistoryTab } from './history-tab';
 import { t } from '../i18n';
 import { toast } from './toast';
 import { themeManager } from './theme-manager';
 
-export type TabType = 'push' | 'settings';
+export type TabType = 'push' | 'history' | 'settings';
 
 export class ModalController {
   private shadowRoot: ShadowRoot | null = null;
@@ -27,6 +28,7 @@ export class ModalController {
   // Tab components
   private pushTab: PushTab | null = null;
   private settingsTab: SettingsTab | null = null;
+  private historyTab: HistoryTab | null = null;
 
   constructor(storage: StorageManager) {
     this.storage = storage;
@@ -156,6 +158,10 @@ export class ModalController {
     // Clean up tab components
     if (this.pushTab) {
       this.pushTab.destroy();
+    }
+
+    if (this.historyTab) {
+      this.historyTab.destroy();
     }
 
     // Restore focus to previous element (Requirements 2.4, 21.3)
@@ -1083,6 +1089,251 @@ export class ModalController {
       .markdown-toggle-icon svg {
         display: block;
       }
+
+      /* History Tab */
+      .history-tab {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .history-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .history-count {
+        font-size: 12px;
+        color: var(--bark-text-secondary);
+      }
+
+      .history-filter {
+        margin-bottom: 0;
+      }
+
+      .history-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .history-actions .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+        min-width: 32px;
+        min-height: 32px;
+      }
+
+      .history-actions .btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .history-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--bark-text-secondary);
+      }
+
+      .history-empty .hint {
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      .history-table-container {
+        border: 1px solid var(--bark-border);
+        border-radius: 8px;
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: 400px;
+      }
+
+      .history-table {
+        display: table;
+        width: 100%;
+        min-width: 450px;
+        border-collapse: collapse;
+      }
+
+      .history-table-row {
+        display: table-row;
+        border-bottom: 1px solid var(--bark-border);
+        font-size: 13px;
+      }
+
+      .history-table-row:last-child {
+        border-bottom: none;
+      }
+
+      .history-table-row.header {
+        background-color: var(--bark-bg-tertiary);
+        font-weight: 600;
+        font-size: 12px;
+        user-select: none;
+      }
+
+      .history-table-row.header .history-table-cell {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+
+      .history-resizer {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 8px;
+        cursor: col-resize;
+        z-index: 2;
+      }
+
+      .history-resizer::after {
+        content: '';
+        position: absolute;
+        right: 3px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 60%;
+        background-color: var(--bark-border);
+        border-radius: 1px;
+      }
+
+      .history-resizer:hover::after,
+      .history-resizer.resizing::after {
+        background-color: var(--bark-primary);
+      }
+
+      .history-table-cell {
+        display: table-cell;
+        padding: 10px 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        border-right: 1px solid var(--bark-border);
+      }
+
+      .history-table-cell:last-child {
+        border-right: none;
+      }
+
+      .history-table-cell.checkbox {
+        width: 36px;
+        min-width: 36px;
+        text-align: center;
+        position: sticky;
+        left: 0;
+        top: 0;
+        z-index: 10;
+        background-color: var(--bark-bg-primary);
+      }
+
+      .history-table-row:not(.header) .history-table-cell.checkbox {
+        background-color: var(--bark-bg-primary);
+      }
+
+      .history-table-row.header .history-table-cell.checkbox {
+        background-color: var(--bark-bg-tertiary);
+        z-index: 11;
+      }
+
+      .history-table-cell.time {
+        width: 130px;
+        min-width: 130px;
+        color: var(--bark-text-secondary);
+        font-size: 12px;
+      }
+
+      .history-table-cell.content {
+        width: auto;
+        min-width: 120px;
+      }
+
+      .history-table-cell.status {
+        width: 60px;
+        min-width: 60px;
+        font-weight: 500;
+      }
+
+      .history-table-cell.status.sent {
+        color: var(--bark-success);
+      }
+
+      .history-table-cell.status.failed {
+        color: var(--bark-danger);
+      }
+
+      .history-table-cell.status.recalled {
+        color: var(--bark-text-secondary);
+      }
+
+      .history-table-cell.device {
+        width: 80px;
+        min-width: 80px;
+        color: var(--bark-text-secondary);
+        font-size: 12px;
+      }
+
+      .history-table-cell.actions {
+        width: 80px;
+        min-width: 80px;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .history-action-btn {
+        background: none;
+        border: none;
+        padding: 4px;
+        cursor: pointer;
+        color: var(--bark-primary);
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .history-action-btn:hover {
+        background-color: var(--bark-bg-secondary);
+      }
+
+      .history-action-btn svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+
+      .history-action-btn.delete:hover {
+        color: var(--bark-danger);
+      }
+
+      @media (max-width: 470px) {
+        .history-table-cell.time {
+          width: 130px;
+          min-width: 130px;
+        }
+
+        .history-table-cell.device {
+          display: table-cell;
+          width: 80px;
+          min-width: 80px;
+        }
+
+        .history-table-cell.status {
+          width: 60px;
+          min-width: 60px;
+        }
+      }
     `;
   }
 
@@ -1117,6 +1368,9 @@ export class ModalController {
             <button class="bark-tab ${this.currentTab === 'push' ? 'active' : ''}" data-tab="push">
               ${t('tabs.push')}
             </button>
+            <button class="bark-tab ${this.currentTab === 'history' ? 'active' : ''}" data-tab="history">
+              ${t('tabs.history')}
+            </button>
             <button class="bark-tab ${this.currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
               ${t('tabs.settings')}
             </button>
@@ -1138,6 +1392,8 @@ export class ModalController {
     // Create a placeholder div that will be replaced with actual component
     if (this.currentTab === 'push') {
       return '<div id="bark-push-tab-container"></div>';
+    } else if (this.currentTab === 'history') {
+      return '<div id="bark-history-tab-container"></div>';
     } else {
       return '<div id="bark-settings-tab-container"></div>';
     }
@@ -1160,6 +1416,18 @@ export class ModalController {
         // Clear container and append rendered component
         container.innerHTML = '';
         container.appendChild(this.pushTab.render());
+      }
+    } else if (this.currentTab === 'history') {
+      const container = this.shadowRoot.querySelector('#bark-history-tab-container');
+      if (container) {
+        // Create HistoryTab if not exists
+        if (!this.historyTab) {
+          this.historyTab = new HistoryTab(this.storage, toast, this.barkClient);
+        }
+
+        // Clear container and append rendered component
+        container.innerHTML = '';
+        container.appendChild(this.historyTab.render());
       }
     } else {
       const container = this.shadowRoot.querySelector('#bark-settings-tab-container');

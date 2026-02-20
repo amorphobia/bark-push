@@ -3,12 +3,13 @@
  * Requirements: 4.1-4.7, 5.1-5.4, 6.1-6.7, 7.1-7.5, 8.1-8.6, 9.1-9.9
  */
 
-import type { BarkDevice, NotificationPayload } from '../types';
+import type { BarkDevice, NotificationPayload, PushHistoryDevice, PushHistoryItem, PushHistoryResponse } from '../types';
 import { StorageManager } from '../storage/storage-manager';
 import { DeviceSelector } from './device-selector';
 import { BarkClient, BarkErrorType } from '../api/bark-client';
 import { t } from '../i18n';
 import type { ToastManager } from './toast';
+import { generateMessageId } from '../utils/message-id';
 
 /**
  * PushTab provides the notification composition interface
@@ -810,6 +811,18 @@ export class PushTab {
       return;
     }
 
+    // Generate message ID for history tracking
+    const messageId = generateMessageId();
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // Build devices array from selected devices
+    const historyDevices: PushHistoryDevice[] = selectedDevices.map(d => ({
+      id: d.id,
+      name: d.name,
+      apiUrl: `${d.serverUrl}/${d.deviceKey}/`,
+      customHeaders: d.customHeaders,
+    }));
+
     // Build payload
     const payload: NotificationPayload = {
       title: titleInput.value.trim() || undefined,
@@ -858,17 +871,83 @@ export class PushTab {
     if (actionSelect?.value && actionSelect.value !== 'none') payload.action = actionSelect.value;
     if (imageInput?.value) payload.image = imageInput.value;
 
+    // Build history item
+    const historyItem: PushHistoryItem = {
+      id: messageId,
+      status: undefined, // will be derived from responseJson
+      title: titleInput.value.trim() || undefined,
+      content: message,
+      markdownEnabled: this.markdownEnabled,
+      devices: historyDevices,
+      requestTimestamp: Date.now(),
+      timezone,
+      isEncrypted: false,
+      responseJson: [],
+      options: {
+        sound: payload.sound,
+        icon: payload.icon,
+        group: payload.group,
+        url: payload.url,
+        autoCopy: payload.autoCopy,
+        isArchive: !!payload.isArchive,
+        subtitle: payload.subtitle,
+        badge: payload.badge,
+        level: payload.level,
+        volume: payload.volume,
+        call: !!payload.call,
+        copy: payload.copy,
+        action: payload.action,
+        image: payload.image,
+      },
+    };
+
+    // Add to history immediately
+    this.storage.addPushHistoryItem(historyItem);
+
     // Show loading state (Requirement 9.5)
     this.isSending = true;
     sendButton.textContent = t('push.sending');
     sendButton.disabled = true;
 
-    try {
-      // Send notification
-      await this.barkClient.sendNotification(selectedDevices, payload);
+    // SVG icons for toast actions
+    const recallSvg = '<svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8"></path></svg>';
 
-      // Show success message (Requirement 9.6)
-      this.showSuccess(t('push.success'));
+    try {
+      // Send notification with message ID
+      const responses = await this.barkClient.sendNotification(selectedDevices, payload, messageId);
+
+      // Update history with responses
+      this.storage.updatePushHistoryItem(messageId, { responseJson: responses });
+
+      // Build recall callback
+      const recallCallback = () => this.recallMessage(messageId, { ...historyItem, responseJson: responses });
+
+      // SVG for dismiss button
+      const dismissSvg = '<svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>';
+
+      // Show success toast with recall and dismiss buttons
+      this.toast.showWithActions(
+        t('push.success'),
+        [
+          {
+            label: t('history.recall'),
+            svg: recallSvg,
+            callback: (toastId) => {
+              recallCallback();
+              if (toastId) this.toast.hide(toastId);
+            },
+          },
+          {
+            label: t('common.close'),
+            svg: dismissSvg,
+            callback: (toastId) => {
+              if (toastId) this.toast.hide(toastId);
+            },
+          },
+        ],
+        'success',
+        0 // no auto-dismiss
+      );
 
       // Clear form and persisted data (Requirement 9.8)
       this.clearFormData();
@@ -877,6 +956,14 @@ export class PushTab {
       this.loadFormData();
 
     } catch (error) {
+      // Update history with error response
+      const errorResponses: PushHistoryResponse[] = [{
+        code: -1,
+        message: error instanceof Error ? error.message : t('push.failed'),
+        timestamp: Date.now(),
+      }];
+      this.storage.updatePushHistoryItem(messageId, { responseJson: errorResponses });
+
       // Show error message (Requirement 9.7)
       const errorMessage = error instanceof Error ? error.message : t('push.failed');
       const translatedMessage = this.translateError(errorMessage);
@@ -890,10 +977,56 @@ export class PushTab {
   }
 
   /**
-   * Show success message
+   * Recall a previously sent message
    */
-  private showSuccess(message: string): void {
-    this.toast.show(message, 'success');
+  private async recallMessage(messageId: string, historyItem: PushHistoryItem): Promise<void> {
+    try {
+      // Recall from each device
+      for (const deviceInfo of historyItem.devices) {
+        // Get the original device from storage to get server URL and headers
+        const devices = this.storage.getDevices();
+        const device = devices.find(d => d.id === deviceInfo.id);
+
+        if (device) {
+          // Build recall payload with all original fields
+          const recallPayload: NotificationPayload = {
+            title: historyItem.title,
+            body: historyItem.markdownEnabled ? undefined : historyItem.content,
+            markdown: historyItem.markdownEnabled ? historyItem.content : undefined,
+          };
+
+          // Add all options, converting boolean to string where needed
+          if (historyItem.options) {
+            if (historyItem.options.sound) recallPayload.sound = historyItem.options.sound;
+            if (historyItem.options.icon) recallPayload.icon = historyItem.options.icon;
+            if (historyItem.options.group) recallPayload.group = historyItem.options.group;
+            if (historyItem.options.url) recallPayload.url = historyItem.options.url;
+            if (historyItem.options.autoCopy) recallPayload.autoCopy = historyItem.options.autoCopy;
+            if (historyItem.options.isArchive) recallPayload.isArchive = '1';
+            if (historyItem.options.subtitle) recallPayload.subtitle = historyItem.options.subtitle;
+            if (historyItem.options.badge !== undefined) recallPayload.badge = historyItem.options.badge;
+            if (historyItem.options.level) recallPayload.level = historyItem.options.level as 'active' | 'critical' | 'timeSensitive' | 'passive';
+            if (historyItem.options.volume !== undefined) recallPayload.volume = historyItem.options.volume;
+            if (historyItem.options.call) recallPayload.call = historyItem.options.call ? '1' : undefined;
+            if (historyItem.options.copy) recallPayload.copy = historyItem.options.copy;
+            if (historyItem.options.action) recallPayload.action = historyItem.options.action;
+            if (historyItem.options.image) recallPayload.image = historyItem.options.image;
+          }
+
+          await this.barkClient.recallNotification(device, messageId, recallPayload);
+        }
+      }
+
+      // Update history item status to recalled
+      this.storage.updatePushHistoryItem(messageId, { status: 'recalled' });
+
+      // Show success message
+      this.toast.show(t('history.recallSuccess'), 'success');
+
+    } catch (error) {
+      // Show error message
+      this.toast.show(t('history.recallFailed'), 'error');
+    }
   }
 
   /**

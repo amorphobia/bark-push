@@ -200,10 +200,11 @@ export const STORAGE_KEYS = {
   LAST_TAB: 'bark_last_tab',
   KEYBOARD_SHORTCUT: 'bark_keyboard_shortcut',
   THEME: 'bark_theme',
+  PUSH_HISTORY: 'bark_push_history',
 } as const;
 
 /** Type for tab selection */
-export type TabType = 'push' | 'settings';
+export type TabType = 'push' | 'history' | 'settings';
 
 /** Type for theme selection */
 export type ThemeType = 'light' | 'dark' | 'auto';
@@ -219,6 +220,7 @@ export interface StorageSchema {
   [STORAGE_KEYS.LAST_TAB]: TabType;
   [STORAGE_KEYS.KEYBOARD_SHORTCUT]: string;
   [STORAGE_KEYS.THEME]: ThemeType;
+  [STORAGE_KEYS.PUSH_HISTORY]: PushHistoryItem[];
 }
 
 /**
@@ -246,4 +248,94 @@ export interface DeviceFormData {
   serverUrl: string;
   deviceKey: string;
   customHeaders?: string;
+}
+
+/**
+ * Push history item status - only "recalled" is stored in item
+ * Other statuses (sent/failed) are derived from responseJson array
+ */
+export type PushHistoryStatus = 'recalled';
+
+/**
+ * Represents a device in push history
+ */
+export interface PushHistoryDevice {
+  /** Device ID (from BarkDevice.id) */
+  id: string;
+
+  /** Optional friendly name at send time */
+  name?: string;
+
+  /** API URL = server URL + device key (e.g., "https://api.day.app/9fKraLksfTus3PyGPF2bR7/") */
+  apiUrl: string;
+
+  /** Optional custom headers at send time */
+  customHeaders?: string;
+}
+
+/**
+ * Response from Bark server for each device request
+ */
+export interface PushHistoryResponse {
+  /** HTTP status code */
+  code: number;
+
+  /** Response message */
+  message: string;
+
+  /** Server timestamp (Unix ms) */
+  timestamp: number;
+}
+
+/**
+ * Push history item - stores complete record of a push notification
+ */
+export interface PushHistoryItem {
+  /** Unique message ID sent to Bark server */
+  id: string;
+
+  /** Only "recalled" is stored; other statuses derived from responseJson */
+  status: PushHistoryStatus | undefined;
+
+  /** Notification title */
+  title?: string;
+
+  /** Notification body or markdown content */
+  content: string;
+
+  /** Whether markdown was enabled */
+  markdownEnabled: boolean;
+
+  /** Devices this was sent to (broadcasts share same ID) */
+  devices: PushHistoryDevice[];
+
+  /** Timestamp when request was made (Unix ms) */
+  requestTimestamp: number;
+
+  /** User's timezone (e.g., "Asia/Shanghai") */
+  timezone: string;
+
+  /** Whether notification was encrypted (always false for now) */
+  isEncrypted: boolean;
+
+  /** Server responses for each device request */
+  responseJson: PushHistoryResponse[];
+
+  /** Snapshot of advanced options */
+  options?: {
+    sound?: string;
+    icon?: string;
+    group?: string;
+    url?: string;
+    autoCopy?: boolean;
+    isArchive?: boolean;
+    subtitle?: string;
+    badge?: number;
+    level?: string;
+    volume?: number;
+    call?: boolean;
+    copy?: string;
+    action?: string;
+    image?: string;
+  };
 }

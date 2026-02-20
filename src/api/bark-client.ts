@@ -3,7 +3,7 @@
  * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9
  */
 
-import type { BarkDevice, NotificationPayload, BarkApiRequest } from '../types';
+import type { BarkDevice, NotificationPayload, BarkApiRequest, PushHistoryResponse } from '../types';
 
 // Error types for translation in UI layer
 export const BarkErrorType = {
@@ -24,44 +24,62 @@ export class BarkClient {
   /**
    * Send a push notification to one or more devices
    * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 2.3
-   * 
+   *
    * Handles devices on different servers by grouping them appropriately
    * and making separate API calls for each unique server/headers combination.
-   * 
+   *
    * @param devices - Array of devices to send to
    * @param payload - Notification content and options
+   * @param messageId - Optional message ID for history tracking
+   * @returns Array of push history responses from all device groups
    * @throws Error if network request fails or API returns error
    */
   async sendNotification(
     devices: BarkDevice[],
-    payload: NotificationPayload
-  ): Promise<void> {
+    payload: NotificationPayload,
+    messageId?: string
+  ): Promise<PushHistoryResponse[]> {
     if (devices.length === 0) {
       throw new Error(BarkErrorType.noDevicesProvided);
     }
 
     // Group devices by server URL and custom headers
     const deviceGroups = this.groupDevicesByServer(devices);
-    
+
     // Send to each group in parallel
     const results = await Promise.allSettled(
-      Array.from(deviceGroups.values()).map(group => 
-        this.sendToDeviceGroup(group, payload)
+      Array.from(deviceGroups.values()).map(group =>
+        this.sendToDeviceGroup(group, payload, messageId)
       )
     );
-    
+
+    // Collect all responses
+    const allResponses: PushHistoryResponse[] = [];
+
     // Collect failures and report with device details
     // Requirements: 3.2, 3.3, 3.4, 3.5
     const failures: Array<{ devices: BarkDevice[], error: string }> = [];
     let groupIndex = 0;
 
     for (const result of results) {
+      const group = Array.from(deviceGroups.values())[groupIndex];
+
       if (result.status === 'rejected') {
-        const group = Array.from(deviceGroups.values())[groupIndex];
         failures.push({
           devices: group,
           error: result.reason.message || BarkErrorType.unknownError
         });
+        // Add error response for each device in the group
+        for (const _device of group) {
+          allResponses.push({
+            code: -1,
+            message: result.reason.message || BarkErrorType.unknownError,
+            timestamp: Date.now(),
+          });
+        }
+      } else {
+        // Add successful responses
+        allResponses.push(...result.value);
       }
       groupIndex++;
     }
@@ -78,12 +96,14 @@ export class BarkClient {
       });
       throw new Error(JSON.stringify(errorMessages));
     }
+
+    return allResponses;
   }
 
   /**
    * Test connection to a Bark server
    * Requirements: 16.3, 16.4, 16.5
-   * 
+   *
    * @param serverUrl - Server URL to test
    * @param _deviceKey - Device key (not used for ping, but kept for API consistency)
    * @param customHeaders - Optional custom headers
@@ -94,7 +114,7 @@ export class BarkClient {
     _deviceKey: string,
     customHeaders?: string
   ): Promise<boolean> {
-    const headers = customHeaders 
+    const headers = customHeaders
       ? this.parseCustomHeaders(customHeaders)
       : {};
 
@@ -112,6 +132,108 @@ export class BarkClient {
         },
         ontimeout: () => {
           resolve(false);
+        },
+      });
+    });
+  }
+
+  /**
+   * Recall a previously sent notification
+   *
+   * @param device - Device to recall from
+   * @param messageId - Message ID to recall
+   * @param originalPayload - Original payload (to preserve server URL and headers)
+   * @returns Push history response
+   */
+  async recallNotification(
+    device: BarkDevice,
+    messageId: string,
+    originalPayload: NotificationPayload
+  ): Promise<PushHistoryResponse> {
+    // All devices in group share same server URL and headers
+    const serverUrl = device.serverUrl;
+    const customHeaders = device.customHeaders
+      ? this.parseCustomHeaders(device.customHeaders)
+      : {};
+
+    // Build request - all original fields plus delete: "1"
+    const request: BarkApiRequest = {
+      device_key: device.deviceKey,
+      id: messageId,
+      delete: '1',
+    };
+
+    // Add all original fields (except id and delete which are already set)
+    if (originalPayload.title) request.title = originalPayload.title;
+    if (originalPayload.body) request.body = originalPayload.body;
+    if (originalPayload.markdown) request.markdown = originalPayload.markdown;
+    if (originalPayload.sound) request.sound = originalPayload.sound;
+    if (originalPayload.icon) request.icon = originalPayload.icon;
+    if (originalPayload.group) request.group = originalPayload.group;
+    if (originalPayload.url) request.url = originalPayload.url;
+    if (originalPayload.badge !== undefined) request.badge = originalPayload.badge;
+    if (originalPayload.level) request.level = originalPayload.level;
+    if (originalPayload.volume !== undefined) request.volume = originalPayload.volume;
+    if (originalPayload.call) request.call = originalPayload.call;
+    if (originalPayload.isArchive) request.isArchive = originalPayload.isArchive;
+    if (originalPayload.copy) request.copy = originalPayload.copy;
+    if (originalPayload.ciphertext) request.ciphertext = originalPayload.ciphertext;
+    if (originalPayload.action) request.action = originalPayload.action;
+    if (originalPayload.image) request.image = originalPayload.image;
+    if (originalPayload.subtitle) request.subtitle = originalPayload.subtitle;
+    if (originalPayload.autoCopy) request.autoCopy = '1';
+    if (originalPayload.automaticallyCopy) request.automaticallyCopy = true;
+
+    return new Promise((resolve) => {
+      GM_xmlhttpRequest({
+        method: 'POST',
+        url: `${serverUrl}/push`,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          ...customHeaders,
+        },
+        data: JSON.stringify(request),
+        timeout: 10000,
+        onload: (response) => {
+          // Parse response to get timestamp
+          let timestamp = Date.now();
+          try {
+            const parsed = JSON.parse(response.responseText);
+            if (parsed.timestamp) {
+              timestamp = parsed.timestamp;
+            }
+          } catch {
+            // Use current time if parsing fails
+          }
+
+          if (response.status >= 200 && response.status < 300) {
+            resolve({
+              code: response.status,
+              message: 'success',
+              timestamp,
+            });
+          } else {
+            const error = this.parseErrorResponse(response.responseText);
+            resolve({
+              code: response.status,
+              message: error,
+              timestamp,
+            });
+          }
+        },
+        onerror: () => {
+          resolve({
+            code: -1,
+            message: BarkErrorType.networkError,
+            timestamp: Date.now(),
+          });
+        },
+        ontimeout: () => {
+          resolve({
+            code: -1,
+            message: BarkErrorType.timeout,
+            timestamp: Date.now(),
+          });
         },
       });
     });
@@ -148,29 +270,36 @@ export class BarkClient {
   /**
    * Send notification to a single device group (same server + headers)
    * Requirements: 2.1, 2.2, 2.3, 2.4
-   * 
+   *
    * All devices in the group share the same server URL and custom headers,
    * allowing us to make a single HTTP request with device_keys array.
-   * 
+   *
    * @param devices - Devices in this group (all share same server/headers)
    * @param payload - Notification payload
+   * @param messageId - Optional message ID for history tracking
    * @throws Error if network request fails or API returns error
    */
   private async sendToDeviceGroup(
     devices: BarkDevice[],
-    payload: NotificationPayload
-  ): Promise<void> {
+    payload: NotificationPayload,
+    messageId?: string
+  ): Promise<PushHistoryResponse[]> {
     // Build the API request
     const request = this.buildRequest(devices, payload);
-    
+
+    // Add message ID if provided
+    if (messageId) {
+      request.id = messageId;
+    }
+
     // All devices in group share same server URL and headers
     const serverUrl = devices[0].serverUrl;
-    const customHeaders = devices[0].customHeaders 
+    const customHeaders = devices[0].customHeaders
       ? this.parseCustomHeaders(devices[0].customHeaders)
       : {};
 
     // Send the request
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       GM_xmlhttpRequest({
         method: 'POST',
         url: `${serverUrl}/push`,
@@ -181,18 +310,53 @@ export class BarkClient {
         data: JSON.stringify(request),
         timeout: 10000,
         onload: (response) => {
+          // Parse response to get timestamp
+          let timestamp = Date.now();
+          try {
+            const parsed = JSON.parse(response.responseText);
+            if (parsed.timestamp) {
+              timestamp = parsed.timestamp;
+            }
+          } catch {
+            // Use current time if parsing fails
+          }
+
           if (response.status >= 200 && response.status < 300) {
-            resolve();
+            // Return response for each device in group
+            const responses: PushHistoryResponse[] = devices.map(() => ({
+              code: response.status,
+              message: 'success',
+              timestamp,
+            }));
+            resolve(responses);
           } else {
             const error = this.parseErrorResponse(response.responseText);
-            reject(new Error(error));
+            // Return error responses for each device in group
+            const responses: PushHistoryResponse[] = devices.map(() => ({
+              code: response.status,
+              message: error,
+              timestamp,
+            }));
+            resolve(responses);
           }
         },
         onerror: () => {
-          reject(new Error(BarkErrorType.networkError));
+          // Return error responses for each device in group
+          const responses: PushHistoryResponse[] = devices.map(() => ({
+            code: -1,
+            message: BarkErrorType.networkError,
+            timestamp: Date.now(),
+          }));
+          resolve(responses);
         },
         ontimeout: () => {
-          reject(new Error(BarkErrorType.timeout));
+          // Return error responses for each device in group
+          const responses: PushHistoryResponse[] = devices.map(() => ({
+            code: -1,
+            message: BarkErrorType.timeout,
+            timestamp: Date.now(),
+          }));
+          resolve(responses);
         },
       });
     });

@@ -5,15 +5,29 @@ jobs:
   build:
     runs-on: windows
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Setup
         run: pnpm install
+
       - name: Test
         run: pnpm test:run
+
       - name: Build
-        run: pnpm build
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        run: |
+          $env:VERSION = (git describe --tags --always --dirty) -replace '^v', ''
+          pnpm build
+
+      - name: Create release
+        if: startsWith(gitea.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
         with:
-          name: artifact
-          path: dist/bark-push.user.js
+          files: dist/bark-push.user.js
+
+      - name: Create nightly release
+        if: startsWith(gitea.ref, 'refs/heads/')
+        uses: akkuman/gitea-release-action@v1
+        with:
+          tag_name: "nightly"
+          files: dist/bark-push.user.js

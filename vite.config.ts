@@ -16,6 +16,7 @@ export default defineConfig({
       userscript: {
         name: 'Bark Push',
         namespace: 'org.eu.xuesong',
+        version: process.env.VERSION || '0.1.0',
         homepage: 'https://gitea.xuesong.eu.org/me/bark-push',
         supportURL: 'https://gitea.xuesong.eu.org/me/bark-push/issues',
         match: ['*://*/*'],

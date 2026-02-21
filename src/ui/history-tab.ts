@@ -416,27 +416,34 @@ export class HistoryTab {
    */
   private handleExport(): void {
     const history = this.storage.getPushHistory();
+    const now = new Date();
+
+    // Format: 20260221T223000+0800
+    const formatDate = (d: Date): string => {
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const offset = -d.getTimezoneOffset();
+      const sign = offset >= 0 ? '+' : '-';
+      const hh = pad(Math.floor(Math.abs(offset) / 60));
+      const mm = pad(Math.abs(offset) % 60);
+      return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}${sign}${hh}${mm}`;
+    };
+
     const exportData = {
       version: 1,
-      exportedAt: new Date().toISOString(),
+      exportedAt: now.toISOString(),
       records: history,
     };
 
-    const json = JSON.stringify(exportData, null, 2);
+    const filename = `bark-push-history-${formatDate(now)}.json`;
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
 
-    // Use GM_setClipboard if available, otherwise fallback
-    if (typeof GM_setClipboard === 'function') {
-      GM_setClipboard(json);
-    } else {
-      // Fallback: create temporary textarea
-      const textarea = document.createElement('textarea');
-      textarea.value = json;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-    }
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
 
+    URL.revokeObjectURL(url);
     this.toast.show(t('history.exportSuccess'), 'success');
   }
 
@@ -444,68 +451,61 @@ export class HistoryTab {
    * Handle import
    */
   private async handleImport(): Promise<void> {
-    let json = '';
+    // Create hidden file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
 
-    // Try to get from clipboard
-    if (typeof GM_getClipboard === 'function') {
-      json = GM_getClipboard();
-    } else {
-      // Fallback: create temporary textarea
-      const textarea = document.createElement('textarea');
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('paste');
-      json = textarea.value;
-      document.body.removeChild(textarea);
-    }
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
 
-    if (!json) {
-      this.toast.show(t('history.importFailed'), 'error');
-      return;
-    }
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
 
-    try {
-      const data = JSON.parse(json);
-
-      // Validate import format
-      if (!data.version || !data.records || !Array.isArray(data.records)) {
-        throw new Error('Invalid format');
-      }
-
-      const records = data.records as PushHistoryItem[];
-      const count = records.length;
-
-      // Merge with existing history
-      const existingHistory = this.storage.getPushHistory();
-      const existingIds = new Set(existingHistory.map(h => h.id));
-
-      for (const record of records) {
-        if (!existingIds.has(record.id)) {
-          existingHistory.unshift(record);
+        // Validate import format
+        if (!data.version || !data.records || !Array.isArray(data.records)) {
+          throw new Error('Invalid format');
         }
-      }
 
-      // Trim to max size
-      const MAX_HISTORY_SIZE = 500;
-      if (existingHistory.length > MAX_HISTORY_SIZE) {
-        existingHistory.length = MAX_HISTORY_SIZE;
-      }
+        const records = data.records as PushHistoryItem[];
+        const count = records.length;
 
-      // Save to storage
-      // Note: We need to add a method to set history directly or use a different approach
-      // For now, we'll add each item individually
-      for (const record of records) {
-        if (!existingIds.has(record.id)) {
-          this.storage.addPushHistoryItem(record);
+        // Merge with existing history
+        const existingHistory = this.storage.getPushHistory();
+        const existingIds = new Set(existingHistory.map(h => h.id));
+
+        for (const record of records) {
+          if (!existingIds.has(record.id)) {
+            existingHistory.unshift(record);
+          }
         }
+
+        // Trim to max size
+        const MAX_HISTORY_SIZE = 500;
+        if (existingHistory.length > MAX_HISTORY_SIZE) {
+          existingHistory.length = MAX_HISTORY_SIZE;
+        }
+
+        // Save to storage
+        // Note: We need to add a method to set history directly or use a different approach
+        // For now, we'll add each item individually
+        for (const record of records) {
+          if (!existingIds.has(record.id)) {
+            this.storage.addPushHistoryItem(record);
+          }
+        }
+
+        this.toast.show(t('history.importSuccess', { count: String(count) }), 'success');
+        this.renderContent();
+
+      } catch (error) {
+        this.toast.show(t('history.importFailed'), 'error');
       }
+    };
 
-      this.toast.show(t('history.importSuccess', { count: String(count) }), 'success');
-      this.renderContent();
-
-    } catch (error) {
-      this.toast.show(t('history.importFailed'), 'error');
-    }
+    input.click();
   }
 
   /**

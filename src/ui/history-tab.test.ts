@@ -191,16 +191,38 @@ describe('HistoryTab', () => {
 
       historyTab = new HistoryTab(storage, toast, barkClient);
 
-      // Call handleExport and check GM_setClipboard was called
+      // Mock URL.createObjectURL and URL.revokeObjectURL
+      const mockUrl = 'blob:http://localhost/mock-url';
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue(mockUrl);
+      const revokeSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+      // Mock document.createElement to capture the anchor element
+      const mockAnchor = {
+        href: '',
+        download: '',
+        click: vi.fn(),
+      };
+      const originalCreateElement = document.createElement.bind(document);
+      const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'a') {
+          return mockAnchor as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call handleExport
       (historyTab as any).handleExport();
 
-      expect((globalThis as any).GM_setClipboard).toHaveBeenCalled();
-      const clipboardContent = (globalThis as any).GM_setClipboard.mock.calls[0][0];
-      const parsed = JSON.parse(clipboardContent);
+      // Verify download was triggered
+      expect(mockAnchor.download).toContain('bark-push-history-');
+      expect(mockAnchor.download).toContain('.json');
+      expect(mockAnchor.click).toHaveBeenCalled();
 
-      expect(parsed.version).toBe(1);
-      expect(parsed.records).toHaveLength(2);
-      expect(parsed.records[0].id).toBe('test-id-1');
+      // Verify URL cleanup
+      expect(revokeSpy).toHaveBeenCalledWith(mockUrl);
+
+      createElementSpy.mockRestore();
+      revokeSpy.mockRestore();
     });
 
     test('export includes timestamp', () => {
@@ -208,13 +230,105 @@ describe('HistoryTab', () => {
       vi.spyOn(storage, 'getPushHistory').mockReturnValue(items);
 
       historyTab = new HistoryTab(storage, toast, barkClient);
+
+      // Mock URL.createObjectURL and URL.revokeObjectURL
+      const mockUrl = 'blob:http://localhost/mock-url';
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue(mockUrl);
+      const revokeSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+      // Mock document.createElement
+      const mockAnchor = {
+        href: '',
+        download: '',
+        click: vi.fn(),
+      };
+      const originalCreateElement = document.createElement.bind(document);
+      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'a') {
+          return mockAnchor as any;
+        }
+        return originalCreateElement(tag);
+      });
+
       (historyTab as any).handleExport();
 
-      const clipboardContent = (globalThis as any).GM_setClipboard.mock.calls[0][0];
-      const parsed = JSON.parse(clipboardContent);
+      // Verify filename includes timestamp pattern (YYYYMMDDTHHMMSS)
+      const filename = mockAnchor.download;
+      expect(filename).toMatch(/bark-push-history-\d{8}T\d{6}[+-]\d{4}\.json/);
 
-      expect(parsed.exportedAt).toBeTruthy();
-      expect(new Date(parsed.exportedAt)).toBeInstanceOf(Date);
+      revokeSpy.mockRestore();
+    });
+
+    test('export creates blob with correct content type', () => {
+      const items = [createMockHistoryItem({ id: 'test-id' })];
+      vi.spyOn(storage, 'getPushHistory').mockReturnValue(items);
+
+      historyTab = new HistoryTab(storage, toast, barkClient);
+
+      // Mock URL methods
+      const mockUrl = 'blob:http://localhost/mock-url';
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue(mockUrl);
+      const revokeSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+      // Mock document.createElement
+      const mockAnchor = {
+        href: '',
+        download: '',
+        click: vi.fn(),
+      };
+      const originalCreateElement = document.createElement.bind(document);
+      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'a') {
+          return mockAnchor as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call export - should work without errors
+      expect(() => (historyTab as any).handleExport()).not.toThrow();
+
+      // Verify download was triggered
+      expect(mockAnchor.click).toHaveBeenCalled();
+
+      revokeSpy.mockRestore();
+    });
+
+    test('export includes correct records count', () => {
+      const items = [
+        createMockHistoryItem({ id: 'id-1' }),
+        createMockHistoryItem({ id: 'id-2' }),
+        createMockHistoryItem({ id: 'id-3' }),
+      ];
+      vi.spyOn(storage, 'getPushHistory').mockReturnValue(items);
+
+      historyTab = new HistoryTab(storage, toast, barkClient);
+
+      // Mock URL methods
+      const mockUrl = 'blob:http://localhost/mock-url';
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue(mockUrl);
+      const revokeSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+      // Mock document.createElement
+      const mockAnchor = {
+        href: '',
+        download: '',
+        click: vi.fn(),
+      };
+      const originalCreateElement = document.createElement.bind(document);
+      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'a') {
+          return mockAnchor as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call export and verify it doesn't throw
+      expect(() => (historyTab as any).handleExport()).not.toThrow();
+
+      // Verify download was triggered
+      expect(mockAnchor.click).toHaveBeenCalled();
+
+      revokeSpy.mockRestore();
     });
   });
 
@@ -232,14 +346,41 @@ describe('HistoryTab', () => {
         ],
       };
 
-      (globalThis as any).GM_getClipboard = vi.fn(() => JSON.stringify(importData));
-
       const addSpy = vi.spyOn(storage, 'addPushHistoryItem').mockImplementation(() => {});
 
       historyTab = new HistoryTab(storage, toast, barkClient);
-      await (historyTab as any).handleImport();
+
+      // Create a mock file with text() method
+      const mockText = JSON.stringify(importData);
+      const mockFile = {
+        name: 'test.json',
+        type: 'application/json',
+        text: vi.fn().mockResolvedValue(mockText),
+      };
+      const mockInput = {
+        type: 'file',
+        accept: '.json',
+        files: [mockFile],
+        click: vi.fn(),
+        onchange: null as ((this: Event) => void) | null,
+      };
+
+      // Mock document.createElement - use original for other tags
+      const originalCreateElement = document.createElement.bind(document);
+      const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'input') {
+          return mockInput as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call handleImport, then manually trigger the onchange with proper event target
+      const importPromise = (historyTab as any).handleImport();
+      (mockInput.onchange as any)?.({ target: mockInput });
+      await importPromise;
 
       expect(addSpy).toHaveBeenCalledTimes(2);
+      createElementSpy.mockRestore();
     });
 
     test('handleImport ignores duplicate IDs', async () => {
@@ -255,14 +396,190 @@ describe('HistoryTab', () => {
         ],
       };
 
-      (globalThis as any).GM_getClipboard = vi.fn(() => JSON.stringify(importData));
-
       const addSpy = vi.spyOn(storage, 'addPushHistoryItem').mockImplementation(() => {});
 
       historyTab = new HistoryTab(storage, toast, barkClient);
-      await (historyTab as any).handleImport();
+
+      // Create a mock file with text() method
+      const mockText = JSON.stringify(importData);
+      const mockFile = {
+        name: 'test.json',
+        type: 'application/json',
+        text: vi.fn().mockResolvedValue(mockText),
+      };
+      const mockInput = {
+        type: 'file',
+        accept: '.json',
+        files: [mockFile],
+        click: vi.fn(),
+        onchange: null as ((this: Event) => void) | null,
+      };
+
+      // Mock document.createElement - use original for other tags
+      const originalCreateElement = document.createElement.bind(document);
+      const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'input') {
+          return mockInput as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call handleImport, then manually trigger the onchange with proper event target
+      const importPromise = (historyTab as any).handleImport();
+      (mockInput.onchange as any)?.({ target: mockInput });
+      await importPromise;
 
       expect(addSpy).toHaveBeenCalledTimes(1);
+      createElementSpy.mockRestore();
+    });
+
+    test('handleImport shows error for invalid format', async () => {
+      vi.spyOn(storage, 'getPushHistory').mockReturnValue([]);
+
+      const toastSpy = vi.spyOn(toast, 'show').mockImplementation(() => '');
+
+      historyTab = new HistoryTab(storage, toast, barkClient);
+
+      // Create a mock file with invalid format (missing version and records)
+      const mockText = JSON.stringify({ foo: 'bar' });
+      const mockFile = {
+        name: 'test.json',
+        type: 'application/json',
+        text: vi.fn().mockResolvedValue(mockText),
+      };
+      const mockInput = {
+        type: 'file',
+        accept: '.json',
+        files: [mockFile],
+        click: vi.fn(),
+        onchange: null as ((this: Event) => void) | null,
+      };
+
+      // Mock document.createElement - use original for other tags
+      const originalCreateElement = document.createElement.bind(document);
+      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'input') {
+          return mockInput as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call handleImport, then manually trigger the onchange
+      const importPromise = (historyTab as any).handleImport();
+      (mockInput.onchange as any)?.({ target: mockInput });
+      await importPromise;
+
+      // Verify error toast was shown
+      expect(toastSpy).toHaveBeenCalled();
+      expect(toastSpy.mock.calls[0][1]).toBe('error');
+    });
+
+    test('handleImport triggers file input click', () => {
+      historyTab = new HistoryTab(storage, toast, barkClient);
+
+      // Create a mock input element
+      const mockInput = {
+        type: 'file',
+        accept: '.json',
+        files: [],
+        click: vi.fn(),
+        onchange: null,
+      };
+
+      // Mock document.createElement - use original for other tags
+      const originalCreateElement = document.createElement.bind(document);
+      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'input') {
+          return mockInput as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call handleImport
+      (historyTab as any).handleImport();
+
+      // Verify click was triggered
+      expect(mockInput.click).toHaveBeenCalled();
+    });
+
+    test('handleImport shows error for invalid JSON', async () => {
+      vi.spyOn(storage, 'getPushHistory').mockReturnValue([]);
+
+      const toastSpy = vi.spyOn(toast, 'show').mockImplementation(() => '');
+
+      historyTab = new HistoryTab(storage, toast, barkClient);
+
+      // Create a mock file with invalid JSON
+      const mockFile = {
+        name: 'test.json',
+        type: 'application/json',
+        text: vi.fn().mockResolvedValue('not valid json{{{'),
+      };
+      const mockInput = {
+        type: 'file',
+        accept: '.json',
+        files: [mockFile],
+        click: vi.fn(),
+        onchange: null as ((this: Event) => void) | null,
+      };
+
+      // Mock document.createElement - use original for other tags
+      const originalCreateElement = document.createElement.bind(document);
+      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'input') {
+          return mockInput as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call handleImport, then manually trigger the onchange
+      const importPromise = (historyTab as any).handleImport();
+      (mockInput.onchange as any)?.({ target: mockInput });
+      await importPromise;
+
+      // Verify error toast was shown
+      expect(toastSpy).toHaveBeenCalled();
+      expect(toastSpy.mock.calls[0][1]).toBe('error');
+    });
+
+    test('handleImport handles empty file gracefully', async () => {
+      vi.spyOn(storage, 'getPushHistory').mockReturnValue([]);
+
+      const toastSpy = vi.spyOn(toast, 'show').mockImplementation(() => '');
+
+      historyTab = new HistoryTab(storage, toast, barkClient);
+
+      // Create a mock file with empty content
+      const mockFile = {
+        name: 'test.json',
+        type: 'application/json',
+        text: vi.fn().mockResolvedValue(''),
+      };
+      const mockInput = {
+        type: 'file',
+        accept: '.json',
+        files: [mockFile],
+        click: vi.fn(),
+        onchange: null as ((this: Event) => void) | null,
+      };
+
+      // Mock document.createElement - use original for other tags
+      const originalCreateElement = document.createElement.bind(document);
+      vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        if (tag === 'input') {
+          return mockInput as any;
+        }
+        return originalCreateElement(tag);
+      });
+
+      // Call handleImport, then manually trigger the onchange
+      const importPromise = (historyTab as any).handleImport();
+      (mockInput.onchange as any)?.({ target: mockInput });
+      await importPromise;
+
+      // Verify error toast was shown for empty file
+      expect(toastSpy).toHaveBeenCalled();
+      expect(toastSpy.mock.calls[0][1]).toBe('error');
     });
   });
 

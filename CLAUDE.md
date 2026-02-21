@@ -39,9 +39,10 @@ pnpm preview      # Preview production build locally
 - Modal is lazy-injected into the page when user activates the script
 
 **UI Layer** (`src/ui/`)
-- `modal.ts` - Main modal container with tabbed interface (Push/Settings)
+- `modal.ts` - Main modal container with tabbed interface (Push/History/Settings)
 - `push-tab.ts` - Push notification form with advanced options
 - `settings-tab.ts` - Device management and configuration
+- `history-tab.ts` - Push history view with recall, export/import functionality
 - `device-manager.ts` - CRUD operations for Bark devices
 - `device-form.ts` / `device-list.ts` / `device-selector.ts` - Device UI components
 - `toast.ts` / `confirm-dialog.ts` - User feedback components
@@ -51,6 +52,7 @@ pnpm preview      # Preview production build locally
 - `BarkClient` class handles all Bark server communication
 - Groups devices by server URL + custom headers for batch requests
 - Implements `testConnection()` method for device validation
+- Implements `recallNotification()` for deleting sent notifications
 - Uses `GM_xmlhttpRequest` for cross-domain requests
 - Error handling with user-friendly messages
 
@@ -58,6 +60,7 @@ pnpm preview      # Preview production build locally
 - `StorageManager` class abstracts Tampermonkey GM_* APIs
 - Type-safe storage with schema defined in `src/types/index.ts`
 - Manages devices, default device, language preference, UI state
+- Push history with max 500 records, supports add/update/delete/clear operations
 
 **Internationalization** (`src/i18n/`)
 - Lightweight custom i18n solution with type safety
@@ -67,12 +70,14 @@ pnpm preview      # Preview production build locally
 
 **Types** (`src/types/`)
 - Core interfaces: `BarkDevice`, `NotificationPayload`, `BarkApiRequest`
+- History types: `PushHistoryItem`, `PushHistoryDevice`, `PushHistoryResponse`, `PushHistoryStatus`
 - Storage schema with `STORAGE_KEYS` constants
 - Form data interfaces for validation
 
 **Utilities** (`src/utils/`)
 - `validation.ts` - Form validation logic
 - `device-factory.ts` - Device creation helpers
+- `message-id.ts` - Unique message ID generation for push tracking
 
 ### Key Design Patterns
 
@@ -130,9 +135,11 @@ See `.kiro/steering/i18n-internationalization.md` for full details.
 **Endpoints**:
 - `POST /push` - Send notification (main endpoint)
 - `GET /ping` - Connection testing
+- `POST /push` with `delete: "1"` and same `id` - Recall/delete notification
 **Required Fields**: `device_key` (or `device_keys` array) + `body`/`markdown`
-**Optional Fields**: `title`, `sound`, `icon`, `group`, `url`, `badge`, etc.
+**Optional Fields**: `title`, `sound`, `icon`, `group`, `url`, `badge`, `id`, `delete`, etc.
 **Custom Headers**: Per-device configuration for authentication
+**Message ID**: Generated via `generateMessageId()` for tracking and recall
 
 ## Important Notes
 
@@ -142,6 +149,8 @@ See `.kiro/steering/i18n-internationalization.md` for full details.
 4. **Keyboard shortcuts**: Configurable via settings; respect input fields (don't trigger when typing)
 5. **Device management**: Users can add/edit/delete devices; each has unique server URL + device key
 6. **Batch sending**: When multiple devices selected, group by server+headers for efficient API calls
+7. **History tracking**: Push history stores up to 500 records with devices, responses, and options snapshot
+8. **Recall feature**: Messages can be recalled via Bark's delete API using the same message ID
 
 ## Common Development Tasks
 
